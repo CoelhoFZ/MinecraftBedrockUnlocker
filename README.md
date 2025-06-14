@@ -100,7 +100,7 @@ The tool:
 
 ## Features
 
-- 🌍 **Multi-language**: Auto-detects EN, PT-BR, ES
+- 🌍 **Multi-language**: Auto-detects EN, PT-BR, ES, RU
 - 🛡️ **Antivirus handling**: Adds exclusions automatically for Windows Defender, BD Free, and others
 - 🔄 **Auto-retry**: If antivirus removes files, retries installation
 - 📊 **Diagnostics**: Full system health check
