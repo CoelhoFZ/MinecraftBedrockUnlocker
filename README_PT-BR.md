@@ -1,5 +1,7 @@
 # Minecraft Bedrock Unlocker
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Apoie-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/coelhofz)
+
 > 🌍 **Português (Brasil)** | **[English](README.md)**
 
 Ferramenta CLI desenvolvida em Rust para gerenciar a DLL de licenciamento do Minecraft Bedrock Edition no Windows.
@@ -73,6 +75,14 @@ cargo build --release
 
 # Saída: target/release/mc_unlocker.exe
 ```
+
+## ☕ Apoie o Projeto
+
+Se essa ferramenta te ajudou, considere apoiar meu trabalho!
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Doar-yellow.svg?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/coelhofz)
+
+Seu apoio me ajuda a criar mais ferramentas gratuitas e conteúdo! 🚀
 
 ## Contribuindo & Licença
 
