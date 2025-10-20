@@ -16,7 +16,7 @@ Unlocks Minecraft by replacing the System32 licensing DLL with a modified versio
 
 > 📖 **[Full installation guide](INSTALL.md)** | Quick start below
 
-Download the latest `mc_unlocker.exe` from [Releases](https://github.com/DuarteFZ/MinecraftBedrockUnlocker/releases).
+Download the latest `mc_unlocker.exe` from [Releases](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases).
 
 **Run as Administrator:**
 ```cmd
@@ -72,7 +72,7 @@ src/
 winget install Rustlang.Rustup
 
 # Clone and build
-git clone https://github.com/DuarteFZ/MinecraftBedrockUnlocker.git
+git clone https://github.com/CoelhoFZ/MinecraftBedrockUnlocker.git
 cd MinecraftBedrockUnlocker
 cargo build --release
 

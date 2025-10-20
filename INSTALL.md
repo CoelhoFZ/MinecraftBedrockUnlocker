@@ -7,7 +7,7 @@
 ### For Regular Users
 
 1. **Download the latest release**
-   - Go to [Releases](https://github.com/DuarteFZ/MinecraftBedrockUnlocker/releases)
+   - Go to [Releases](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
    - Download `mc_unlocker.exe` (latest version)
    - File size: ~5.3 MB
 
@@ -43,7 +43,7 @@
 winget install Rustlang.Rustup
 
 # 2. Clone repository
-git clone https://github.com/DuarteFZ/MinecraftBedrockUnlocker.git
+git clone https://github.com/CoelhoFZ/MinecraftBedrockUnlocker.git
 cd MinecraftBedrockUnlocker
 
 # 3. Build release version
@@ -154,8 +154,8 @@ To revert changes and restore original DLL:
 
 ## 🆘 Need Help?
 
-- **Issues:** [Report a bug](https://github.com/DuarteFZ/MinecraftBedrockUnlocker/issues)
-- **Discussions:** [Ask questions](https://github.com/DuarteFZ/MinecraftBedrockUnlocker/discussions)
+- **Issues:** [Report a bug](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/issues)
+- **Discussions:** [Ask questions](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/discussions)
 - **YouTube:** [@CoelhoFZ](https://www.youtube.com/@CoelhoFZ)
 
 ---
@@ -183,4 +183,4 @@ mc_unlocker.exe abrir-store
 
 ---
 
-Made with ❤️ by [CoelhoFZ](https://github.com/DuarteFZ) | [Back to README](README.md)
+Made with ❤️ by [CoelhoFZ](https://github.com/CoelhoFZ) | [Back to README](README.md)
