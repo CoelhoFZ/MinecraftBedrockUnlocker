@@ -41,7 +41,8 @@ impl DllManager {
         }
 
         // Check DLL
-        println!("                    {}          {}", Translations::dll_path(), self.target_dll_path.display());
+        println!("                    {}          ", Translations::dll_path());
+        println!("                                     {}", self.target_dll_path.display());
 
         if !self.target_dll_path.exists() {
             println!("                    {}           File not found", Translations::dll_state().yellow());
