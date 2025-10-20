@@ -31,7 +31,7 @@ mc_unlocker.exe
 
 ## Features
 
-- 🚀 **Native executable** - No .NET Runtime required (~800 KB)
+- 🚀 **Native executable** - No .NET Runtime required (~5.3 MB, includes 2 DLLs)
 - 🌍 **Multi-language** - Auto-detects 8 languages (EN, PT-BR, PT-PT, ES, FR, DE, ZH-CN, RU)
 - 🔒 **Memory-safe** - Built with Rust
 - 🔄 **Reversible** - Restore original DLL anytime
