@@ -9,7 +9,7 @@ Desbloqueia o Minecraft substituindo a DLL de licenciamento da System32 por uma 
 
 ## Instalação
 
-Baixe o `mc_unlocker.exe` mais recente em [Releases](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases).
+Baixe o `mc_unlocker.exe` mais recente em [Releases](https://github.com/DuarteFZ/MinecraftBedrockUnlocker/releases).
 
 **Execute como Administrador:**
 ```cmd
@@ -65,7 +65,7 @@ src/
 winget install Rustlang.Rustup
 
 # Clonar e compilar
-git clone https://github.com/CoelhoFZ/MinecraftBedrockUnlocker.git
+git clone https://github.com/DuarteFZ/MinecraftBedrockUnlocker.git
 cd MinecraftBedrockUnlocker
 cargo build --release
 
