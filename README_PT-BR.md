@@ -15,6 +15,8 @@ Desbloqueia o Minecraft substituindo a DLL de licenciamento da System32 por uma 
 
 Baixe o `mc_unlocker.exe` mais recente em [Releases](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases).
 
+> ⚠️ **Aviso do Windows SmartScreen:** O Windows pode mostrar "O Windows protegeu o computador" porque o executável não tem assinatura digital. Clique em **"Mais informações"** → **"Executar assim mesmo"**. Isso é normal para software open-source não assinado.
+
 **Execute como Administrador:**
 ```cmd
 # Clique com botão direito em mc_unlocker.exe → "Executar como administrador"

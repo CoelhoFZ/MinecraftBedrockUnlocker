@@ -20,6 +20,8 @@ Unlocks Minecraft by replacing the System32 licensing DLL with a modified versio
 
 Download the latest `mc_unlocker.exe` from [Releases](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases).
 
+> ⚠️ **Windows SmartScreen Warning:** Windows may show "Windows protected your PC" because the executable is not digitally signed. Click **"More info"** → **"Run anyway"**. This is normal for unsigned open-source software.
+
 **Run as Administrator:**
 ```cmd
 # Right-click mc_unlocker.exe → "Run as administrator"
