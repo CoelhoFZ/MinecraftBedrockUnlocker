@@ -1,6 +1,7 @@
 # Minecraft Bedrock Unlocker
 
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Apoie-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/coelhofz)
+[![Discord](https://img.shields.io/badge/Discord-Entrar%20no%20Servidor-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/anwwRuXn)
 
 > 🌍 **Português (Brasil)** | **[English](README.md)**
 
