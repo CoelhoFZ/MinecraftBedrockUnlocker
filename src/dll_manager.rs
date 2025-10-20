@@ -41,8 +41,8 @@ impl DllManager {
         }
 
         // Check DLL
-        println!("                    {}          ", Translations::dll_path());
-        println!("                                     {}", self.target_dll_path.display());
+        print!("                    {}           ", Translations::dll_path());
+        println!("{}", self.target_dll_path.file_name().unwrap_or_default().to_string_lossy());
 
         if !self.target_dll_path.exists() {
             println!("                    {}           File not found", Translations::dll_state().yellow());
@@ -60,7 +60,14 @@ impl DllManager {
                 println!("{}", Translations::dll_unknown().magenta());
             }
 
-            println!("                    Hash SHA256:             {}", current_hash);
+            println!("                    Hash SHA256:");
+            // Print hash in fixed-width chunks to avoid console auto-wrap starting at column 0
+            let indent = "                         "; // match visual indent used above
+            for chunk in current_hash.as_bytes().chunks(32) {
+                if let Ok(part) = std::str::from_utf8(chunk) {
+                    println!("{}{}", indent, part);
+                }
+            }
         }
 
         println!();
