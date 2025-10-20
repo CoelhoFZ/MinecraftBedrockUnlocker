@@ -9,6 +9,8 @@ Desbloqueia o Minecraft substituindo a DLL de licenciamento da System32 por uma 
 
 ## Instalação
 
+> 📖 **[Guia completo de instalação](INSTALL.md)** | Início rápido abaixo
+
 Baixe o `mc_unlocker.exe` mais recente em [Releases](https://github.com/DuarteFZ/MinecraftBedrockUnlocker/releases).
 
 **Execute como Administrador:**

@@ -14,6 +14,8 @@ Unlocks Minecraft by replacing the System32 licensing DLL with a modified versio
 
 ## Installation
 
+> 📖 **[Full installation guide](INSTALL.md)** | Quick start below
+
 Download the latest `mc_unlocker.exe` from [Releases](https://github.com/DuarteFZ/MinecraftBedrockUnlocker/releases).
 
 **Run as Administrator:**
