@@ -70,3 +70,6 @@ venv/
 # ===== Pastas de Build/Dist =====
 /build/
 /dist/
+
+# Documentation
+AGENTS.md
