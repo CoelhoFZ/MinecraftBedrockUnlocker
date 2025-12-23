@@ -1,0 +1,76 @@
+# ===== Arquivos de Build do Rust =====
+/target/
+**/*.rs.bk
+
+# ===== Executáveis e Libraries =====
+*.exe
+*.dll
+!dlls/**/*.dll
+*.so
+*.dylib
+*.pdb
+
+# ===== IDEs =====
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# JetBrains (IntelliJ, CLion, RustRover)
+.idea/
+*.iml
+*.iws
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+
+# Outros editores
+*.swp
+*.swo
+*~
+
+# ===== Sistema Operacional =====
+# Windows
+Thumbs.db
+desktop.ini
+*.tmp
+*.temp
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# ===== Arquivos de Backup =====
+*.bak
+*.backup
+*.old
+
+# ===== Python (build.py) =====
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+.venv/
+
+# ===== Logs =====
+*.log
+
+# ===== Arquivos Temporários do Projeto =====
+# Executáveis copiados para raiz
+/minecraft-unlocker-cli.exe
+/mc_unlocker.exe
+
+# Arquivos obfuscados (se houver)
+*.obf
+
+# ===== Pastas de Build/Dist =====
+/build/
+/dist/
+
+# Documentation
+AGENTS.md

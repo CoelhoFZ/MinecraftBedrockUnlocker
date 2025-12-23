@@ -1,0 +1,100 @@
+﻿# Minecraft Bedrock Unlocker (GDK)
+
+🎮 **Bypass for Minecraft Bedrock Trial Mode (Windows 10/11)**
+
+CLI tool to unlock the full version of Minecraft Bedrock Edition (GDK) using the OnlineFix method.
+
+> ⚠️ **Disclaimer**: This project is for educational purposes only. Please support the developers by purchasing the game.
+
+## Requirements
+
+- Windows 10/11
+- Minecraft Bedrock Edition (Trial) installed from **Microsoft Store** or **Xbox App**
+- Game installed in `C:\XboxGames\Minecraft for Windows\` (via Xbox App)
+
+## Installation
+
+### Option 1: Use the Executable (Recommended)
+
+1. Download the executable from the [Releases page](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
+2. Run as **Administrator**
+3. Choose **[1] Install Mod**
+4. Open Minecraft from the Start Menu!
+
+### Option 2: Build from Source
+
+```bash
+# Clone repository
+git clone https://github.com/CoelhoFZ/MinecraftBedrockUnlocker.git
+cd MinecraftBedrockUnlocker
+
+# Build
+cargo build --release
+
+# Run as Administrator
+.\target\release\mc_unlocker.exe
+```
+
+## How It Works
+
+The program uses the OnlineFix method which:
+1. Copies bypass files to Minecraft's Content folder
+2. The `winmm.dll` intercepts XStore API calls
+3. Returns "licensed" status before UI loads
+
+## Interactive Menu
+
+```
+╔══════════════════════════════════════════════════════════════════════╗
+║ ██╗   ██╗███╗   ██╗██╗      ██████╗  ██████╗██╗  ██╗███████╗██████╗  ║
+║ ██║   ██║████╗  ██║██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝██╔══██╗ ║
+║ ██║   ██║██╔██╗ ██║██║     ██║   ██║██║     █████╔╝ █████╗  ██████╔╝ ║
+║ ██║   ██║██║╚██╗██║██║     ██║   ██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗ ║
+║ ╚██████╔╝██║ ╚████║███████╗╚██████╔╝╚██████╗██║  ██╗███████╗██║  ██║ ║
+║  ╚═════╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+[1] Install Mod (Unlock game)
+[2] Restore Original (Back to Trial)
+[3] Open Minecraft
+[4] Open Microsoft Store
+[5] Check Status
+[0] Exit
+```
+
+## Troubleshooting
+
+### Windows SmartScreen Warning
+
+When running the executable for the first time, Windows may show a "Windows protected your PC" warning. This is normal for unsigned applications.
+
+**To bypass:**
+1. Click **"More info"**
+2. Click **"Run anyway"**
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Antivirus blocks files | Add exception or temporarily disable |
+| "Minecraft not found" | Install via Xbox App to C:\XboxGames |
+| Game crashes | Check if Minecraft Trial is properly installed |
+
+## Compatibility
+
+- ✅ Minecraft Bedrock 1.21.120+ (GDK)
+- ✅ Windows 10/11
+- ❌ Xbox Console / Mobile
+
+## Credits
+
+- OnlineFix team for the bypass method
+- CoelhoFZ for developing the tool
+
+## Community
+
+Join our Discord: https://discord.gg/HP74ccUP
+
+## License
+
+GPLv3 License - See [LICENSE](LICENSE)
