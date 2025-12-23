@@ -12,15 +12,15 @@
 
 **Minecraft Bedrock free download** | **Minecraft Windows 10 free** | **Minecraft crack 2024** | **Minecraft unlocker** | **Free Minecraft PC**
 
-A powerful CLI tool to unlock the full version of **Minecraft Bedrock Edition (GDK)** using the OnlineFix method. Works with Xbox App and Microsoft Store installations. No need to buy - play Minecraft for free!
+A powerful CLI tool to unlock the full version of **Minecraft Bedrock Edition (GDK)** using the OnlineFix method. **Only works with Xbox App installations** (NOT Microsoft Store!). No need to buy - play Minecraft for free!
 
 > ⚠️ **Disclaimer**: This project is for educational purposes only. Please support the developers by purchasing the game.
 
 ## Requirements
 
 - Windows 10/11
-- Minecraft Bedrock Edition (Trial) installed from **Microsoft Store** or **Xbox App**
-- Game installed in `C:\XboxGames\Minecraft for Windows\` (via Xbox App)
+- Minecraft Bedrock Edition (Trial) installed from **Xbox App** (⚠️ NOT Microsoft Store!)
+- Game installed in `C:\XboxGames\Minecraft for Windows\` (default Xbox App location)
 
 ## Installation
 
@@ -125,10 +125,10 @@ Some antivirus software may flag this tool as malicious. **This is a false posit
 - ✅ Minecraft Bedrock Edition 1.21.120+ (GDK) - Latest version 2024/2025
 - ✅ Windows 10 (64-bit)
 - ✅ Windows 11 (64-bit)
-- ✅ Xbox App installations
-- ✅ Microsoft Store installations
+- ✅ **Xbox App installations ONLY**
 
 **Not Supported:**
+- ❌ **Microsoft Store installations** (game must be in C:\XboxGames)
 - ❌ Xbox Console (Xbox One / Series X|S)
 - ❌ Mobile (Android / iOS)
 - ❌ PlayStation

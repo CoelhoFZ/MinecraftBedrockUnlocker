@@ -12,15 +12,15 @@
 
 **Minecraft Bedrock grátis** | **Minecraft Windows 10 grátis** | **Minecraft crack 2024** | **Minecraft desbloqueador** | **Minecraft PC grátis** | **Como baixar Minecraft de graça**
 
-Uma poderosa ferramenta CLI para desbloquear a versão completa do **Minecraft Bedrock Edition (GDK)** usando o método OnlineFix. Funciona com instalações do Xbox App e Microsoft Store. Sem precisar comprar - jogue Minecraft de graça!
+Uma poderosa ferramenta CLI para desbloquear a versão completa do **Minecraft Bedrock Edition (GDK)** usando o método OnlineFix. **Só funciona com instalações do Xbox App** (NÃO Microsoft Store!). Sem precisar comprar - jogue Minecraft de graça!
 
 > ⚠️ **Aviso**: Este projeto é apenas para fins educacionais. Por favor, apoie os desenvolvedores comprando o jogo.
 
 ## Requisitos
 
 - Windows 10/11
-- Minecraft Bedrock Edition (Trial) instalado da **Microsoft Store** ou **Xbox App**
-- Jogo instalado em `C:\XboxGames\Minecraft for Windows\` (via Xbox App)
+- Minecraft Bedrock Edition (Trial) instalado pelo **Xbox App** (⚠️ NÃO pela Microsoft Store!)
+- Jogo instalado em `C:\XboxGames\Minecraft for Windows\` (local padrão do Xbox App)
 
 ## Instalação
 
@@ -125,10 +125,10 @@ Alguns antivírus podem marcar esta ferramenta como maliciosa. **Isso é um fals
 - ✅ Minecraft Bedrock Edition 1.21.120+ (GDK) - Última versão 2024/2025
 - ✅ Windows 10 (64-bit)
 - ✅ Windows 11 (64-bit)
-- ✅ Instalações via Xbox App
-- ✅ Instalações via Microsoft Store
+- ✅ **Instalações via Xbox App SOMENTE**
 
 **Não Suportado:**
+- ❌ **Instalações via Microsoft Store** (o jogo precisa estar em C:\XboxGames)
 - ❌ Xbox Console (Xbox One / Series X|S)
 - ❌ Mobile (Android / iOS)
 - ❌ PlayStation
