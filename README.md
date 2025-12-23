@@ -1,5 +1,12 @@
 ﻿# Minecraft Bedrock Unlocker (GDK)
 
+[![GitHub release](https://img.shields.io/github/v/release/CoelhoFZ/MinecraftBedrockUnlocker?style=flat-square&color=brightgreen)](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
+[![License](https://img.shields.io/github/license/CoelhoFZ/MinecraftBedrockUnlocker?style=flat-square&color=blue)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/CoelhoFZ/MinecraftBedrockUnlocker?style=flat-square&color=yellow)](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/stargazers)
+[![Downloads](https://img.shields.io/github/downloads/CoelhoFZ/MinecraftBedrockUnlocker/total?style=flat-square&color=purple)](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
+[![Rust](https://img.shields.io/badge/Rust-1.70+-orange?style=flat-square&logo=rust)](https://www.rust-lang.org/)
+[![Discord](https://img.shields.io/badge/Discord-Join-7289da?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/HP74ccUP)
+
 🎮 **Bypass for Minecraft Bedrock Trial Mode (Windows 10/11)**
 
 CLI tool to unlock the full version of Minecraft Bedrock Edition (GDK) using the OnlineFix method.
