@@ -6,494 +6,554 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- SEO Meta Tags -->
-    <title>Minecraft Bedrock Grátis - Download Unlocker Windows 10/11 | 2024</title>
+    <title>Minecraft Bedrock Unlocker - Jogue Grátis no Windows 10/11</title>
     <meta name="description"
-        content="Baixe Minecraft Bedrock Edition grátis no Windows 10/11. Ferramenta segura e open source para desbloquear o jogo completo. Funciona em 2024!">
-    <meta name="keywords"
-        content="minecraft grátis, minecraft bedrock free, minecraft windows 10 grátis, minecraft crack 2024, minecraft unlocker, baixar minecraft de graça, minecraft bedrock download, como jogar minecraft grátis, minecraft pc free">
-    <meta name="author" content="CoelhoFZ">
-    <meta name="robots" content="index, follow">
+        content="Desbloqueie Minecraft Bedrock Edition completo de graça no Windows. Ferramenta open source segura, compatível com Xbox App. Download 2024.">
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://coelhofz.github.io/MinecraftBedrockUnlocker/">
-    <meta property="og:title" content="Minecraft Bedrock Grátis - Download Windows 10/11">
-    <meta property="og:description"
-        content="Desbloqueie Minecraft Bedrock Edition de graça! Ferramenta open source segura.">
-    <meta property="og:image"
-        content="https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/assets/banner.png">
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://coelhofz.github.io/MinecraftBedrockUnlocker/">
-    <meta property="twitter:title" content="Minecraft Bedrock Grátis - Download Windows 10/11">
-    <meta property="twitter:description"
-        content="Desbloqueie Minecraft Bedrock Edition de graça! Ferramenta open source segura.">
-
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://coelhofz.github.io/MinecraftBedrockUnlocker/">
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png"
-        href="https://www.minecraft.net/etc.clientlibs/minecraft/clientlibs/main/resources/favicon-32x32.png">
-
-    <!-- Google Fonts -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&display=swap"
+        rel="stylesheet">
 
     <style>
+        :root {
+            --mc-green: #4ade80;
+            --mc-dark-green: #22c55e;
+            --mc-dirt: #3f2e26;
+            --bg-dark: #09090b;
+            --bg-card: #18181b;
+            --bg-card-hover: #27272a;
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --accent-glow: rgba(74, 222, 128, 0.5);
+            --border: #27272a;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #4ade80;
-            --primary-dark: #22c55e;
-            --bg-dark: #0a0a0a;
-            --bg-card: #171717;
-            --text: #fafafa;
-            --text-muted: #a1a1aa;
-            --border: #27272a;
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text);
-            line-height: 1.6;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 50% 0%, #1a2e1d 0%, transparent 70%),
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
         }
 
+        /* Utility */
         .container {
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
         }
 
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 80px 20px 60px;
-            background: linear-gradient(180deg, #0f1f0a 0%, var(--bg-dark) 100%);
-        }
-
-        .hero h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 800;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #4ade80, #22d3ee);
+        .text-gradient {
+            background: linear-gradient(135deg, #4ade80 0%, #22d3ee 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
+        /* Header */
+        nav {
+            padding: 24px 0;
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--mc-green);
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-left: 24px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--mc-green);
+        }
+
+        /* Hero */
+        .hero {
+            padding: 160px 0 100px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(3rem, 6vw, 5rem);
+            line-height: 1.1;
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+
         .hero p {
             font-size: 1.25rem;
-            color: var(--text-muted);
+            color: var(--text-secondary);
             max-width: 600px;
             margin: 0 auto 40px;
         }
 
-        .badges {
+        .cta-group {
             display: flex;
-            gap: 10px;
+            gap: 16px;
             justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 40px;
         }
 
-        .badge {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .badge.green {
-            border-color: #22c55e;
-            color: #4ade80;
-        }
-
-        .badge.blue {
-            border-color: #3b82f6;
-            color: #60a5fa;
-        }
-
-        .badge.purple {
-            border-color: #8b5cf6;
-            color: #a78bfa;
-        }
-
-        /* Download Button */
-        .download-btn {
+        .btn {
             display: inline-flex;
             align-items: center;
-            gap: 12px;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            font-size: 1.25rem;
-            font-weight: 700;
-            padding: 18px 40px;
+            gap: 10px;
+            padding: 16px 32px;
             border-radius: 12px;
+            font-weight: 600;
             text-decoration: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
 
-        .download-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.5);
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-dark);
         }
 
-        .download-btn svg {
-            width: 24px;
-            height: 24px;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--accent-glow);
         }
 
-        /* Features */
-        .features {
-            padding: 60px 20px;
-        }
-
-        .features h2 {
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 40px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .feature-card {
-            background: var(--bg-card);
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
         }
 
-        .feature-card h3 {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Stats/Badges */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 60px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
-        .feature-card p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
+        .stat-item svg {
+            width: 20px;
+            height: 20px;
+            color: var(--mc-green);
         }
 
-        /* How it Works */
-        .how-it-works {
-            padding: 60px 20px;
-            background: var(--bg-card);
+        /* Cards Grid */
+        .features {
+            padding: 100px 0;
         }
 
-        .how-it-works h2 {
+        .section-header {
             text-align: center;
-            font-size: 2rem;
-            margin-bottom: 40px;
+            margin-bottom: 60px;
         }
 
-        .steps {
+        .section-header h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--mc-green);
+            box-shadow: 0 10px 40px -10px rgba(74, 222, 128, 0.15);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(74, 222, 128, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .card-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--mc-green);
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 12px;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Steps */
+        .step-list {
+            counter-reset: steps;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            max-width: 600px;
+            gap: 24px;
+            max-width: 700px;
             margin: 0 auto;
         }
 
-        .step {
+        .step-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            transition: 0.3s;
+        }
+
+        .step-item:hover {
+            border-color: var(--mc-dark-green);
+            background: rgba(34, 197, 94, 0.03);
+        }
+
+        .step-num {
+            width: 40px;
+            height: 40px;
+            background: var(--mc-dark-green);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: black;
+            flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background: rgba(234, 179, 8, 0.05);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin: 40px auto;
+            max-width: 800px;
             display: flex;
             gap: 20px;
             align-items: flex-start;
         }
 
-        .step-number {
-            background: var(--primary);
-            color: black;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
+        .warning-icon {
+            color: #fbbf24;
             flex-shrink: 0;
-        }
-
-        .step-content h3 {
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-        }
-
-        .step-content p {
-            color: var(--text-muted);
-        }
-
-        /* FAQ */
-        .faq {
-            padding: 60px 20px;
-        }
-
-        .faq h2 {
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 40px;
-        }
-
-        .faq-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-        }
-
-        .faq-item h3 {
-            font-size: 1rem;
-            margin-bottom: 10px;
-            color: var(--primary);
-        }
-
-        .faq-item p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
         }
 
         /* Footer */
         footer {
-            text-align: center;
-            padding: 40px 20px;
             border-top: 1px solid var(--border);
-            color: var(--text-muted);
+            padding: 60px 0 30px;
+            margin-top: 100px;
+            text-align: center;
+            color: var(--text-secondary);
         }
 
-        footer a {
-            color: var(--primary);
-            text-decoration: none;
-        }
+        /* Mobile */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
 
-        /* Warning */
-        .warning {
-            background: rgba(234, 179, 8, 0.1);
-            border: 1px solid #ca8a04;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 40px auto;
-            max-width: 700px;
-        }
+            .cta-group {
+                flex-direction: column;
+            }
 
-        .warning h3 {
-            color: #facc15;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .warning p {
-            color: var(--text-muted);
+            .nav-links {
+                display: none;
+            }
         }
     </style>
 </head>
 
 <body>
-    <!-- Hero Section -->
+
+    <nav>
+        <div class="container nav-content">
+            <div class="logo">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M4,2H20A2,2 0 0,1 22,4V20A2,2 0 0,1 20,22H4A2,2 0 0,1 2,20V4A2,2 0 0,1 4,2M6,6V10H10V12H8V18H10V16H14V18H16V12H14V10H18V6H14V10H10V6H6Z" />
+                </svg>
+                MC Unlocker
+            </div>
+            <div class="nav-links">
+                <a href="#como-funciona">Como Funciona</a>
+                <a href="#faq">FAQ</a>
+                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
     <section class="hero">
         <div class="container">
-            <h1>🎮 Minecraft Bedrock Grátis</h1>
-            <p>Desbloqueie a versão completa do Minecraft Bedrock Edition no Windows 10/11. Ferramenta open source,
-                segura e fácil de usar!</p>
+            <div
+                style="margin-bottom: 20px; display: inline-block; padding: 6px 16px; background: rgba(74, 222, 128, 0.1); border-radius: 30px; border: 1px solid rgba(74, 222, 128, 0.2); color: var(--mc-green); font-size: 0.9rem; font-weight: 600;">
+                ✨ Versão 2.1.0 Disponível
+            </div>
+            <h1>
+                Minecraft Bedrock
+                <br />
+                <span class="text-gradient">Totalmente Desbloqueado</span>
+            </h1>
+            <p>
+                A ferramenta definitiva para desbloquear o Minecraft Windows 10/11 completo.
+                <br />Sem custos. Código aberto. Seguro.
+            </p>
 
-            <div class="badges">
-                <span class="badge green">✓ Funciona em 2024</span>
-                <span class="badge blue">✓ Windows 10/11</span>
-                <span class="badge purple">✓ Open Source</span>
+            <div class="cta-group">
+                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                    </svg>
+                    Baixar Agora v2.1.0
+                </a>
+                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker" class="btn btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.03.66-3.72-1.455-3.72-1.455-.54-1.38-1.335-1.755-1.335-1.755-1.095-.75.09-.735.09-.735 1.2-.09 1.83 1.245 1.83 1.245 1.08 1.83 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405 1.02 0 2.04.135 3 .405 2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.285 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
+                    </svg>
+                    Ver Código Fonte
+                </a>
             </div>
 
-            <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest" class="download-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    100% Seguro
+                </div>
+                <div class="stat-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                    </svg>
+                    Updates Constantes
+                </div>
+                <div class="stat-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                        <line x1="8" y1="21" x2="16" y2="21" />
+                        <line x1="12" y1="17" x2="12" y2="21" />
+                    </svg>
+                    Apenas Xbox App
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features container">
+        <div class="section-header">
+            <h2>Por que escolher o Unlocker?</h2>
+            <p style="color: var(--text-secondary)">Desenvolvido para ser simples, rápido e transparente.</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                <h3>Desbloqueio Total</h3>
+                <p>Remove todas as limitações do modo Trial. Jogue sem limite de tempo, acesse servidores e use skins
+                    personalizadas.</p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                </div>
+                <h3>Open Source</h3>
+                <p>Transparência total. Nenhuma linha de código malicioso escondida. Você pode auditar tudo no GitHub.
+                </p>
+            </div>
+
+            <div class="card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="4 17 10 11 4 5"></polyline>
+                        <line x1="12" y1="19" x2="20" y2="19"></line>
+                    </svg>
+                </div>
+                <h3>Simples de Usar</h3>
+                <p>Não precisa copiar arquivos manualmente. Nossa CLI faz todo o trabalho sujo para você em segundos.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="como-funciona" class="container" style="padding-bottom: 100px;">
+        <div class="section-header">
+            <h2>Como Instalar (Passo a Passo)</h2>
+            <p style="color: var(--text-secondary)">Siga rigorosamente para garantir o funcionamento.</p>
+        </div>
+
+        <div class="step-list">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div>
+                    <h3 style="margin-bottom: 5px">Instalar via Xbox App</h3>
+                    <p style="color: var(--text-secondary)">Baixe o "Minecraft for Windows" (Trial) <strong>apenas pelo
+                            aplicativo Xbox</strong>. Não use a Microsoft Store diretamente.</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div>
+                    <h3 style="margin-bottom: 5px">Baixar o Unlocker</h3>
+                    <p style="color: var(--text-secondary)">Faça o download da última versão (mc_unlocker.exe) na nossa
+                        página de releases.</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div>
+                    <h3 style="margin-bottom: 5px">Executar como Admin</h3>
+                    <p style="color: var(--text-secondary)">Clique com botão direito no arquivo e selecione "Executar
+                        como Administrador". É necessário para modificar a pasta do jogo.</p>
+                </div>
+            </div>
+
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div>
+                    <h3 style="margin-bottom: 5px">Ativar o Mod</h3>
+                    <p style="color: var(--text-secondary)">No menu do programa, digite <strong>1</strong> e pressione
+                        Enter. Aguarde a mensagem de sucesso.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <div class="warning-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                    </path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
-                Download Grátis
-            </a>
-        </div>
-    </section>
-
-    <!-- Features -->
-    <section class="features">
-        <div class="container">
-            <h2>Por que usar o Minecraft Unlocker?</h2>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <h3>🔓 Desbloqueia Tudo</h3>
-                    <p>Acesso completo ao Minecraft Bedrock Edition. Sem trial, sem limitações. Jogue o jogo completo!
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>🛡️ 100% Seguro</h3>
-                    <p>Código aberto no GitHub. Você pode revisar cada linha do código fonte. Sem vírus, sem malware.
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>⚡ Fácil de Usar</h3>
-                    <p>Interface simples com menu interativo. Instale em 3 cliques - sem conhecimento técnico
-                        necessário.</p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>🔄 Reversível</h3>
-                    <p>Desinstale a qualquer momento e volte ao modo trial. Sem riscos para seu sistema.</p>
-                </div>
+            </div>
+            <div>
+                <h3 style="margin-bottom: 8px; color: #fbbf24;">Alerta de Antivírus</h3>
+                <p style="font-size: 0.95rem; color: rgba(255,255,255,0.8);">
+                    Como esta ferramenta modifica arquivos do jogo (injeção de DLL), é comum que antivírus detectem como
+                    "HackTool" ou falso positivo.
+                    Recomendamos adicionar uma exceção para o arquivo ou desativar temporariamente a proteção em tempo
+                    real.
+                </p>
             </div>
         </div>
     </section>
 
-    <!-- How it Works -->
-    <section class="how-it-works">
-        <div class="container">
-            <h2>Como Baixar Minecraft Grátis</h2>
-
-            <div class="steps">
-                <div class="step">
-                    <span class="step-number">1</span>
-                    <div class="step-content">
-                        <h3>Instale o Minecraft Trial pelo Xbox App</h3>
-                        <p>Baixe o Minecraft Bedrock Edition (Trial) <strong>pelo Xbox App</strong> (obrigatório - não
-                            funciona com Microsoft Store!).</p>
-                    </div>
-                </div>
-
-                <div class="step">
-                    <span class="step-number">2</span>
-                    <div class="step-content">
-                        <h3>Baixe o Unlocker</h3>
-                        <p>Clique no botão de download acima e baixe o mc_unlocker.exe.</p>
-                    </div>
-                </div>
-
-                <div class="step">
-                    <span class="step-number">3</span>
-                    <div class="step-content">
-                        <h3>Execute como Admin</h3>
-                        <p>Clique com botão direito → "Executar como administrador".</p>
-                    </div>
-                </div>
-
-                <div class="step">
-                    <span class="step-number">4</span>
-                    <div class="step-content">
-                        <h3>Escolha "Instalar Mod"</h3>
-                        <p>Pressione 1 no menu e pronto! Abra o Minecraft e jogue!</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Warning -->
-    <div class="container">
-        <div class="warning">
-            <h3>⚠️ Aviso sobre Antivírus</h3>
-            <p>Alguns antivírus podem detectar falsos positivos. Isso é normal para ferramentas de bypass. O código é
-                100% open source - você pode revisar no <a
-                    href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker">GitHub</a>.</p>
-        </div>
-    </div>
-
-    <!-- FAQ -->
-    <section class="faq">
-        <div class="container">
-            <h2>Perguntas Frequentes</h2>
-
-            <div class="faq-item">
-                <h3>O Minecraft Unlocker é seguro?</h3>
-                <p>Sim! O código é 100% open source e você pode revisar cada linha no GitHub. Não contém vírus,
-                    minerador de criptomoeda ou qualquer malware.</p>
-            </div>
-
-            <div class="faq-item">
-                <h3>Funciona no Windows 11?</h3>
-                <p>Sim! Funciona perfeitamente no Windows 10 e Windows 11 (64-bit).</p>
-            </div>
-
-            <div class="faq-item">
-                <h3>Como baixar Minecraft de graça?</h3>
-                <p>Primeiro instale o Minecraft Trial <strong>pelo Xbox App</strong> (importante: NÃO pela Microsoft
-                    Store!), depois use nosso Unlocker para desbloquear o jogo completo gratuitamente.</p>
-            </div>
-
-            <div class="faq-item">
-                <h3>Preciso de conta Microsoft?</h3>
-                <p>Sim, você precisa de uma conta Microsoft para baixar o Minecraft Trial pelo Xbox App.</p>
-            </div>
-
-            <div class="faq-item">
-                <h3>Funciona com Minecraft da Microsoft Store?</h3>
-                <p><strong>NÃO!</strong> Este unlocker só funciona com o Minecraft instalado pelo <strong>Xbox
-                        App</strong>. O jogo deve estar em C:\XboxGames\Minecraft for Windows\. Se você instalou pela
-                    Microsoft Store, desinstale e reinstale pelo Xbox App.</p>
-            </div>
-
-            <div class="faq-item">
-                <h3>Posso jogar online/multiplayer?</h3>
-                <p>Sim! Após desbloquear, você pode jogar em servidores públicos e com amigos normalmente.</p>
-            </div>
-
-            <div class="faq-item">
-                <h3>Funciona com a última versão do Minecraft?</h3>
-                <p>Sim! O unlocker é compatível com Minecraft Bedrock 1.21.120+ (versão mais recente de 2024/2025).</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
     <footer>
-        <p>Desenvolvido por <a href="https://github.com/CoelhoFZ">CoelhoFZ</a> | <a
-                href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker">Código Fonte no GitHub</a></p>
-        <p style="margin-top: 10px; font-size: 0.85rem;">Este projeto é apenas para fins educacionais. Por favor, apoie
-            os desenvolvedores comprando o jogo.</p>
-        <p style="margin-top: 20px;"><a href="https://discord.gg/HP74ccUP">Discord</a></p>
+        <div class="container">
+            <div style="margin-bottom: 20px;">
+                <a href="https://github.com/CoelhoFZ"
+                    style="color: var(--text-primary); text-decoration: none; font-weight: 700; font-size: 1.2rem;">
+                    CoelhoFZ
+                </a>
+            </div>
+            <p style="max-width: 500px; margin: 0 auto 20px;">
+                Minecraft Bedrock Unlocker é um projeto de código aberto.
+                Contribuições são bem-vindas no GitHub.
+            </p>
+            <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 40px;">
+                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker">GitHub</a>
+                <a href="https://discord.gg/HP74ccUP">Discord</a>
+                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/blob/main/LICENSE">Licença</a>
+            </div>
+            <p style="font-size: 0.8rem; opacity: 0.5;">
+                Este projeto não é afiliado à Mojang Studios ou Microsoft.
+            </p>
+        </div>
     </footer>
 
-    <!-- Structured Data for SEO -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "Minecraft Bedrock Unlocker",
-        "operatingSystem": "Windows 10, Windows 11",
-        "applicationCategory": "GameApplication",
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
-        },
-        "description": "Ferramenta para desbloquear Minecraft Bedrock Edition gratuitamente no Windows 10/11",
-        "downloadUrl": "https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest",
-        "softwareVersion": "2.1.0",
-        "author": {
-            "@type": "Person",
-            "name": "CoelhoFZ"
-        }
-    }
-    </script>
 </body>
 
 </html>
