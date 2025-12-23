@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- SEO Meta Tags -->
-    <title>Minecraft Bedrock Unlocker - Jogue Grátis no Windows 10/11</title>
+    <title>Minecraft Bedrock Unlocker - Play for Free on Windows 10/11</title>
     <meta name="description"
-        content="Desbloqueie Minecraft Bedrock Edition completo de graça no Windows. Ferramenta open source segura, compatível com Xbox App. Download 2024.">
+        content="Unlock full Minecraft Bedrock Edition for free on Windows. Safe open source tool, compatible with Xbox App. Download 2024.">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -88,6 +88,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            color: white;
+            text-decoration: none;
         }
 
         .logo svg {
@@ -96,16 +98,88 @@
             fill: var(--mc-green);
         }
 
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
         .nav-links a {
             color: var(--text-secondary);
             text-decoration: none;
-            margin-left: 24px;
             font-weight: 500;
             transition: color 0.2s;
         }
 
         .nav-links a:hover {
             color: var(--mc-green);
+        }
+
+        /* Language Selector */
+        .lang-select-wrapper {
+            position: relative;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .lang-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .lang-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            min-width: 140px;
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+            z-index: 200;
+        }
+
+        .lang-dropdown.show {
+            display: flex;
+        }
+
+        .lang-option {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 10px;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .lang-option:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
         }
 
         /* Hero */
@@ -134,6 +208,7 @@
             display: flex;
             gap: 16px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -147,6 +222,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            cursor: pointer;
         }
 
         .btn-primary {
@@ -346,17 +422,32 @@
 
     <nav>
         <div class="container nav-content">
-            <div class="logo">
+            <a href="#" class="logo">
                 <svg viewBox="0 0 24 24">
                     <path
                         d="M4,2H20A2,2 0 0,1 22,4V20A2,2 0 0,1 20,22H4A2,2 0 0,1 2,20V4A2,2 0 0,1 4,2M6,6V10H10V12H8V18H10V16H14V18H16V12H14V10H18V6H14V10H10V6H6Z" />
                 </svg>
                 MC Unlocker
-            </div>
-            <div class="nav-links">
-                <a href="#como-funciona">Como Funciona</a>
-                <a href="#faq">FAQ</a>
-                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker" target="_blank">GitHub</a>
+            </a>
+
+            <div class="nav-actions">
+                <div class="nav-links">
+                    <a href="#how-it-works" id="nav-how">How it Works</a>
+                    <a href="#faq" id="nav-faq">FAQ</a>
+                    <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker" target="_blank">GitHub</a>
+                </div>
+
+                <div class="lang-select-wrapper">
+                    <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">
+                        🇺🇸 EN
+                    </button>
+                    <div class="lang-dropdown" id="langDropdown">
+                        <button class="lang-option" onclick="changeLang('en')">🇺🇸 English</button>
+                        <button class="lang-option" onclick="changeLang('pt')">🇧🇷 Português</button>
+                        <button class="lang-option" onclick="changeLang('es')">🇪🇸 Español</button>
+                        <button class="lang-option" onclick="changeLang('ru')">🇷🇺 Русский</button>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -365,31 +456,33 @@
         <div class="container">
             <div
                 style="margin-bottom: 20px; display: inline-block; padding: 6px 16px; background: rgba(74, 222, 128, 0.1); border-radius: 30px; border: 1px solid rgba(74, 222, 128, 0.2); color: var(--mc-green); font-size: 0.9rem; font-weight: 600;">
-                ✨ Versão 2.1.0 Disponível
+                <span id="version-badge">✨ Multi-language Update</span>
             </div>
             <h1>
                 Minecraft Bedrock
                 <br />
-                <span class="text-gradient">Totalmente Desbloqueado</span>
+                <span class="text-gradient" id="hero-title-span">Fully Unlocked</span>
             </h1>
-            <p>
-                A ferramenta definitiva para desbloquear o Minecraft Windows 10/11 completo.
-                <br />Sem custos. Código aberto. Seguro.
+            <p id="hero-subtitle">
+                The ultimate tool to unlock full Minecraft Windows 10/11.
+                <br />Free. Open Source. Safe.
             </p>
 
             <div class="cta-group">
-                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest" class="btn btn-primary">
+                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest" class="btn btn-primary"
+                    id="btn-download">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
                     </svg>
-                    Baixar Agora v2.1.0
+                    Download Now
                 </a>
-                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker" class="btn btn-secondary">
+                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker" class="btn btn-secondary"
+                    id="btn-source">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                         <path
                             d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.03.66-3.72-1.455-3.72-1.455-.54-1.38-1.335-1.755-1.335-1.755-1.095-.75.09-.735.09-.735 1.2-.09 1.83 1.245 1.83 1.245 1.08 1.83 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405 1.02 0 2.04.135 3 .405 2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.285 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
                     </svg>
-                    Ver Código Fonte
+                    Source Code
                 </a>
             </div>
 
@@ -398,13 +491,13 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                     </svg>
-                    100% Seguro
+                    <span id="stat-safe">100% Safe</span>
                 </div>
                 <div class="stat-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                     </svg>
-                    Updates Constantes
+                    <span id="stat-updates">Constant Updates</span>
                 </div>
                 <div class="stat-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -412,7 +505,7 @@
                         <line x1="8" y1="21" x2="16" y2="21" />
                         <line x1="12" y1="17" x2="12" y2="21" />
                     </svg>
-                    Apenas Xbox App
+                    <span id="stat-platform">Xbox App Only</span>
                 </div>
             </div>
         </div>
@@ -420,8 +513,9 @@
 
     <section class="features container">
         <div class="section-header">
-            <h2>Por que escolher o Unlocker?</h2>
-            <p style="color: var(--text-secondary)">Desenvolvido para ser simples, rápido e transparente.</p>
+            <h2 id="features-title">Why choose MC Unlocker?</h2>
+            <p style="color: var(--text-secondary)" id="features-subtitle">Designed to be simple, fast, and transparent.
+            </p>
         </div>
 
         <div class="grid">
@@ -432,9 +526,9 @@
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                     </svg>
                 </div>
-                <h3>Desbloqueio Total</h3>
-                <p>Remove todas as limitações do modo Trial. Jogue sem limite de tempo, acesse servidores e use skins
-                    personalizadas.</p>
+                <h3 id="feat-1-title">Full Unlock</h3>
+                <p id="feat-1-desc">Removes all Trial limitations. Play with no time limit, join servers, and use custom
+                    skins.</p>
             </div>
 
             <div class="card">
@@ -447,8 +541,8 @@
                         <polyline points="10 9 9 9 8 9"></polyline>
                     </svg>
                 </div>
-                <h3>Open Source</h3>
-                <p>Transparência total. Nenhuma linha de código malicioso escondida. Você pode auditar tudo no GitHub.
+                <h3 id="feat-2-title">Open Source</h3>
+                <p id="feat-2-desc">Total transparency. No hidden malicious code. You can audit everything on GitHub.
                 </p>
             </div>
 
@@ -459,53 +553,53 @@
                         <line x1="12" y1="19" x2="20" y2="19"></line>
                     </svg>
                 </div>
-                <h3>Simples de Usar</h3>
-                <p>Não precisa copiar arquivos manualmente. Nossa CLI faz todo o trabalho sujo para você em segundos.
+                <h3 id="feat-3-title">Simple to Use</h3>
+                <p id="feat-3-desc">No need to manually copy files. Our CLI does all the dirty work for you in seconds.
                 </p>
             </div>
         </div>
     </section>
 
-    <section id="como-funciona" class="container" style="padding-bottom: 100px;">
+    <section id="how-it-works" class="container" style="padding-bottom: 100px;">
         <div class="section-header">
-            <h2>Como Instalar (Passo a Passo)</h2>
-            <p style="color: var(--text-secondary)">Siga rigorosamente para garantir o funcionamento.</p>
+            <h2 id="steps-title">How to Install</h2>
+            <p style="color: var(--text-secondary)" id="steps-subtitle">Follow strictly to ensure it works.</p>
         </div>
 
         <div class="step-list">
             <div class="step-item">
                 <div class="step-num">1</div>
                 <div>
-                    <h3 style="margin-bottom: 5px">Instalar via Xbox App</h3>
-                    <p style="color: var(--text-secondary)">Baixe o "Minecraft for Windows" (Trial) <strong>apenas pelo
-                            aplicativo Xbox</strong>. Não use a Microsoft Store diretamente.</p>
+                    <h3 style="margin-bottom: 5px" id="step-1-title">Install via Xbox App</h3>
+                    <p style="color: var(--text-secondary)" id="step-1-desc">Download "Minecraft for Windows" (Trial)
+                        <strong>only via Xbox App</strong>. Do NOT use Microsoft Store directly.</p>
                 </div>
             </div>
 
             <div class="step-item">
                 <div class="step-num">2</div>
                 <div>
-                    <h3 style="margin-bottom: 5px">Baixar o Unlocker</h3>
-                    <p style="color: var(--text-secondary)">Faça o download da última versão (mc_unlocker.exe) na nossa
-                        página de releases.</p>
+                    <h3 style="margin-bottom: 5px" id="step-2-title">Download Unlocker</h3>
+                    <p style="color: var(--text-secondary)" id="step-2-desc">Download the latest version
+                        (mc_unlocker.exe) from our releases page.</p>
                 </div>
             </div>
 
             <div class="step-item">
                 <div class="step-num">3</div>
                 <div>
-                    <h3 style="margin-bottom: 5px">Executar como Admin</h3>
-                    <p style="color: var(--text-secondary)">Clique com botão direito no arquivo e selecione "Executar
-                        como Administrador". É necessário para modificar a pasta do jogo.</p>
+                    <h3 style="margin-bottom: 5px" id="step-3-title">Run as Admin</h3>
+                    <p style="color: var(--text-secondary)" id="step-3-desc">Right-click the file and select "Run as
+                        Administrator". Required to modify game files.</p>
                 </div>
             </div>
 
             <div class="step-item">
                 <div class="step-num">4</div>
                 <div>
-                    <h3 style="margin-bottom: 5px">Ativar o Mod</h3>
-                    <p style="color: var(--text-secondary)">No menu do programa, digite <strong>1</strong> e pressione
-                        Enter. Aguarde a mensagem de sucesso.</p>
+                    <h3 style="margin-bottom: 5px" id="step-4-title">Activate Mod</h3>
+                    <p style="color: var(--text-secondary)" id="step-4-desc">In the menu, type <strong>1</strong> and
+                        press Enter. Wait for the success message.</p>
                 </div>
             </div>
         </div>
@@ -520,13 +614,33 @@
                 </svg>
             </div>
             <div>
-                <h3 style="margin-bottom: 8px; color: #fbbf24;">Alerta de Antivírus</h3>
-                <p style="font-size: 0.95rem; color: rgba(255,255,255,0.8);">
-                    Como esta ferramenta modifica arquivos do jogo (injeção de DLL), é comum que antivírus detectem como
-                    "HackTool" ou falso positivo.
-                    Recomendamos adicionar uma exceção para o arquivo ou desativar temporariamente a proteção em tempo
-                    real.
+                <h3 style="margin-bottom: 8px; color: #fbbf24;" id="warning-title">Antivirus Warning</h3>
+                <p style="font-size: 0.95rem; color: rgba(255,255,255,0.8);" id="warning-desc">
+                    Since this tool modifies game files (DLL injection), it is common for antivirus to detect it as
+                    "HackTool" or false positive. We recommend adding an exception or temporarily disabling real-time
+                    protection.
                 </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="container" style="padding-bottom: 100px;">
+        <div class="section-header">
+            <h2 id="faq-title">Frequently Asked Questions</h2>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <h3 id="faq-1-q">Is it safe?</h3>
+                <p id="faq-1-a">Yes! The code is 100% open source. No virus, no miner.</p>
+            </div>
+            <div class="card">
+                <h3 id="faq-2-q">Works on Windows 11?</h3>
+                <p id="faq-2-a">Yes! Works perfectly on Windows 10 and 11 (64-bit).</p>
+            </div>
+            <div class="card">
+                <h3 id="faq-3-q">Microsoft Store?</h3>
+                <p id="faq-3-a">No! You must install the game via Xbox App. Uninstall if you used Store.</p>
             </div>
         </div>
     </section>
@@ -539,21 +653,240 @@
                     CoelhoFZ
                 </a>
             </div>
-            <p style="max-width: 500px; margin: 0 auto 20px;">
-                Minecraft Bedrock Unlocker é um projeto de código aberto.
-                Contribuições são bem-vindas no GitHub.
+            <p style="max-width: 500px; margin: 0 auto 20px;" id="footer-text">
+                Minecraft Bedrock Unlocker is an open source project. Not affiliated with Mojang/Microsoft.
             </p>
             <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 40px;">
                 <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker">GitHub</a>
                 <a href="https://discord.gg/HP74ccUP">Discord</a>
-                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/blob/main/LICENSE">Licença</a>
+                <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/blob/main/LICENSE">License</a>
             </div>
-            <p style="font-size: 0.8rem; opacity: 0.5;">
-                Este projeto não é afiliado à Mojang Studios ou Microsoft.
-            </p>
         </div>
     </footer>
 
+    <!-- Translation Logic -->
+    <script>
+        const translations = {
+            en: {
+                "nav-how": "How it Works",
+                "nav-faq": "FAQ",
+                "hero-title-span": "Fully Unlocked",
+                "hero-subtitle": "The ultimate tool to unlock full Minecraft Windows 10/11.<br>Free. Open Source. Safe.",
+                "btn-download": "Download Now",
+                "btn-source": "Source Code",
+                "stat-safe": "100% Safe",
+                "stat-updates": "Constant Updates",
+                "stat-platform": "Xbox App Only",
+                "features-title": "Why choose MC Unlocker?",
+                "features-subtitle": "Designed to be simple, fast, and transparent.",
+                "feat-1-title": "Full Unlock",
+                "feat-1-desc": "Removes all Trial limitations. Play with no time limit, join servers, and use custom skins.",
+                "feat-2-title": "Open Source",
+                "feat-2-desc": "Total transparency. No hidden malicious code. You can audit everything on GitHub.",
+                "feat-3-title": "Simple to Use",
+                "feat-3-desc": "No need to manually copy files. Our CLI does all the dirty work for you in seconds.",
+                "steps-title": "How to Install",
+                "steps-subtitle": "Follow strictly to ensure it works.",
+                "step-1-title": "Install via Xbox App",
+                "step-1-desc": "Download \"Minecraft for Windows\" (Trial) <strong>only via Xbox App</strong>. Do NOT use Microsoft Store directly.",
+                "step-2-title": "Download Unlocker",
+                "step-2-desc": "Download the latest version (mc_unlocker.exe) from our releases page.",
+                "step-3-title": "Run as Admin",
+                "step-3-desc": "Right-click the file and select \"Run as Administrator\". Required to modify game files.",
+                "step-4-title": "Activate Mod",
+                "step-4-desc": "In the menu, type <strong>1</strong> and press Enter. Wait for the success message.",
+                "warning-title": "Antivirus Warning",
+                "warning-desc": "Since this tool modifies game files (DLL injection), it is common for antivirus to detect it as \"HackTool\" or false positive. We recommend adding an exception or temporarily disabling real-time protection.",
+                "faq-title": "Frequently Asked Questions",
+                "faq-1-q": "Is it safe?",
+                "faq-1-a": "Yes! The code is 100% open source. No virus, no miner.",
+                "faq-2-q": "Works on Windows 11?",
+                "faq-2-a": "Yes! Works perfectly on Windows 10 and 11 (64-bit).",
+                "faq-3-q": "Microsoft Store?",
+                "faq-3-a": "No! You must install the game via Xbox App. Uninstall if you used Store.",
+                "footer-text": "Minecraft Bedrock Unlocker is an open source project. Not affiliated with Mojang/Microsoft."
+            },
+            pt: {
+                "nav-how": "Como Funciona",
+                "nav-faq": "Perguntas",
+                "hero-title-span": "Totalmente Desbloqueado",
+                "hero-subtitle": "A ferramenta definitiva para desbloquear Minecraft Windows 10/11.<br>Grátis. Código Aberto. Seguro.",
+                "btn-download": "Baixar Agora",
+                "btn-source": "Código Fonte",
+                "stat-safe": "100% Seguro",
+                "stat-updates": "Updates Constantes",
+                "stat-platform": "Apenas Xbox App",
+                "features-title": "Por que escolher o Unlocker?",
+                "features-subtitle": "Desenvolvido para ser simples, rápido e transparente.",
+                "feat-1-title": "Desbloqueio Total",
+                "feat-1-desc": "Remove todas as limitações do Trial. Jogue sem tempo limite, entre em servidores e use skins.",
+                "feat-2-title": "Código Aberto",
+                "feat-2-desc": "Transparência total. Sem código malicioso escondido. Você pode auditar tudo no GitHub.",
+                "feat-3-title": "Fácil de Usar",
+                "feat-3-desc": "Não precisa copiar arquivos manualmente. Nossa CLI faz todo o trabalho sujo em segundos.",
+                "steps-title": "Como Instalar",
+                "steps-subtitle": "Siga rigorosamente para garantir o funcionamento.",
+                "step-1-title": "Instale via Xbox App",
+                "step-1-desc": "Baixe o \"Minecraft for Windows\" (Trial) <strong>apenas pelo Xbox App</strong>. Não use a Microsoft Store.",
+                "step-2-title": "Baixar o Unlocker",
+                "step-2-desc": "Faça o download da última versão (mc_unlocker.exe) na nossa página de releases.",
+                "step-3-title": "Executar como Admin",
+                "step-3-desc": "Clique com botão direito e selecione \"Executar como Administrador\". Necessário para modificar arquivos.",
+                "step-4-title": "Ativar o Mod",
+                "step-4-desc": "No menu, digite <strong>1</strong> e dê Enter. Aguarde a mensagem de sucesso.",
+                "warning-title": "Alerta de Antivírus",
+                "warning-desc": "Como esta ferramenta injeta DLLs, é comum antivírus detectarem como \"HackTool\" ou falso positivo. Recomendamos adicionar exceção ou desativar proteção temporariamente.",
+                "faq-title": "Perguntas Frequentes",
+                "faq-1-q": "É seguro?",
+                "faq-1-a": "Sim! Código 100% aberto. Sem vírus, sem mineradores.",
+                "faq-2-q": "Funciona no Windows 11?",
+                "faq-2-a": "Sim! Funciona perfeitamente no Windows 10 e 11 (64-bit).",
+                "faq-3-q": "Microsoft Store?",
+                "faq-3-a": "Não! Você deve instalar pelo Xbox App. Desinstale se usou a Store.",
+                "footer-text": "Minecraft Bedrock Unlocker é um projeto open source. Não afiliado à Mojang/Microsoft."
+            },
+            es: {
+                "nav-how": "Cómo Funciona",
+                "nav-faq": "Preguntas",
+                "hero-title-span": "Totalmente Desbloqueado",
+                "hero-subtitle": "La herramienta definitiva para desbloquear Minecraft Windows 10/11.<br>Gratis. Código Abierto. Seguro.",
+                "btn-download": "Descargar Ahora",
+                "btn-source": "Código Fuente",
+                "stat-safe": "100% Seguro",
+                "stat-updates": "Actualizaciones Constantes",
+                "stat-platform": "Solo Xbox App",
+                "features-title": "¿Por qué elegir Unlocker?",
+                "features-subtitle": "Diseñado para ser simple, rápido y transparente.",
+                "feat-1-title": "Desbloqueo Total",
+                "feat-1-desc": "Elimina limitaciones de prueba. Juega sin límite de tiempo, únete a servidores y usa skins.",
+                "feat-2-title": "Código Abierto",
+                "feat-2-desc": "Transparencia total. Sin código malicioso oculto. Puedes auditar todo en GitHub.",
+                "feat-3-title": "Fácil de Usar",
+                "feat-3-desc": "No necesitas copiar archivos manualmente. Nuestra CLI hace todo el trabajo sucio en segundos.",
+                "steps-title": "Cómo Instalar",
+                "steps-subtitle": "Sigue estrictamente para asegurar el funcionamiento.",
+                "step-1-title": "Instalar vía Xbox App",
+                "step-1-desc": "Descarga \"Minecraft for Windows\" (Trial) <strong>solo por Xbox App</strong>. No uses Microsoft Store.",
+                "step-2-title": "Descargar Unlocker",
+                "step-2-desc": "Descarga la última versión (mc_unlocker.exe) en nuestra página de releases.",
+                "step-3-title": "Ejecutar como Admin",
+                "step-3-desc": "Clic derecho y selecciona \"Ejecutar como Administrador\". Necesario para modificar archivos.",
+                "step-4-title": "Activar el Mod",
+                "step-4-desc": "En el menú, escribe <strong>1</strong> y presiona Enter. Espera el mensaje de éxito.",
+                "warning-title": "Alerta de Antivirus",
+                "warning-desc": "Como esta herramienta inyecta DLLs, es común que los antivirus detecten como \"HackTool\" o falso positivo. Recomendamos añadir excepción o desactivar protección temporalmente.",
+                "faq-title": "Preguntas Frecuentes",
+                "faq-1-q": "¿Es seguro?",
+                "faq-1-a": "¡Sí! Código 100% abierto. Sin virus, sin mineros.",
+                "faq-2-q": "¿Funciona en Windows 11?",
+                "faq-2-a": "¡Sí! Funciona perfectamente en Windows 10 y 11 (64-bit).",
+                "faq-3-q": "¿Microsoft Store?",
+                "faq-3-a": "¡No! Debes instalar por Xbox App. Desinstala si usaste la Store.",
+                "footer-text": "Minecraft Bedrock Unlocker es un proyecto open source. No afiliado a Mojang/Microsoft."
+            },
+            ru: {
+                "nav-how": "Как это работает",
+                "nav-faq": "FAQ",
+                "hero-title-span": "Полная Разблокировка",
+                "hero-subtitle": "Лучший инструмент для разблокировки Minecraft Windows 10/11.<br>Бесплатно. Открытый исходный код. Безопасно.",
+                "btn-download": "Скачать Сейчас",
+                "btn-source": "Исходный Код",
+                "stat-safe": "100% Безопасно",
+                "stat-updates": "Постоянные обновления",
+                "stat-platform": "Только приложение Xbox",
+                "features-title": "Почему выбирают Unlocker?",
+                "features-subtitle": "Простой, быстрый и прозрачный.",
+                "feat-1-title": "Полная разблокировка",
+                "feat-1-desc": "Убирает все ограничения пробной версии. Играйте без лимита времени, заходите на сервера.",
+                "feat-2-title": "Открытый код",
+                "feat-2-desc": "Полная прозрачность. Никакого скрытого вредоносного кода. Проверьте на GitHub.",
+                "feat-3-title": "Простота",
+                "feat-3-desc": "Не нужно копировать файлы вручную. Наш CLI сделает всю грязную работу за секунды.",
+                "steps-title": "Как установить",
+                "steps-subtitle": "Следуйте инструкциям строго.",
+                "step-1-title": "Установка через Xbox App",
+                "step-1-desc": "Скачайте \"Minecraft for Windows\" (Trial) <strong>только через Xbox App</strong>. НЕ используйте Microsoft Store.",
+                "step-2-title": "Скачать Unlocker",
+                "step-2-desc": "Скачайте последнюю версию (mc_unlocker.exe) на странице релизов.",
+                "step-3-title": "Запуск от админа",
+                "step-3-desc": "ПКМ по файлу -> \"Запуск от имени администратора\". Требуется для модификации файлов.",
+                "step-4-title": "Активация мода",
+                "step-4-desc": "В меню введите <strong>1</strong> и нажмите Enter. Ждите сообщения об успехе.",
+                "warning-title": "Предупреждение антивируса",
+                "warning-desc": "Так как инструмент внедряет DLL, антивирусы могут ложно срабатывать. Рекомендуем добавить в исключения.",
+                "faq-title": "Частые вопросы",
+                "faq-1-q": "Это безопасно?",
+                "faq-1-a": "Да! Код 100% открыт. Без вирусов и майнеров.",
+                "faq-2-q": "Работает на Windows 11?",
+                "faq-2-a": "Да! Работает отлично на Windows 10 и 11 (64-bit).",
+                "faq-3-q": "Microsoft Store?",
+                "faq-3-a": "Нет! Используйте приложение Xbox. Удалите, если скачали через Store.",
+                "footer-text": "Minecraft Bedrock Unlocker - проект с открытым кодом. Не связан с Mojang/Microsoft."
+            }
+        };
+
+        function toggleLangDropdown() {
+            document.getElementById('langDropdown').classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        window.onclick = function (event) {
+            if (!event.target.matches('.lang-btn')) {
+                var dropdowns = document.getElementsByClassName("lang-dropdown");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        function changeLang(lang) {
+            localStorage.setItem('lang', lang);
+            updatePageLanguage(lang);
+        }
+
+        function updatePageLanguage(lang) {
+            const t = translations[lang];
+            if (!t) return;
+
+            // Update text content
+            for (const key in t) {
+                const el = document.getElementById(key);
+                if (el) {
+                    el.innerHTML = t[key];
+                }
+            }
+
+            // Update Button Label
+            const flags = {
+                en: "🇺🇸 EN",
+                pt: "🇧🇷 PT",
+                es: "🇪🇸 ES",
+                ru: "🇷🇺 RU"
+            };
+            document.getElementById('langBtn').innerText = flags[lang];
+            document.documentElement.lang = lang;
+        }
+
+        // Detect Language on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('lang');
+            if (savedLang) {
+                updatePageLanguage(savedLang);
+            } else {
+                const userLang = navigator.language || navigator.userLanguage;
+                let detected = 'en'; // Fallback
+
+                if (userLang.startsWith('pt')) detected = 'pt';
+                else if (userLang.startsWith('es')) detected = 'es';
+                else if (userLang.startsWith('ru')) detected = 'ru';
+
+                updatePageLanguage(detected);
+            }
+        });
+    </script>
 </body>
 
 </html>
