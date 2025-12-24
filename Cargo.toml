@@ -20,6 +20,8 @@ windows = { version = "0.58", features = [
     "Win32_System_Console",
     "Win32_Security",
     "Win32_Storage_FileSystem",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
 ] }
 winreg = "0.52"
 sha2 = "0.10"

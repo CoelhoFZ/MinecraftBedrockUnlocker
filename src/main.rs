@@ -66,14 +66,17 @@ fn main() -> Result<()> {
 
     let cli = Cli::parse();
 
-    // Check if running as administrator
+    // Check if running as administrator - if not, re-launch with elevation
     if !is_elevated() {
-        eprintln!("{}", Translations::admin_required().red().bold());
-        eprintln!("{}", Translations::admin_how_to().yellow());
-        eprintln!();
-        eprintln!("{}", press_enter_to_exit());
-        let _ = io::stdin().read_line(&mut String::new());
-        std::process::exit(1);
+        // Try to re-launch with admin rights
+        if !request_elevation() {
+            eprintln!("{}", Translations::admin_required().red().bold());
+            eprintln!("{}", Translations::admin_how_to().yellow());
+            eprintln!();
+            eprintln!("{}", press_enter_to_exit());
+            let _ = io::stdin().read_line(&mut String::new());
+        }
+        std::process::exit(0); // Exit this non-elevated instance
     }
 
     let manager = DllManager::new()?;
@@ -414,5 +417,46 @@ fn is_elevated() -> bool {
             }
         }
         false
+    }
+}
+
+/// Request elevation by re-launching this exe with admin rights (UAC prompt)
+fn request_elevation() -> bool {
+    use std::os::windows::ffi::OsStrExt;
+    use std::ffi::OsStr;
+    use windows::Win32::UI::Shell::ShellExecuteW;
+    use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
+    use windows::core::PCWSTR;
+    
+    // Get the current executable path
+    let exe_path = match std::env::current_exe() {
+        Ok(path) => path,
+        Err(_) => return false,
+    };
+    
+    // Convert to wide string
+    let exe_wide: Vec<u16> = OsStr::new(&exe_path)
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect();
+    
+    // "runas" verb triggers UAC prompt
+    let verb: Vec<u16> = OsStr::new("runas")
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect();
+    
+    unsafe {
+        let result = ShellExecuteW(
+            None,
+            PCWSTR::from_raw(verb.as_ptr()),
+            PCWSTR::from_raw(exe_wide.as_ptr()),
+            PCWSTR::null(),
+            PCWSTR::null(),
+            SW_SHOWNORMAL,
+        );
+        
+        // ShellExecuteW returns a value > 32 on success
+        result.0 as usize > 32
     }
 }
