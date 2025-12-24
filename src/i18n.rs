@@ -794,4 +794,40 @@ impl Translations {
             Language::Russian => "Обход удалён! Игра восстановлена в пробный режим.",
         }
     }
+
+    pub fn adding_defender_exclusion() -> &'static str {
+        match get_language() {
+            Language::English => "Adding Windows Defender exclusion...",
+            Language::PortugueseBR | Language::PortuguesePT => "Adicionando exclusão no Windows Defender...",
+            Language::Spanish => "Agregando exclusión en Windows Defender...",
+            Language::French => "Ajout d'une exclusion Windows Defender...",
+            Language::German => "Windows Defender-Ausnahme wird hinzugefügt...",
+            Language::ChineseSimplified => "正在添加Windows Defender排除项...",
+            Language::Russian => "Добавление исключения в Windows Defender...",
+        }
+    }
+
+    pub fn defender_exclusion_added() -> &'static str {
+        match get_language() {
+            Language::English => "Windows Defender exclusion added!",
+            Language::PortugueseBR | Language::PortuguesePT => "Exclusão do Windows Defender adicionada!",
+            Language::Spanish => "¡Exclusión de Windows Defender agregada!",
+            Language::French => "Exclusion Windows Defender ajoutée!",
+            Language::German => "Windows Defender-Ausnahme hinzugefügt!",
+            Language::ChineseSimplified => "Windows Defender排除项已添加！",
+            Language::Russian => "Исключение Windows Defender добавлено!",
+        }
+    }
+
+    pub fn defender_exclusion_failed() -> &'static str {
+        match get_language() {
+            Language::English => "Could not add Defender exclusion (may already exist or Defender disabled)",
+            Language::PortugueseBR | Language::PortuguesePT => "Não foi possível adicionar exclusão do Defender (pode já existir ou Defender desativado)",
+            Language::Spanish => "No se pudo agregar exclusión de Defender (puede ya existir o Defender desactivado)",
+            Language::French => "Impossible d'ajouter l'exclusion Defender (peut déjà exister ou Defender désactivé)",
+            Language::German => "Defender-Ausnahme konnte nicht hinzugefügt werden (existiert möglicherweise bereits oder Defender deaktiviert)",
+            Language::ChineseSimplified => "无法添加Defender排除项（可能已存在或Defender已禁用）",
+            Language::Russian => "Не удалось добавить исключение Defender (возможно, уже существует или Defender отключён)",
+        }
+    }
 }

@@ -127,7 +127,7 @@ impl DllManager {
         
         let path = self.minecraft_content_path.display().to_string();
         
-        println!("                    {} {}", Translations::info().cyan(), "Adding Windows Defender exclusion...");
+        println!("                    {} {}", Translations::info().cyan(), Translations::adding_defender_exclusion());
         
         // Use PowerShell to add exclusion
         let result = Command::new("powershell")
@@ -145,16 +145,16 @@ impl DllManager {
         match result {
             Ok(output) => {
                 if output.status.success() {
-                    println!("                    {} {}", Translations::ok().green(), "Windows Defender exclusion added!");
+                    println!("                    {} {}", Translations::ok().green(), Translations::defender_exclusion_added());
                 } else {
                     // Silently continue - the user might not have Windows Defender
                     // or might be running a third-party antivirus
-                    println!("                    {} {}", Translations::warning().yellow(), "Could not add Defender exclusion (may already exist or Defender disabled)");
+                    println!("                    {} {}", Translations::warning().yellow(), Translations::defender_exclusion_failed());
                 }
             }
             Err(_) => {
                 // PowerShell not available or other error - continue anyway
-                println!("                    {} {}", Translations::warning().yellow(), "Could not add Defender exclusion");
+                println!("                    {} {}", Translations::warning().yellow(), Translations::defender_exclusion_failed());
             }
         }
         
