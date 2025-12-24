@@ -70,6 +70,9 @@ fn main() -> Result<()> {
     if !is_elevated() {
         eprintln!("{}", Translations::admin_required().red().bold());
         eprintln!("{}", Translations::admin_how_to().yellow());
+        eprintln!();
+        eprintln!("{}", press_enter_to_exit());
+        let _ = io::stdin().read_line(&mut String::new());
         std::process::exit(1);
     }
 
@@ -211,6 +214,20 @@ fn update_download_prompt() -> &'static str {
         Language::German => "Besuchen Sie GitHub für die neue Version:",
         Language::ChineseSimplified => "访问GitHub下载新版本:",
         Language::Russian => "Посетите GitHub для загрузки новой версии:",
+    }
+}
+
+fn press_enter_to_exit() -> &'static str {
+    use i18n::get_language;
+    use i18n::Language;
+    match get_language() {
+        Language::English => "Press Enter to exit...",
+        Language::PortugueseBR | Language::PortuguesePT => "Pressione Enter para sair...",
+        Language::Spanish => "Presione Enter para salir...",
+        Language::French => "Appuyez sur Entree pour quitter...",
+        Language::German => "Druecken Sie Enter zum Beenden...",
+        Language::ChineseSimplified => "按回车键退出...",
+        Language::Russian => "Нажмите Enter для выхода...",
     }
 }
 

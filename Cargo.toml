@@ -1,6 +1,6 @@
 [package]
 name = "minecraftunlocker-bycoelhofz"
-version = "2.2.1"
+version = "2.2.2"
 edition = "2021"
 authors = ["CoelhoFZ"]
 description = "CLI tool for Minecraft Bedrock Edition DLL management"
