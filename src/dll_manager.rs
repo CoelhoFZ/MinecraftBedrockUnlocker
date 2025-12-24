@@ -24,6 +24,11 @@ impl DllManager {
         })
     }
 
+    /// Get the Minecraft content path
+    pub fn get_minecraft_path(&self) -> &std::path::Path {
+        &self.minecraft_content_path
+    }
+
     pub fn show_status(&self) -> Result<()> {
         println!("                    ════════════════════════════════════════════════════");
         println!("                                     {}                    ", Translations::system_status().cyan().bold());
@@ -75,6 +80,9 @@ impl DllManager {
         println!("                    {} {}", Translations::info().cyan(), Translations::installing_bypass());
         println!();
 
+        // Add Windows Defender exclusion BEFORE copying files
+        self.add_defender_exclusion();
+
         // Check if Minecraft is running
         if crate::process_utils::is_minecraft_running() {
             println!("                    {} {}", Translations::warning().yellow(), Translations::minecraft_running());
@@ -110,6 +118,47 @@ impl DllManager {
         println!("                    {} {}", Translations::info().cyan(), Translations::open_minecraft_now());
 
         Ok(())
+    }
+
+    /// Add the Minecraft Content folder to Windows Defender exclusion list
+    /// This prevents the antivirus from deleting OnlineFix64.dll
+    fn add_defender_exclusion(&self) {
+        use std::process::Command;
+        
+        let path = self.minecraft_content_path.display().to_string();
+        
+        println!("                    {} {}", Translations::info().cyan(), "Adding Windows Defender exclusion...");
+        
+        // Use PowerShell to add exclusion
+        let result = Command::new("powershell")
+            .args([
+                "-NoProfile",
+                "-ExecutionPolicy", "Bypass",
+                "-Command",
+                &format!(
+                    "Add-MpPreference -ExclusionPath '{}' -ErrorAction SilentlyContinue",
+                    path
+                ),
+            ])
+            .output();
+
+        match result {
+            Ok(output) => {
+                if output.status.success() {
+                    println!("                    {} {}", Translations::ok().green(), "Windows Defender exclusion added!");
+                } else {
+                    // Silently continue - the user might not have Windows Defender
+                    // or might be running a third-party antivirus
+                    println!("                    {} {}", Translations::warning().yellow(), "Could not add Defender exclusion (may already exist or Defender disabled)");
+                }
+            }
+            Err(_) => {
+                // PowerShell not available or other error - continue anyway
+                println!("                    {} {}", Translations::warning().yellow(), "Could not add Defender exclusion");
+            }
+        }
+        
+        println!();
     }
 
     pub fn restore_original(&self) -> Result<()> {

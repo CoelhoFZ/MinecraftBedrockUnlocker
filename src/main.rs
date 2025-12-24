@@ -13,9 +13,17 @@ mod dll_manager;
 mod process_utils;
 mod minecraft;
 mod i18n;
+mod health_check;
+mod antivirus;
+mod auto_update;
+mod diagnostics;
 
 use dll_manager::DllManager;
 use i18n::Translations;
+use health_check::HealthCheck;
+use antivirus::AntivirusDetector;
+use auto_update::AutoUpdater;
+use diagnostics::Diagnostics;
 
 /// MINECRAFT UNLOCKER CLI - byCoelhoFZ
 /// Minecraft DLL Manager (Console Mode)
@@ -142,7 +150,7 @@ fn print_banner() {
     println!();
 }
 
-fn print_menu(show_youtube_option: bool) {
+fn print_menu(show_extra_options: bool) {
     println!("                        {}                  ", Translations::available_options().green().bold());
     println!();
     println!("                {} {}        ", "[1]".green().bold(), Translations::menu_option_1().white());
@@ -150,9 +158,11 @@ fn print_menu(show_youtube_option: bool) {
     println!("                {} {}          ", "[3]".green().bold(), Translations::menu_option_3().white());
     println!("                {} {}", "[4]".green().bold(), Translations::menu_option_4().white());
     println!("                {} {}       ", "[5]".green().bold(), Translations::menu_option_5().white());
+    println!("                {} {}", "[6]".cyan().bold(), menu_diagnostics().white());
+    println!("                {} {}", "[7]".cyan().bold(), menu_check_updates().white());
     println!("                {} {}               ", "[0]".red().bold(), Translations::menu_option_0().white());
-    if show_youtube_option {
-        println!("                {} {}", "[6]".yellow().bold(), Translations::menu_option_6().white());
+    if show_extra_options {
+        println!("                {} {}", "[8]".yellow().bold(), Translations::menu_option_6().white());
     }
     println!();
     println!("             ════════════════════════════════════════════════");
@@ -160,6 +170,48 @@ fn print_menu(show_youtube_option: bool) {
     // Display version at bottom
     println!("                              {} {}", "v".dimmed(), env!("CARGO_PKG_VERSION").dimmed());
     println!();
+}
+
+fn menu_diagnostics() -> &'static str {
+    use i18n::get_language;
+    use i18n::Language;
+    match get_language() {
+        Language::English => "System Diagnostics",
+        Language::PortugueseBR | Language::PortuguesePT => "Diagnóstico do Sistema",
+        Language::Spanish => "Diagnóstico del Sistema",
+        Language::French => "Diagnostic Système",
+        Language::German => "Systemdiagnose",
+        Language::ChineseSimplified => "系统诊断",
+        Language::Russian => "Диагностика системы",
+    }
+}
+
+fn menu_check_updates() -> &'static str {
+    use i18n::get_language;
+    use i18n::Language;
+    match get_language() {
+        Language::English => "Check for Updates",
+        Language::PortugueseBR | Language::PortuguesePT => "Verificar Atualizações",
+        Language::Spanish => "Buscar Actualizaciones",
+        Language::French => "Vérifier les Mises à Jour",
+        Language::German => "Nach Updates suchen",
+        Language::ChineseSimplified => "检查更新",
+        Language::Russian => "Проверить обновления",
+    }
+}
+
+fn update_download_prompt() -> &'static str {
+    use i18n::get_language;
+    use i18n::Language;
+    match get_language() {
+        Language::English => "Visit GitHub to download the new version:",
+        Language::PortugueseBR | Language::PortuguesePT => "Visite o GitHub para baixar a nova versão:",
+        Language::Spanish => "Visite GitHub para descargar la nueva versión:",
+        Language::French => "Visitez GitHub pour télécharger la nouvelle version:",
+        Language::German => "Besuchen Sie GitHub für die neue Version:",
+        Language::ChineseSimplified => "访问GitHub下载新版本:",
+        Language::Russian => "Посетите GitHub для загрузки новой версии:",
+    }
 }
 
 fn clear_and_show_banner() {
@@ -250,15 +302,51 @@ fn run_interactive(manager: DllManager) -> Result<()> {
                     eprintln!();
                     eprintln!("      {} {}", Translations::error().red().bold(), e);
                 }
+                // Also show health check and antivirus status
+                println!();
+                let health = HealthCheck::new(manager.get_minecraft_path().to_path_buf());
+                health.print_status();
+                println!();
+                AntivirusDetector::print_detected();
+                
                 has_used_option = true;
                 wait_and_return_to_menu(has_used_option);
             }
-            "6" => {
+            "6" | "diagnostics" => {
+                // Run full system diagnostics
+                let diag = Diagnostics::new(manager.get_minecraft_path().to_path_buf());
+                diag.print_results();
+                
+                has_used_option = true;
+                wait_and_return_to_menu(has_used_option);
+            }
+            "7" | "update" => {
+                // Check for updates
+                let updater = AutoUpdater::new();
+                updater.print_update_status();
+                
+                // If update available, ask if user wants to download
+                if let Some(info) = updater.check_for_updates() {
+                    if info.is_newer {
+                        println!();
+                        println!("                    {} {}", 
+                            "[?]".yellow().bold(),
+                            update_download_prompt());
+                        println!("                    {} {}", 
+                            Translations::info().cyan(),
+                            "GitHub: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases");
+                    }
+                }
+                
+                has_used_option = true;
+                wait_and_return_to_menu(has_used_option);
+            }
+            "8" => {
                 if has_used_option {
                     open_youtube_channel()?;
                     wait_and_return_to_menu(has_used_option);
                 } else {
-                    println!("      {}", Translations::invalid_option("5").yellow().bold());
+                    println!("      {}", Translations::invalid_option("7").yellow().bold());
                     wait_and_return_to_menu(has_used_option);
                 }
             }
@@ -274,7 +362,7 @@ fn run_interactive(manager: DllManager) -> Result<()> {
                 print_menu(has_used_option);
             }
             _ => {
-                let max_option = if has_used_option { "6" } else { "5" };
+                let max_option = if has_used_option { "8" } else { "7" };
                 println!("      {}", Translations::invalid_option(max_option).yellow().bold());
                 wait_and_return_to_menu(has_used_option);
             }
