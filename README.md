@@ -5,7 +5,7 @@
 [![Stars](https://img.shields.io/github/stars/CoelhoFZ/MinecraftBedrockUnlocker?style=flat-square&color=yellow)](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/stargazers)
 [![Downloads](https://img.shields.io/github/downloads/CoelhoFZ/MinecraftBedrockUnlocker/total?style=flat-square&color=purple)](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
 [![Rust](https://img.shields.io/badge/Rust-1.70+-orange?style=flat-square&logo=rust)](https://www.rust-lang.org/)
-[![Discord](https://img.shields.io/badge/Discord-Join-7289da?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/HP74ccUP)
+[![Discord](https://img.shields.io/badge/Discord-Join-7289da?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/bfFdyJ3gEj)
 [![VirusTotal](https://img.shields.io/badge/VirusTotal-Clean-success?style=flat-square&logo=virustotal)](https://www.virustotal.com/)
 
 > **🔓 Unlock Minecraft Bedrock Edition for FREE on Windows 10/11!**
@@ -157,7 +157,7 @@ Some antivirus software may flag this tool as malicious. **This is a false posit
 
 ## Community
 
-Join our Discord: https://discord.gg/HP74ccUP
+Join our Discord: https://discord.gg/bfFdyJ3gEj
 
 ## License
 

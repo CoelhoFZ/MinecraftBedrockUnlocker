@@ -5,7 +5,7 @@
 [![Stars](https://img.shields.io/github/stars/CoelhoFZ/MinecraftBedrockUnlocker?style=flat-square&color=yellow)](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/stargazers)
 [![Downloads](https://img.shields.io/github/downloads/CoelhoFZ/MinecraftBedrockUnlocker/total?style=flat-square&color=purple)](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
 [![Rust](https://img.shields.io/badge/Rust-1.70+-orange?style=flat-square&logo=rust)](https://www.rust-lang.org/)
-[![Discord](https://img.shields.io/badge/Discord-Entrar-7289da?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/HP74ccUP)
+[![Discord](https://img.shields.io/badge/Discord-Entrar-7289da?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/bfFdyJ3gEj)
 [![VirusTotal](https://img.shields.io/badge/VirusTotal-Limpo-success?style=flat-square&logo=virustotal)](https://www.virustotal.com/)
 
 > **🔓 Desbloqueie o Minecraft Bedrock Edition DE GRAÇA no Windows 10/11!**
@@ -155,7 +155,7 @@ Alguns antivírus podem marcar esta ferramenta como maliciosa. **Isso é um fals
 
 ## Comunidade
 
-Entre no nosso Discord: https://discord.gg/HP74ccUP
+Entre no nosso Discord: https://discord.gg/bfFdyJ3gEj
 
 ## Licença
 
