@@ -16,7 +16,6 @@ $ErrorActionPreference = 'Stop'
 # Configuration
 $RepoOwner = "CoelhoFZ"
 $RepoName = "MinecraftBedrockUnlocker"
-$ExeName = "mc_unlocker.exe"
 
 # Colors
 function Write-Color {
@@ -46,13 +45,9 @@ function Test-Admin {
 function Request-Elevation {
     Write-Color "[!] Administrator privileges required. Requesting elevation..." Yellow
     
-    # Build the command to re-run this script elevated
-    $scriptBlock = {
-        irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | iex
-    }
-    
     try {
-        Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | iex`"" -Verb RunAs
+        $url = "https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1"
+        Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"Invoke-RestMethod '$url' | Invoke-Expression`"" -Verb RunAs
         Write-Color "[OK] Elevated window opened. You can close this window." Green
     }
     catch {
@@ -71,7 +66,7 @@ function Get-LatestRelease {
     
     try {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $release = Invoke-RestMethod -Uri $apiUrl -Headers @{'User-Agent'='MinecraftUnlocker-Installer'} -TimeoutSec 30
+        $release = Invoke-RestMethod -Uri $apiUrl -Headers @{'User-Agent' = 'MinecraftUnlocker-Installer' } -TimeoutSec 30
         
         $asset = $release.assets | Where-Object { $_.name -like "*.exe" } | Select-Object -First 1
         
@@ -80,10 +75,10 @@ function Get-LatestRelease {
         }
         
         return @{
-            Version = $release.tag_name -replace '^v', ''
+            Version     = $release.tag_name -replace '^v', ''
             DownloadUrl = $asset.browser_download_url
-            FileName = $asset.name
-            ReleaseUrl = $release.html_url
+            FileName    = $asset.name
+            ReleaseUrl  = $release.html_url
         }
     }
     catch {
