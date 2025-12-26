@@ -10,6 +10,7 @@ use windows::Win32::System::Console::{
 };
 
 mod dll_manager;
+mod utils;
 mod process_utils;
 mod minecraft;
 mod i18n;
@@ -29,7 +30,7 @@ use diagnostics::Diagnostics;
 /// Minecraft DLL Manager (Console Mode)
 #[derive(Parser)]
 #[command(name = "MinecraftUnlocker")]
-#[command(version = "1.0.0")]
+#[command(version = env!("CARGO_PKG_VERSION"))]
 #[command(about = "Minecraft Bedrock Edition DLL Manager", long_about = None)]
 struct Cli {
     #[command(subcommand)]

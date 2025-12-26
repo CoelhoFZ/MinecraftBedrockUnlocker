@@ -1,8 +1,8 @@
-# ===== Arquivos de Build do Rust =====
+# ===== Rust Build Files =====
 /target/
 **/*.rs.bk
 
-# ===== Executáveis e Libraries =====
+# ===== Executables and Libraries =====
 *.exe
 *.dll
 !dlls/**/*.dll
@@ -25,12 +25,12 @@
 *.suo
 *.user
 
-# Outros editores
+# Other editors
 *.swp
 *.swo
 *~
 
-# ===== Sistema Operacional =====
+# ===== Operating System =====
 # Windows
 Thumbs.db
 desktop.ini
@@ -43,12 +43,12 @@ desktop.ini
 # Linux
 *~
 
-# ===== Arquivos de Backup =====
+# ===== Backup Files =====
 *.bak
 *.backup
 *.old
 
-# ===== Python (build.py) =====
+# ===== Python =====
 __pycache__/
 *.py[cod]
 *$py.class
@@ -60,15 +60,15 @@ venv/
 # ===== Logs =====
 *.log
 
-# ===== Arquivos Temporários do Projeto =====
-# Executáveis copiados para raiz
+# ===== Project Temporary Files =====
+# Executables copied to root
 /minecraft-unlocker-cli.exe
 /mc_unlocker.exe
 
-# Arquivos obfuscados (se houver)
+# Obfuscated files (if any)
 *.obf
 
-# ===== Pastas de Build/Dist =====
+# ===== Build/Dist Folders =====
 /build/
 /dist/
 

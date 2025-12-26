@@ -24,14 +24,27 @@ A powerful CLI tool to unlock the full version of **Minecraft Bedrock Edition (G
 
 ## Installation
 
-### Option 1: Use the Executable (Recommended)
+### Option 1: PowerShell One-Liner (Recommended)
+
+Open PowerShell and run:
+
+```powershell
+irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | iex
+```
+
+> If blocked by ISP/DNS, try this alternative:
+> ```powershell
+> iex (curl.exe -s https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | Out-String)
+> ```
+
+### Option 2: Download Executable
 
 1. Download the executable from the [Releases page](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
 2. Run as **Administrator**
 3. Choose **[1] Install Mod**
 4. Open Minecraft from the Start Menu!
 
-### Option 2: Build from Source
+### Option 3: Build from Source
 
 ```bash
 # Clone repository
@@ -67,8 +80,10 @@ The program uses the OnlineFix method which:
 [1] Install Mod (Unlock game)
 [2] Restore Original (Back to Trial)
 [3] Open Minecraft
-[4] Open Microsoft Store
+[4] Install Minecraft (Xbox App)
 [5] Check Status
+[6] System Diagnostics
+[7] Check for Updates
 [0] Exit
 ```
 

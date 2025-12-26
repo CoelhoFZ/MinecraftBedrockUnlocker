@@ -24,14 +24,27 @@ Uma poderosa ferramenta CLI para desbloquear a versão completa do **Minecraft B
 
 ## Instalação
 
-### Opção 1: Usar o Executável (Recomendado)
+### Opção 1: PowerShell One-Liner (Recomendado)
+
+Abra o PowerShell e execute:
+
+```powershell
+irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | iex
+```
+
+> Se bloqueado pelo provedor/DNS, tente esta alternativa:
+> ```powershell
+> iex (curl.exe -s https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | Out-String)
+> ```
+
+### Opção 2: Baixar o Executável
 
 1. Baixe o executável da [página de Releases](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
 2. Execute como **Administrador**
 3. Escolha **[1] Instalar Mod**
 4. Abra o Minecraft pelo Menu Iniciar!
 
-### Opção 2: Compilar do Código Fonte
+### Opção 3: Compilar do Código Fonte
 
 ```bash
 # Clonar repositório

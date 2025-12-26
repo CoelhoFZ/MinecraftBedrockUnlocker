@@ -2,18 +2,8 @@
 // Auto-reinstalls if files are missing or corrupted
 
 use colored::*;
-use sha2::{Sha256, Digest};
-use std::fs;
-use std::path::Path;
 use crate::i18n::Translations;
 
-// Expected file hashes (SHA256) for integrity verification
-const EXPECTED_HASHES: &[(&str, &str)] = &[
-    ("winmm.dll", ""), // We don't check hash, just presence
-    ("OnlineFix64.dll", ""),
-    ("dlllist.txt", ""),
-    ("OnlineFix.ini", ""),
-];
 
 pub struct HealthCheck {
     minecraft_path: std::path::PathBuf,

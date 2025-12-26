@@ -53,13 +53,6 @@ cargo build --release
 # Output: target/release/mc_unlocker.exe
 ```
 
-### Using Python Build Script
-
-```bash
-# Alternative build method
-python build.py
-```
-
 ---
 
 ## 🌍 Language Support
@@ -90,7 +83,7 @@ This is normal for unsigned executables:
 
 ### Antivirus blocking the file
 
-The tool modifies System32, which triggers false positives:
+The tool copies DLL files to the game folder, which triggers false positives:
 
 1. Add exception in your antivirus
 2. Or temporarily disable real-time protection

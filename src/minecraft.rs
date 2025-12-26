@@ -71,32 +71,7 @@ fn check_xbox_games() -> bool {
 
 /// Get all available drive letters on the system using Windows API
 fn get_available_drives() -> Vec<char> {
-    let mut drives = Vec::new();
-    
-    #[cfg(target_os = "windows")]
-    {
-        extern "system" {
-            fn GetLogicalDrives() -> u32;
-        }
-        
-        let bitmask = unsafe { GetLogicalDrives() };
-        
-        for i in 0..26u32 {
-            if (bitmask & (1 << i)) != 0 {
-                let drive_letter = (b'A' + i as u8) as char;
-                if drive_letter != 'A' && drive_letter != 'B' {
-                    drives.push(drive_letter);
-                }
-            }
-        }
-    }
-    
-    #[cfg(not(target_os = "windows"))]
-    {
-        drives = vec!['C', 'D', 'E', 'F', 'G'];
-    }
-    
-    drives
+    crate::utils::get_available_drives()
 }
 
 fn check_registry_current_user() -> bool {
