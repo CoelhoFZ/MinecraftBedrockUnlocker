@@ -1042,35 +1042,6 @@ function Restore-Original {
     # This forces the system to re-validate the real license status
     Reset-StoreLicenseCache
     
-    # NUCLEAR OPTION: Reset the Minecraft app data completely
-    # This clears ALL cached data including any persisted license tokens
-    Write-Info (T 'resetting_app')
-    try {
-        $mcPkg = Get-AppxPackage -Name "MICROSOFT.MINECRAFTUWP" -ErrorAction SilentlyContinue
-        if ($mcPkg) {
-            $mcPkg | Reset-AppxPackage -ErrorAction SilentlyContinue
-            Write-OK (T 'app_reset_ok')
-        }
-    } catch {
-        # Reset-AppxPackage may not be available on older Windows versions
-        Write-Warn (T 'app_reset_fallback')
-        try {
-            # Fallback: manually clear the app data
-            $appDataPath = "$env:LOCALAPPDATA\Packages\MICROSOFT.MINECRAFTUWP_8wekyb3d8bbwe"
-            $subDirs = @("LocalState", "LocalCache", "TempState", "Settings", "RoamingState")
-            foreach ($sub in $subDirs) {
-                $subPath = Join-Path $appDataPath $sub
-                if (Test-Path $subPath) {
-                    Get-ChildItem -Path $subPath -Recurse -Force -ErrorAction SilentlyContinue | 
-                        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-                }
-            }
-            Write-OK (T 'app_data_cleared')
-        } catch {
-            Write-Warn "Manual clear failed: $_"
-        }
-    }
-    
     Write-C ""
     Write-OK (T 'removed_ok')
     Write-C ""
@@ -1106,17 +1077,41 @@ function Open-Minecraft {
     }
     
     Write-Info (T 'opening_mc')
+    
+    $opened = $false
+    
+    # Method 1: shell:AppsFolder (most reliable, doesn't depend on minecraft: URI registration)
     try {
-        Start-Process "minecraft:" -ErrorAction SilentlyContinue
-        Write-OK (T 'mc_opened')
-    } catch {
-        Write-Warn "Could not open via protocol. Trying shell:AppsFolder..."
+        Start-Process "explorer.exe" -ArgumentList "shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App" -ErrorAction Stop
+        $opened = $true
+    } catch { }
+    
+    # Method 2: minecraft: URI protocol
+    if (-not $opened) {
         try {
-            Start-Process "shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App" -ErrorAction SilentlyContinue
-            Write-OK (T 'mc_opened')
-        } catch {
-            Write-Err "Failed to open Minecraft. Please open manually."
-        }
+            $proc = Start-Process "minecraft:" -PassThru -ErrorAction Stop
+            if ($proc -and $proc.Id -gt 0) { $opened = $true }
+        } catch { }
+    }
+    
+    # Method 3: Direct exe via Get-AppxPackage
+    if (-not $opened) {
+        try {
+            $pkg = Get-AppxPackage -Name "MICROSOFT.MINECRAFTUWP" -ErrorAction SilentlyContinue
+            if ($pkg) {
+                $exe = Join-Path $pkg.InstallLocation "Minecraft.Windows.exe"
+                if (Test-Path $exe) {
+                    Start-Process $exe -ErrorAction Stop
+                    $opened = $true
+                }
+            }
+        } catch { }
+    }
+    
+    if ($opened) {
+        Write-OK (T 'mc_opened')
+    } else {
+        Write-Err "Failed to open Minecraft. Please open manually from the Start Menu."
     }
     Wait-Enter
 }
