@@ -832,19 +832,34 @@ function Restore-Original {
     Write-Info (T 'removing')
     Write-C ""
     
-    $filesToRemove = @("winmm.dll", "OnlineFix64.dll", "dlllist.txt", "OnlineFix.ini")
+    # Current OnlineFix files + legacy OpenFix/bypass file names
+    $filesToRemove = @(
+        # Current OnlineFix
+        "winmm.dll", "OnlineFix64.dll", "dlllist.txt", "OnlineFix.ini",
+        # Legacy OpenFix (older bypass versions)
+        "OpenFix.ini", "OpenFix64.dll", "OpenFix.log",
+        # Legacy backup/logs
+        "winmm_orig.dll", "FakeGDK.log", "FullBypass.log",
+        "DirectHook.log", "Monitor.log", "VPMon.log", "XStore.log"
+    )
     
+    $removedCount = 0
     foreach ($file in $filesToRemove) {
         $filePath = Join-Path $mcPath $file
         if (Test-Path $filePath) {
             try {
                 Remove-Item -Path $filePath -Force
                 Write-OK "Removed: $file"
+                $removedCount++
             }
             catch {
                 Write-Warn "Failed to remove: $file - $_"
             }
         }
+    }
+    
+    if ($removedCount -eq 0) {
+        Write-Info "No bypass files found to remove."
     }
     
     Write-C ""
