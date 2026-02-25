@@ -263,6 +263,21 @@ function T {
             pt = "Bypass removido com sucesso! Jogo restaurado para Trial."
             es = "Bypass eliminado exitosamente! Juego restaurado a Trial."
         }
+        "resetting_license" = @{
+            en = "Resetting Windows Store / Gaming Services license cache..."
+            pt = "Resetando cache de licenca da Windows Store / Gaming Services..."
+            es = "Reseteando cache de licencia de Windows Store / Gaming Services..."
+        }
+        "license_reset_partial" = @{
+            en = "Could not fully reset license cache. You may need to restart your PC."
+            pt = "Nao foi possivel resetar o cache de licenca completamente. Reinicie o PC se necessario."
+            es = "No se pudo resetear el cache de licencia completamente. Reinicie el PC si es necesario."
+        }
+        "restore_reopen_note" = @{
+            en = "IMPORTANT: Open Minecraft again to verify it returned to Trial mode. If still showing as Paid, restart your PC."
+            pt = "IMPORTANTE: Abra o Minecraft novamente para verificar se voltou ao modo Trial. Se ainda aparecer como Pago, reinicie seu PC."
+            es = "IMPORTANTE: Abra Minecraft nuevamente para verificar si volvio al modo Trial. Si sigue mostrando como Pago, reinicie su PC."
+        }
         "opening_mc" = @{
             en = "Opening Minecraft..."
             pt = "Abrindo Minecraft..."
@@ -860,6 +875,97 @@ function Install-Bypass {
     Wait-Enter
 }
 
+function Reset-StoreLicenseCache {
+    # Reset the Windows Store and Gaming Services license cache
+    # This ensures the system re-validates the actual license status
+    
+    Write-Info (T 'resetting_license')
+    
+    $resetDone = $false
+    
+    # Method 1: Restart ClipSVC (Client License Platform Service)
+    try {
+        $clipSvc = Get-Service -Name "ClipSVC" -ErrorAction SilentlyContinue
+        if ($clipSvc) {
+            Stop-Service -Name "ClipSVC" -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
+            Start-Service -Name "ClipSVC" -ErrorAction SilentlyContinue
+            Write-OK "ClipSVC (License Service) - Reset OK"
+            $resetDone = $true
+        }
+    } catch {
+        Write-Warn "ClipSVC reset failed: $_"
+    }
+    
+    # Method 2: Restart GamingServices
+    try {
+        $gamingSvc = Get-Service -Name "GamingServices" -ErrorAction SilentlyContinue
+        if ($gamingSvc) {
+            Stop-Service -Name "GamingServices" -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
+            Start-Service -Name "GamingServices" -ErrorAction SilentlyContinue
+            Write-OK "GamingServices - Reset OK"
+            $resetDone = $true
+        }
+    } catch {
+        Write-Warn "GamingServices reset failed: $_"
+    }
+    
+    # Method 3: Restart GamingServicesNet
+    try {
+        $gamingSvcNet = Get-Service -Name "GamingServicesNet" -ErrorAction SilentlyContinue
+        if ($gamingSvcNet) {
+            Stop-Service -Name "GamingServicesNet" -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 1
+            Start-Service -Name "GamingServicesNet" -ErrorAction SilentlyContinue
+            Write-OK "GamingServicesNet - Reset OK"
+            $resetDone = $true
+        }
+    } catch {
+        Write-Warn "GamingServicesNet reset failed: $_"
+    }
+    
+    # Method 4: Clear the Microsoft Store cache (silent mode)
+    try {
+        $wsreset = Get-Command "wsreset.exe" -ErrorAction SilentlyContinue
+        if ($wsreset) {
+            # Use -i for silent/non-interactive if available, otherwise use cmd trick
+            $proc = Start-Process -FilePath "wsreset.exe" -PassThru -WindowStyle Hidden -ErrorAction SilentlyContinue
+            if ($proc) {
+                $proc | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
+                if (-not $proc.HasExited) {
+                    $proc | Stop-Process -Force -ErrorAction SilentlyContinue
+                }
+                Write-OK "Microsoft Store Cache - Reset OK"
+                $resetDone = $true
+            }
+        }
+    } catch {
+        Write-Warn "Store cache reset failed: $_"
+    }
+    
+    # Method 5: Clear Xbox Live token cache
+    try {
+        $xboxCachePath = "C:\ProgramData\Microsoft\XboxLive"
+        if (Test-Path $xboxCachePath) {
+            $htCacheFile = Join-Path $xboxCachePath "HTCache.dat"
+            if (Test-Path $htCacheFile) {
+                Remove-Item -Path $htCacheFile -Force -ErrorAction SilentlyContinue
+                Write-OK "Xbox Live Cache - Cleared"
+                $resetDone = $true
+            }
+        }
+    } catch {
+        Write-Warn "Xbox cache clear failed: $_"
+    }
+    
+    if (-not $resetDone) {
+        Write-Warn (T 'license_reset_partial')
+    }
+    
+    Write-C ""
+}
+
 function Restore-Original {
     $mcPath = Find-MinecraftPath
     
@@ -869,8 +975,12 @@ function Restore-Original {
         return
     }
     
+    # IMPORTANT: Kill Minecraft FIRST, before any file operations
+    # DLLs loaded in memory persist even after deletion
     if (Test-MinecraftRunning) {
         Stop-Minecraft
+        # Extra wait to ensure process fully terminates and releases DLLs
+        Start-Sleep -Seconds 2
     }
     
     Write-Info (T 'removing')
@@ -907,7 +1017,15 @@ function Restore-Original {
     }
     
     Write-C ""
+    
+    # Reset Windows Store / Gaming Services license cache
+    # This forces the system to re-validate the real license status
+    Reset-StoreLicenseCache
+    
+    Write-C ""
     Write-OK (T 'removed_ok')
+    Write-C ""
+    Write-Info (T 'restore_reopen_note')
     Wait-Enter
 }
 
