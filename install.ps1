@@ -540,7 +540,10 @@ function Request-Elevation {
         $scriptUrl = "$Script:BaseUrl/install.ps1"
         $cmd = "Set-ExecutionPolicy Bypass -Scope Process -Force; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; iex (irm '$scriptUrl')"
         Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"$cmd`"" -Verb RunAs
-        Write-OK "Elevated window opened."
+        # Close this (non-admin) window automatically after 2 seconds
+        Write-OK "Elevated window opened. This window will close..."
+        Start-Sleep -Seconds 2
+        exit
     }
     catch {
         Write-Err "Failed to elevate. Please run PowerShell as Administrator."
