@@ -298,6 +298,26 @@ function T {
             pt = "Dados do app Minecraft limpos manualmente."
             es = "Datos de la app Minecraft limpiados manualmente."
         }
+        "reregistering_mc" = @{
+            en = "Re-registering Minecraft package (force license re-validation)..."
+            pt = "Re-registrando pacote do Minecraft (forcando re-validacao de licenca)..."
+            es = "Re-registrando paquete de Minecraft (forzando re-validacion de licencia)..."
+        }
+        "reregister_ok" = @{
+            en = "Minecraft package re-registered successfully."
+            pt = "Pacote do Minecraft re-registrado com sucesso."
+            es = "Paquete de Minecraft re-registrado exitosamente."
+        }
+        "clearing_app_cache" = @{
+            en = "Clearing Minecraft app cache and settings..."
+            pt = "Limpando cache e configuracoes do Minecraft..."
+            es = "Limpiando cache y configuraciones de Minecraft..."
+        }
+        "cache_cleared" = @{
+            en = "App cache and settings cleared."
+            pt = "Cache e configuracoes do app limpos."
+            es = "Cache y configuraciones de la app limpiados."
+        }
         "opening_mc" = @{
             en = "Opening Minecraft..."
             pt = "Abrindo Minecraft..."
@@ -1042,6 +1062,46 @@ function Restore-Original {
     # This forces the system to re-validate the real license status
     Reset-StoreLicenseCache
     
+    # Re-register Minecraft package to force full license re-validation
+    Write-Info (T 'reregistering_mc')
+    try {
+        $mcPkg = Get-AppxPackage -Name "MICROSOFT.MINECRAFTUWP" -ErrorAction SilentlyContinue
+        if ($mcPkg -and $mcPkg.InstallLocation) {
+            $manifest = Join-Path $mcPkg.InstallLocation "AppxManifest.xml"
+            if (Test-Path $manifest) {
+                Add-AppxPackage -Register $manifest -DisableDevelopmentMode -ForceApplicationShutdown -ErrorAction SilentlyContinue
+                Write-OK (T 'reregister_ok')
+            }
+        }
+    } catch {
+        Write-Warn "Re-register failed: $_"
+    }
+    
+    # Clear Minecraft app local data (license tokens / settings cache)
+    Write-Info (T 'clearing_app_cache')
+    try {
+        $appDataPath = "$env:LOCALAPPDATA\Packages\MICROSOFT.MINECRAFTUWP_8wekyb3d8bbwe"
+        if (Test-Path $appDataPath) {
+            $cacheDirs = @("LocalCache", "TempState")
+            foreach ($dir in $cacheDirs) {
+                $dirPath = Join-Path $appDataPath $dir
+                if (Test-Path $dirPath) {
+                    Get-ChildItem -Path $dirPath -Recurse -Force -ErrorAction SilentlyContinue | 
+                        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+                }
+            }
+            # Clear settings.dat (contains cached license state)
+            $settingsPath = Join-Path $appDataPath "Settings"
+            if (Test-Path $settingsPath) {
+                Get-ChildItem -Path $settingsPath -Filter "settings.dat*" -Force -ErrorAction SilentlyContinue | 
+                    Remove-Item -Force -ErrorAction SilentlyContinue
+                Write-OK (T 'cache_cleared')
+            }
+        }
+    } catch {
+        Write-Warn "Cache clear failed: $_"
+    }
+    
     Write-C ""
     Write-OK (T 'removed_ok')
     Write-C ""
@@ -1080,17 +1140,18 @@ function Open-Minecraft {
     
     $opened = $false
     
-    # Method 1: shell:AppsFolder (most reliable, doesn't depend on minecraft: URI registration)
+    # Method 1: shell:AppsFolder (most reliable, works even without minecraft: URI)
     try {
-        Start-Process "explorer.exe" -ArgumentList "shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App" -ErrorAction Stop
+        Start-Process "shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App" -ErrorAction Stop
         $opened = $true
     } catch { }
     
     # Method 2: minecraft: URI protocol
     if (-not $opened) {
         try {
-            $proc = Start-Process "minecraft:" -PassThru -ErrorAction Stop
-            if ($proc -and $proc.Id -gt 0) { $opened = $true }
+            Start-Process "minecraft:" -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
+            if (Test-MinecraftRunning) { $opened = $true }
         } catch { }
     }
     
