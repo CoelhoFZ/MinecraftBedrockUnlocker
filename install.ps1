@@ -278,6 +278,26 @@ function T {
             pt = "IMPORTANTE: Abra o Minecraft novamente para verificar se voltou ao modo Trial. Se ainda aparecer como Pago, reinicie seu PC."
             es = "IMPORTANTE: Abra Minecraft nuevamente para verificar si volvio al modo Trial. Si sigue mostrando como Pago, reinicie su PC."
         }
+        "resetting_app" = @{
+            en = "Resetting Minecraft app data (clearing license cache)..."
+            pt = "Resetando dados do app Minecraft (limpando cache de licenca)..."
+            es = "Reseteando datos de la app Minecraft (limpiando cache de licencia)..."
+        }
+        "app_reset_ok" = @{
+            en = "Minecraft app data reset successfully! License cache cleared."
+            pt = "Dados do app Minecraft resetados! Cache de licenca limpo."
+            es = "Datos de la app Minecraft reseteados! Cache de licencia limpiado."
+        }
+        "app_reset_fallback" = @{
+            en = "Reset-AppxPackage not available. Trying manual cleanup..."
+            pt = "Reset-AppxPackage nao disponivel. Tentando limpeza manual..."
+            es = "Reset-AppxPackage no disponible. Intentando limpieza manual..."
+        }
+        "app_data_cleared" = @{
+            en = "Minecraft app data manually cleared."
+            pt = "Dados do app Minecraft limpos manualmente."
+            es = "Datos de la app Minecraft limpiados manualmente."
+        }
         "opening_mc" = @{
             en = "Opening Minecraft..."
             pt = "Abrindo Minecraft..."
@@ -1021,6 +1041,35 @@ function Restore-Original {
     # Reset Windows Store / Gaming Services license cache
     # This forces the system to re-validate the real license status
     Reset-StoreLicenseCache
+    
+    # NUCLEAR OPTION: Reset the Minecraft app data completely
+    # This clears ALL cached data including any persisted license tokens
+    Write-Info (T 'resetting_app')
+    try {
+        $mcPkg = Get-AppxPackage -Name "MICROSOFT.MINECRAFTUWP" -ErrorAction SilentlyContinue
+        if ($mcPkg) {
+            $mcPkg | Reset-AppxPackage -ErrorAction SilentlyContinue
+            Write-OK (T 'app_reset_ok')
+        }
+    } catch {
+        # Reset-AppxPackage may not be available on older Windows versions
+        Write-Warn (T 'app_reset_fallback')
+        try {
+            # Fallback: manually clear the app data
+            $appDataPath = "$env:LOCALAPPDATA\Packages\MICROSOFT.MINECRAFTUWP_8wekyb3d8bbwe"
+            $subDirs = @("LocalState", "LocalCache", "TempState", "Settings", "RoamingState")
+            foreach ($sub in $subDirs) {
+                $subPath = Join-Path $appDataPath $sub
+                if (Test-Path $subPath) {
+                    Get-ChildItem -Path $subPath -Recurse -Force -ErrorAction SilentlyContinue | 
+                        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+                }
+            }
+            Write-OK (T 'app_data_cleared')
+        } catch {
+            Write-Warn "Manual clear failed: $_"
+        }
+    }
     
     Write-C ""
     Write-OK (T 'removed_ok')
