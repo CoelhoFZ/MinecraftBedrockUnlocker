@@ -2,177 +2,147 @@
 
 > Complete step-by-step installation guide for Windows
 
-## 🎯 Quick Install (Recommended)
+## 🎯 Quick Install
 
-### For Regular Users
+### Step 1: Install Minecraft Trial
 
-1. **Download the latest release**
-   - Go to [Releases](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
-   - Download `mc_unlocker.exe` (latest version)
-   - File size: ~5.3 MB
+1. Open the **Xbox App** (NOT Microsoft Store!)
+2. Search for "Minecraft for Windows"
+3. Install the **Trial version** (free)
+4. Make sure it installs to `C:\XboxGames\` (default)
 
-2. **Run as Administrator**
-   ```
-   Right-click on mc_unlocker.exe
-   → Select "Run as administrator"
-   ```
+> ⚠️ **IMPORTANT**: Must be installed from Xbox App, NOT Microsoft Store!
 
-3. **Choose your option**
-   - The program will auto-detect your language
-   - Select option `[1]` to unlock Minecraft
-   - Follow the on-screen instructions
+### Step 2: Run the Unlocker
 
-4. **Done!** 🎉
-   - Open Minecraft from the menu or Microsoft Store
-   - Enjoy!
+Open **PowerShell as Administrator** and paste:
+
+```powershell
+irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | iex
+```
+
+### Step 3: Choose Option [1]
+
+The script will show an interactive menu. Select **[1] Install Mod**.
+
+### Step 4: Play!
+
+Open Minecraft from the Start Menu or use option **[3]** in the script.
 
 ---
 
-## 🛠️ Advanced Installation (Developers)
+## 🔧 How to Open PowerShell as Administrator
 
-### Prerequisites
+### Method 1 (Easiest):
+1. Press **Win + X**
+2. Click **Terminal (Admin)** or **PowerShell (Admin)**
 
-- **Windows 10/11** (64-bit)
-- **Rust toolchain** (if compiling from source)
-- **Git** (for cloning repository)
+### Method 2:
+1. Press **Win** key
+2. Type **PowerShell**
+3. Right-click → **Run as administrator**
 
-### Compile from Source
-
-```bash
-# 1. Install Rust
-winget install Rustlang.Rustup
-
-# 2. Clone repository
-git clone https://github.com/CoelhoFZ/MinecraftBedrockUnlocker.git
-cd MinecraftBedrockUnlocker
-
-# 3. Build release version
-cargo build --release
-
-# 4. Executable location
-# Output: target/release/mc_unlocker.exe
-```
+### Method 3:
+1. Press **Win + R**
+2. Type `powershell`
+3. Press **Ctrl + Shift + Enter** (runs as admin)
 
 ---
 
 ## 🌍 Language Support
 
-The program automatically detects your Windows language:
+The script automatically detects your Windows language:
 
 | Language | Auto-Detect |
 |----------|-------------|
 | 🇺🇸 English | ✅ |
 | 🇧🇷 Português (Brasil) | ✅ |
-| 🇵🇹 Português (Portugal) | ✅ |
 | 🇪🇸 Español | ✅ |
-| 🇫🇷 Français | ✅ |
-| 🇩🇪 Deutsch | ✅ |
-| 🇨🇳 中文 (简体) | ✅ |
-| 🇷🇺 Русский | ✅ |
+
+---
+
+## 🔄 Alternative Installation (if blocked by ISP/DNS)
+
+If the main command doesn't work:
+
+```powershell
+iex (curl.exe -s https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | Out-String)
+```
 
 ---
 
 ## ❓ Troubleshooting
 
-### "Windows protected your PC" warning
+### "Running scripts is disabled on this system"
 
-This is normal for unsigned executables:
-
-1. Click **"More info"**
-2. Click **"Run anyway"**
-
-### Antivirus blocking the file
-
-The tool copies DLL files to the game folder, which triggers false positives:
-
-1. Add exception in your antivirus
-2. Or temporarily disable real-time protection
+Run this first:
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force
+```
+Then try the install command again.
 
 ### "Access Denied" error
 
-You must run as Administrator:
+Make sure you're running PowerShell as **Administrator** (see above).
 
-1. Right-click → "Run as administrator"
-2. Or open Command Prompt as admin first
+### Antivirus blocks the files
 
-### Minecraft Store is blocking
+The script adds Windows Defender exclusions automatically. If you have a third-party antivirus:
 
-If Microsoft Store won't close:
+1. Temporarily disable real-time protection
+2. Run the script
+3. Add exception for `C:\XboxGames\Minecraft for Windows\Content`
+4. Re-enable antivirus
 
-1. Open Task Manager (Ctrl+Shift+Esc)
-2. Find "Microsoft Store" process
-3. End task manually
-4. Try again
+### "Minecraft not found"
 
----
+The game must be installed via **Xbox App** in `C:\XboxGames\`:
 
-## 🔄 Restore Original DLL
-
-To revert changes and restore original DLL:
-
-1. Run `mc_unlocker.exe` as Administrator
-2. Choose option `[2]` - Restore Original DLL
-3. Confirm the operation
-4. Done! Original state restored
+1. Open Xbox App
+2. Search "Minecraft for Windows"
+3. Install the Trial version
+4. Run the script again
 
 ---
 
 ## 📋 System Requirements
 
 - **OS:** Windows 10/11 (64-bit)
-- **RAM:** 100 MB free
-- **Disk:** 10 MB free space
+- **PowerShell:** 5.1+ (pre-installed on Windows 10/11)
+- **Internet:** Required (to download DLL files from GitHub)
 - **Permissions:** Administrator rights
-- **Dependencies:** None (self-contained)
+- **Disk:** ~15 MB free space in Minecraft folder
+
+---
+
+## 🔄 Uninstall / Restore Original
+
+To remove the bypass and restore the game to Trial mode:
+
+1. Run the script again
+2. Choose option **[2] Restore Original**
+3. Done! Game is back to normal
 
 ---
 
 ## ⚠️ Important Notes
 
-1. **Backup recommended**
-   - The program creates automatic backups
-   - Original DLL is embedded in the executable
-
-2. **Educational purposes only**
+1. **Educational purposes only**
    - This tool is for learning and research
-   - May violate Microsoft's Terms of Service
    - Consider purchasing a legitimate license
 
-3. **No warranty**
+2. **No warranty**
    - Use at your own risk
-   - We're not responsible for system instability
-   - Always have a Windows restore point
+
+3. **Xbox App required**
+   - Microsoft Store installations are NOT compatible
 
 ---
 
 ## 🆘 Need Help?
 
+- **Discord:** https://discord.gg/bfFdyJ3gEj
 - **Issues:** [Report a bug](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/issues)
-- **Discussions:** [Ask questions](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/discussions)
-- **YouTube:** [@CoelhoFZ](https://www.youtube.com/@CoelhoFZ)
-
----
-
-## 📝 Command Line Usage
-
-For automation or advanced users:
-
-```bash
-# Install modified DLL (unlock)
-mc_unlocker.exe instalar-mod
-
-# Restore original DLL
-mc_unlocker.exe restaurar-original
-
-# Check current status
-mc_unlocker.exe status
-
-# Open Minecraft
-mc_unlocker.exe abrir-minecraft
-
-# Open Microsoft Store
-mc_unlocker.exe abrir-store
-```
 
 ---
 

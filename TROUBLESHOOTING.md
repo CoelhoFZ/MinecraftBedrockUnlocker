@@ -6,11 +6,11 @@
 
 ### Quick Fix:
 
-1. **Disable your antivirus temporarily**
-2. **Run `mc_unlocker.exe` as Administrator**
-3. **Choose option [1] to reinstall the bypass**
-4. **Wait 5 seconds and check option [5] Status**
-5. **If files are still missing, your antivirus is deleting them immediately**
+1. Open **PowerShell as Administrator**
+2. Run the script: `irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | iex`
+3. Choose option **[5] Check Status** to see which files are missing
+4. If files are missing, choose **[1] Install Mod** to reinstall
+5. If files keep disappearing, your antivirus is deleting them immediately
 
 ---
 
@@ -18,10 +18,12 @@
 
 ### Symptoms:
 - Install says "OK" but game still shows "Unlock Full Version"
-- Running Status [5] shows files are missing
+- Status [5] shows files are missing
 - `OnlineFix64.dll` disappears after installation
 
 ### Solution:
+
+The script tries to add Windows Defender exclusions automatically, but if that fails:
 
 #### For Windows Defender:
 1. Open **Windows Security** (search in Start Menu)
@@ -30,7 +32,7 @@
 4. Scroll down to **Exclusions** and click **Add or remove exclusions**
 5. Click **Add an exclusion** → **Folder**
 6. Navigate to and select: `C:\XboxGames\Minecraft for Windows\Content`
-7. **Restart the unlocker and choose [1] Install Mod again**
+7. **Run the script again and choose [1] Install Mod**
 
 #### For Kaspersky:
 1. Open Kaspersky
@@ -84,27 +86,26 @@ The game is installed from Microsoft Store instead of Xbox App, OR installed in 
 
 ---
 
-## ⚠️ Problem: Windows SmartScreen Warning
-
-When you first run the executable, Windows shows "Windows protected your PC".
+## ⚠️ Problem: "Running scripts is disabled on this system"
 
 ### Solution:
-1. Click **"More info"**
-2. Click **"Run anyway"**
-
-This is normal for unsigned applications.
+Run this command first:
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force
+```
+Then try the install command again.
 
 ---
 
 ## ⚠️ Problem: "Access Denied" Errors
 
 ### Cause:
-Program not running as Administrator.
+PowerShell not running as Administrator.
 
 ### Solution:
-1. Right-click `mc_unlocker.exe`
-2. Select **"Run as administrator"**
-3. Click **Yes** on the UAC prompt
+1. Press **Win + X**
+2. Click **Terminal (Admin)** or **PowerShell (Admin)**
+3. Paste the install command
 
 ---
 
@@ -136,11 +137,11 @@ Use **option [6] System Diagnostics** to check:
 **A causa #1 é o antivírus deletando os arquivos!**
 
 #### Solução Rápida:
-1. Desative o antivírus temporariamente
-2. Execute `mc_unlocker.exe` como Administrador
-3. Escolha opção [1] para reinstalar
-4. Espere 5 segundos e verifique opção [5] Status
-5. Se os arquivos sumiram, adicione exclusão do antivírus
+1. Abra o **PowerShell como Administrador**
+2. Execute: `irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | iex`
+3. Use opção **[5] Verificar Status** para ver quais arquivos estão faltando
+4. Se faltam, use **[1] Instalar Mod** para reinstalar
+5. Se os arquivos continuam sumindo, adicione exclusão do antivírus
 
 ### Como adicionar exclusão no Windows Defender:
 1. Abra **Segurança do Windows**
@@ -154,3 +155,10 @@ Use **option [6] System Diagnostics** to check:
 ### Minecraft não encontrado?
 - Instale pelo **Xbox App** (NÃO Microsoft Store!)
 - O jogo deve estar em `C:\XboxGames\`
+
+### Erro "A execução de scripts está desabilitada neste sistema"
+Execute primeiro:
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force
+```
+Depois tente o comando de instalação novamente.

@@ -3,16 +3,13 @@
 [![GitHub release](https://img.shields.io/github/v/release/CoelhoFZ/MinecraftBedrockUnlocker?style=flat-square&color=brightgreen)](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
 [![License](https://img.shields.io/github/license/CoelhoFZ/MinecraftBedrockUnlocker?style=flat-square&color=blue)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/CoelhoFZ/MinecraftBedrockUnlocker?style=flat-square&color=yellow)](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/stargazers)
-[![Downloads](https://img.shields.io/github/downloads/CoelhoFZ/MinecraftBedrockUnlocker/total?style=flat-square&color=purple)](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
-[![Rust](https://img.shields.io/badge/Rust-1.70+-orange?style=flat-square&logo=rust)](https://www.rust-lang.org/)
 [![Discord](https://img.shields.io/badge/Discord-Entrar-7289da?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/bfFdyJ3gEj)
-[![VirusTotal](https://img.shields.io/badge/VirusTotal-Limpo-success?style=flat-square&logo=virustotal)](https://www.virustotal.com/)
 
 > **🔓 Desbloqueie o Minecraft Bedrock Edition DE GRAÇA no Windows 10/11!**
 
 **Minecraft Bedrock grátis** | **Minecraft Windows 10 grátis** | **Minecraft crack 2024** | **Minecraft desbloqueador** | **Minecraft PC grátis** | **Como baixar Minecraft de graça**
 
-Uma poderosa ferramenta CLI para desbloquear a versão completa do **Minecraft Bedrock Edition (GDK)** usando o método OnlineFix. **Só funciona com instalações do Xbox App** (NÃO Microsoft Store!). Sem precisar comprar - jogue Minecraft de graça!
+Uma ferramenta PowerShell para desbloquear a versão completa do **Minecraft Bedrock Edition (GDK)** usando o método OnlineFix. **Só funciona com instalações do Xbox App** (NÃO Microsoft Store!). Sem precisar comprar - jogue Minecraft de graça!
 
 > ⚠️ **Aviso**: Este projeto é apenas para fins educacionais. Por favor, apoie os desenvolvedores comprando o jogo.
 
@@ -24,9 +21,9 @@ Uma poderosa ferramenta CLI para desbloquear a versão completa do **Minecraft B
 
 ## Instalação
 
-### Opção 1: PowerShell One-Liner (Recomendado)
+### PowerShell One-Liner (Só copiar e colar!)
 
-Abra o PowerShell e execute:
+Abra o **PowerShell como Administrador** e execute:
 
 ```powershell
 irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | iex
@@ -37,115 +34,103 @@ irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/ins
 > iex (curl.exe -s https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | Out-String)
 > ```
 
-### Opção 2: Baixar o Executável
-
-1. Baixe o executável da [página de Releases](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
-2. Execute como **Administrador**
-3. Escolha **[1] Instalar Mod**
-4. Abra o Minecraft pelo Menu Iniciar!
-
-### Opção 3: Compilar do Código Fonte
-
-```bash
-# Clonar repositório
-git clone https://github.com/CoelhoFZ/MinecraftBedrockUnlocker.git
-cd MinecraftBedrockUnlocker
-
-# Compilar
-cargo build --release
-
-# Executar como Administrador
-.\target\release\mc_unlocker.exe
-```
+É só isso! O script vai:
+1. Detectar seu idioma automaticamente
+2. Solicitar privilégios de Administrador se necessário
+3. Encontrar sua instalação do Minecraft
+4. Adicionar exclusões no Windows Defender automaticamente
+5. Baixar e instalar os arquivos de bypass
+6. Verificar a instalação
 
 ## Como Funciona
 
-O programa usa o método OnlineFix que:
-1. Copia arquivos de bypass para a pasta Content do Minecraft
+O script usa o método OnlineFix que:
+1. Baixa os arquivos de bypass direto do GitHub para a pasta Content do Minecraft
 2. O `winmm.dll` intercepta chamadas de API XStore
 3. Retorna status "licenciado" antes da UI carregar
 
 ## Menu Interativo
 
 ```
-╔══════════════════════════════════════════════════════════════════════╗
-║ ██╗   ██╗███╗   ██╗██╗      ██████╗  ██████╗██╗  ██╗███████╗██████╗  ║
-║ ██║   ██║████╗  ██║██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝██╔══██╗ ║
-║ ██║   ██║██╔██╗ ██║██║     ██║   ██║██║     █████╔╝ █████╗  ██████╔╝ ║
-║ ██║   ██║██║╚██╗██║██║     ██║   ██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗ ║
-║ ╚██████╔╝██║ ╚████║███████╗╚██████╔╝╚██████╗██║  ██╗███████╗██║  ██║ ║
-║  ╚═════╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ║
-╚══════════════════════════════════════════════════════════════════════╝
+  ============================================================
+   __  __ _                            __ _   
+  |  \/  (_)_ __   ___  ___ _ __ __ _ / _| |_ 
+  | |\/| | | '_ \ / _ \/ __| '__/ _' | |_| __|
+  | |  | | | | | |  __/ (__| | | (_| |  _| |_ 
+  |_|  |_|_|_| |_|\___|\___|_|  \__,_|_|  \__|
+     ____           _                 _        
+    | __ )  ___  __| |_ __ ___   ___| | __    
+    |  _ \ / _ \/ _' | '__/ _ \ / __| |/ /    
+    | |_) |  __/ (_| | | | (_) | (__|   <     
+    |____/ \___|\__,_|_|  \___/ \___|_|\_\    
+                     Unlocker by CoelhoFZ      
+  ============================================================
 
-[1] Instalar Mod (Desbloquear jogo)
+[1] Instalar Mod (Desbloquear Jogo)
 [2] Restaurar Original (Voltar ao Trial)
 [3] Abrir Minecraft
-[4] Abrir Xbox App
+[4] Instalar Minecraft (Xbox App)
 [5] Verificar Status
+[6] Diagnóstico do Sistema
 [0] Sair
 ```
 
+## Funcionalidades
+
+- 🌍 **Multi-idioma**: Detecta automaticamente EN, PT-BR, ES
+- 🛡️ **Tratamento de antivírus**: Adiciona exclusões no Windows Defender automaticamente
+- 🔄 **Tentativa automática**: Se o antivírus deletar os arquivos, tenta novamente
+- 📊 **Diagnóstico**: Verificação completa de saúde do sistema
+- 🔧 **Auto-reparo**: Corrige arquivos faltando ao abrir o Minecraft
+- ✅ **Verificação de integridade**: Checagem SHA256 após download
+- 📦 **Sem EXE**: Roda 100% no PowerShell - sem downloads bloqueados pelo antivírus!
+
 ## Solução de Problemas
-
-### Aviso do Windows SmartScreen
-
-Ao executar o programa pela primeira vez, o Windows pode mostrar um aviso "O Windows protegeu o computador". Isso é normal para aplicativos não assinados.
-
-**Para continuar:**
-1. Clique em **"Mais informações"**
-2. Clique em **"Executar assim mesmo"**
 
 ### Problemas Comuns
 
 | Problema | Solução |
 |----------|---------|
-| Antivírus bloqueia | Adicione exceção ou desative temporariamente |
+| Antivírus bloqueia arquivos | O script adiciona exclusões automaticamente. Se ainda falhar, desative o AV temporariamente |
 | "Minecraft não encontrado" | Instale via Xbox App em C:\XboxGames |
-| Jogo crasha | Verifique se o Minecraft Trial está instalado corretamente |
+| Jogo mostra "Desbloquear versão completa" | Antivírus deletou os arquivos - execute o script novamente |
+| Jogo crasha | Execute Diagnóstico [6] e verifique Gaming Services |
+
+### Exclusão Manual de Antivírus
+
+Se o script não conseguir adicionar exclusões automaticamente:
+
+1. Abra **Segurança do Windows**
+2. Vá em **Proteção contra vírus e ameaças** → **Gerenciar configurações**
+3. Role até **Exclusões** → **Adicionar ou remover exclusões**
+4. Adicione a pasta: `C:\XboxGames\Minecraft for Windows\Content`
+
+> Veja [TROUBLESHOOTING.md](TROUBLESHOOTING.md) para ajuda detalhada.
 
 ## ⚠️ Falsos Positivos de Antivírus
 
-Alguns antivírus podem marcar esta ferramenta como maliciosa. **Isso é um falso positivo.**
-
-### Por que isso acontece?
-
-| Tipo de Detecção | Explicação |
-|------------------|------------|
-| `Generic.Trojan` | Detecção heurística - não é uma assinatura de vírus real |
-| `AI.DetectMalware` | Correspondência genérica de padrões por IA |
-| `BehavesLike.Win64` | Comportamento similar a ferramentas de hacking (porque É uma ferramenta de bypass!) |
-| `HackTool` | Corretamente identificado como "ferramenta de hack" - isso é esperado! |
+Os arquivos DLL usados podem disparar alertas de antivírus. **Isso é comportamento esperado** - qualquer ferramenta de bypass de licença dispara detecções heurísticas.
 
 ### O que você deve saber:
 
 1. **Código Aberto** - Você pode revisar 100% do código neste repositório
 2. **Método OnlineFix** - As DLLs usadas são da confiável equipe OnlineFix
-3. **Comportamento Esperado** - Qualquer ferramenta de injeção de DLL / bypass de licença vai acionar o antivírus
+3. **Sem EXE** - O script PowerShell baixa DLLs diretamente do GitHub
 4. **Sem Malware** - Esta ferramenta NÃO rouba dados, minera criptomoedas ou danifica seu PC
-
-### Ações Recomendadas:
-
-- ✅ Adicione uma exceção para `mc_unlocker.exe` no seu antivírus
-- ✅ Desative temporariamente a proteção em tempo real durante a instalação
-- ✅ Use o Windows Defender ao invés de antivírus de terceiros agressivos
-- ❌ NÃO baixe de fontes não oficiais
-
-> 💡 **Dica Pro**: Se você está paranoico, compile você mesmo a partir do código fonte!
 
 ## Compatibilidade
 
-**Plataformas Suportadas:**
-- ✅ Minecraft Bedrock Edition 1.21.120+ (GDK) - Última versão 2024/2025
+**Suportado:**
+- ✅ Minecraft Bedrock Edition 1.21.120+ (GDK) - 2024/2025
 - ✅ Windows 10 (64-bit)
 - ✅ Windows 11 (64-bit)
 - ✅ **Instalações via Xbox App SOMENTE**
 
 **Não Suportado:**
-- ❌ **Instalações via Microsoft Store** (o jogo precisa estar em C:\XboxGames)
+- ❌ Instalações via Microsoft Store (o jogo precisa estar em C:\XboxGames)
 - ❌ Xbox Console (Xbox One / Series X|S)
 - ❌ Mobile (Android / iOS)
-- ❌ PlayStation
-- ❌ Nintendo Switch
+- ❌ PlayStation / Nintendo Switch
 - ❌ macOS / Linux
 
 ## Créditos
@@ -160,4 +145,3 @@ Entre no nosso Discord: https://discord.gg/bfFdyJ3gEj
 ## Licença
 
 GPLv3 License - Veja [LICENSE](LICENSE)
-
