@@ -11,13 +11,6 @@ const ONLINEFIX64_DLL: &[u8] = include_bytes!("../dlls/OnlineFix/OnlineFix64.dll
 const DLLLIST_TXT: &[u8] = include_bytes!("../dlls/OnlineFix/dlllist.txt");
 const ONLINEFIX_INI: &[u8] = include_bytes!("../dlls/OnlineFix/OnlineFix.ini");
 
-/// Result of installation verification
-#[derive(Debug, PartialEq)]
-enum InstallVerification {
-    Success,
-    FilesMissing(Vec<String>),
-}
-
 pub struct DllManager {
     minecraft_content_path: PathBuf,
 }
@@ -251,6 +244,47 @@ impl DllManager {
         println!("                      {}", self.minecraft_content_path.display().to_string().yellow());
     }
 
+    /// Add the Minecraft Content folder to Windows Defender exclusion list
+    /// This prevents the antivirus from deleting OnlineFix64.dll
+    fn add_defender_exclusion(&self) {
+        use std::process::Command;
+        
+        let path = self.minecraft_content_path.display().to_string();
+        
+        println!("                    {} {}", Translations::info().cyan(), Translations::adding_defender_exclusion());
+        
+        // Use PowerShell to add exclusion
+        let result = Command::new("powershell")
+            .args([
+                "-NoProfile",
+                "-ExecutionPolicy", "Bypass",
+                "-Command",
+                &format!(
+                    "Add-MpPreference -ExclusionPath '{}' -ErrorAction SilentlyContinue",
+                    path
+                ),
+            ])
+            .output();
+
+        match result {
+            Ok(output) => {
+                if output.status.success() {
+                    println!("                    {} {}", Translations::ok().green(), Translations::defender_exclusion_added());
+                } else {
+                    // Silently continue - the user might not have Windows Defender
+                    // or might be running a third-party antivirus
+                    println!("                    {} {}", Translations::warning().yellow(), Translations::defender_exclusion_failed());
+                }
+            }
+            Err(_) => {
+                // PowerShell not available or other error - continue anyway
+                println!("                    {} {}", Translations::warning().yellow(), Translations::defender_exclusion_failed());
+            }
+        }
+        
+        println!();
+    }
+
     pub fn restore_original(&self) -> Result<()> {
         println!("                    {} {}", Translations::info().cyan(), Translations::removing_bypass());
         println!();
@@ -342,162 +376,4 @@ fn calculate_file_hash(path: &std::path::Path) -> Result<String> {
 /// Get all available drive letters on the system using Windows API
 fn get_available_drives() -> Vec<char> {
     crate::utils::get_available_drives()
-}
-
-// ============================================================================
-// Localized message functions for install verification
-// ============================================================================
-
-fn verifying_installation_msg() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "Verifying installation...",
-        Language::PortugueseBR | Language::PortuguesePT => "Verificando instalação...",
-        Language::Spanish => "Verificando instalación...",
-        Language::French => "Vérification de l'installation...",
-        Language::German => "Installation wird überprüft...",
-        Language::ChineseSimplified => "正在验证安装...",
-        Language::Russian => "Проверка установки...",
-    }
-}
-
-fn files_deleted_by_av_msg() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "⚠️  FILES WERE DELETED BY ANTIVIRUS!",
-        Language::PortugueseBR | Language::PortuguesePT => "⚠️  ARQUIVOS FORAM DELETADOS PELO ANTIVÍRUS!",
-        Language::Spanish => "⚠️  ¡ARCHIVOS FUERON ELIMINADOS POR EL ANTIVIRUS!",
-        Language::French => "⚠️  FICHIERS SUPPRIMÉS PAR L'ANTIVIRUS!",
-        Language::German => "⚠️  DATEIEN WURDEN VOM ANTIVIRUS GELÖSCHT!",
-        Language::ChineseSimplified => "⚠️  文件被杀毒软件删除！",
-        Language::Russian => "⚠️  ФАЙЛЫ БЫЛИ УДАЛЕНЫ АНТИВИРУСОМ!",
-    }
-}
-
-fn av_exclusion_needed_msg() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "You need to add an antivirus exclusion manually",
-        Language::PortugueseBR | Language::PortuguesePT => "Você precisa adicionar uma exclusão de antivírus manualmente",
-        Language::Spanish => "Necesitas agregar una exclusión de antivirus manualmente",
-        Language::French => "Vous devez ajouter une exclusion d'antivirus manuellement",
-        Language::German => "Sie müssen manuell eine Antivirus-Ausnahme hinzufügen",
-        Language::ChineseSimplified => "您需要手动添加杀毒软件排除",
-        Language::Russian => "Вам нужно вручную добавить исключение антивируса",
-    }
-}
-
-fn retrying_installation_msg() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "Retrying installation...",
-        Language::PortugueseBR | Language::PortuguesePT => "Tentando novamente...",
-        Language::Spanish => "Reintentando instalación...",
-        Language::French => "Nouvelle tentative d'installation...",
-        Language::German => "Installationsversuch wird wiederholt...",
-        Language::ChineseSimplified => "重试安装...",
-        Language::Russian => "Повторная попытка установки...",
-    }
-}
-
-fn retry_success_msg() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "Retry successful! Bypass installed.",
-        Language::PortugueseBR | Language::PortuguesePT => "Tentativa bem-sucedida! Bypass instalado.",
-        Language::Spanish => "¡Reintento exitoso! Bypass instalado.",
-        Language::French => "Nouvelle tentative réussie! Bypass installé.",
-        Language::German => "Wiederholung erfolgreich! Bypass installiert.",
-        Language::ChineseSimplified => "重试成功！绕过已安装。",
-        Language::Russian => "Повторная попытка успешна! Обход установлен.",
-    }
-}
-
-fn manual_av_disable_msg() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "PLEASE DISABLE YOUR ANTIVIRUS TEMPORARILY OR ADD EXCLUSION:",
-        Language::PortugueseBR | Language::PortuguesePT => "POR FAVOR DESATIVE SEU ANTIVÍRUS TEMPORARIAMENTE OU ADICIONE EXCLUSÃO:",
-        Language::Spanish => "POR FAVOR DESACTIVE SU ANTIVIRUS TEMPORALMENTE O AGREGUE EXCLUSIÓN:",
-        Language::French => "VEUILLEZ DÉSACTIVER VOTRE ANTIVIRUS TEMPORAIREMENT OU AJOUTER UNE EXCLUSION:",
-        Language::German => "BITTE DEAKTIVIEREN SIE VORÜBERGEHEND IHREN ANTIVIRUS ODER FÜGEN SIE EINE AUSNAHME HINZU:",
-        Language::ChineseSimplified => "请暂时禁用您的杀毒软件或添加排除：",
-        Language::Russian => "ПОЖАЛУЙСТА, ВРЕМЕННО ОТКЛЮЧИТЕ АНТИВИРУС ИЛИ ДОБАВЬТЕ ИСКЛЮЧЕНИЕ:",
-    }
-}
-
-fn adding_av_exclusions_msg() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "Adding antivirus exclusions...",
-        Language::PortugueseBR | Language::PortuguesePT => "Adicionando exclusões de antivírus...",
-        Language::Spanish => "Agregando exclusiones de antivirus...",
-        Language::French => "Ajout des exclusions d'antivirus...",
-        Language::German => "Antivirus-Ausnahmen werden hinzugefügt...",
-        Language::ChineseSimplified => "正在添加杀毒软件排除...",
-        Language::Russian => "Добавление исключений антивируса...",
-    }
-}
-
-fn exclusion_added_msg() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "Exclusion added",
-        Language::PortugueseBR | Language::PortuguesePT => "Exclusão adicionada",
-        Language::Spanish => "Exclusión agregada",
-        Language::French => "Exclusion ajoutée",
-        Language::German => "Ausnahme hinzugefügt",
-        Language::ChineseSimplified => "排除已添加",
-        Language::Russian => "Исключение добавлено",
-    }
-}
-
-fn manual_exclusion_needed_msg() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "Manual exclusion needed",
-        Language::PortugueseBR | Language::PortuguesePT => "Exclusão manual necessária",
-        Language::Spanish => "Exclusión manual necesaria",
-        Language::French => "Exclusion manuelle nécessaire",
-        Language::German => "Manuelle Ausnahme erforderlich",
-        Language::ChineseSimplified => "需要手动添加排除",
-        Language::Russian => "Требуется ручное исключение",
-    }
-}
-
-fn av_instructions_header_msg() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "How to add antivirus exclusion:",
-        Language::PortugueseBR | Language::PortuguesePT => "Como adicionar exclusão de antivírus:",
-        Language::Spanish => "Cómo agregar exclusión de antivirus:",
-        Language::French => "Comment ajouter une exclusion d'antivirus:",
-        Language::German => "So fügen Sie eine Antivirus-Ausnahme hinzu:",
-        Language::ChineseSimplified => "如何添加杀毒软件排除：",
-        Language::Russian => "Как добавить исключение антивируса:",
-    }
-}
-
-fn folder_to_exclude_msg() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "Add this folder to exclusions:",
-        Language::PortugueseBR | Language::PortuguesePT => "Adicione esta pasta às exclusões:",
-        Language::Spanish => "Agregue esta carpeta a las exclusiones:",
-        Language::French => "Ajoutez ce dossier aux exclusions:",
-        Language::German => "Fügen Sie diesen Ordner zu den Ausnahmen hinzu:",
-        Language::ChineseSimplified => "将此文件夹添加到排除列表：",
-        Language::Russian => "Добавьте эту папку в исключения:",
-    }
 }

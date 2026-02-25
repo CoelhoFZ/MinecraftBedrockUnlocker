@@ -98,73 +98,6 @@ impl HealthCheck {
         // If winmm exists but OnlineFix64 doesn't, antivirus probably deleted it
         winmm.exists() && !onlinefix.exists()
     }
-
-    /// Auto-repair missing files (for when antivirus deletes them)
-    pub fn auto_repair(&self) -> bool {
-        let status = self.check();
-        
-        match status {
-            HealthStatus::Missing(files) => {
-                println!("                    {} {}", 
-                    "[AUTO-REPAIR]".yellow().bold(), 
-                    auto_repair_attempting());
-                
-                let mut all_repaired = true;
-                
-                for file in &files {
-                    let data = match file.as_str() {
-                        "winmm.dll" => WINMM_DLL,
-                        "OnlineFix64.dll" => ONLINEFIX64_DLL,
-                        "dlllist.txt" => DLLLIST_TXT,
-                        "OnlineFix.ini" => ONLINEFIX_INI,
-                        _ => continue,
-                    };
-                    
-                    let target_path = self.minecraft_path.join(file);
-                    match fs::write(&target_path, data) {
-                        Ok(_) => {
-                            println!("                      {} {} {}", 
-                                Translations::ok().green(), 
-                                file, 
-                                auto_repair_restored());
-                        }
-                        Err(_) => {
-                            println!("                      {} {} {}", 
-                                Translations::error().red(), 
-                                file, 
-                                auto_repair_failed());
-                            all_repaired = false;
-                        }
-                    }
-                }
-                
-                all_repaired
-            }
-            HealthStatus::Healthy => true,
-            _ => false,
-        }
-    }
-
-    /// Perform a quick health check and auto-repair before launching Minecraft
-    pub fn ensure_healthy(&self) -> bool {
-        let status = self.check();
-        
-        match status {
-            HealthStatus::Healthy => true,
-            HealthStatus::Missing(_) => {
-                // Try auto-repair
-                if self.auto_repair() {
-                    // Wait a moment for files to be written
-                    std::thread::sleep(std::time::Duration::from_millis(500));
-                    // Verify again
-                    matches!(self.check(), HealthStatus::Healthy)
-                } else {
-                    false
-                }
-            }
-            _ => false,
-        }
-    }
 }
 
 // Localized strings for health check
@@ -249,47 +182,5 @@ pub fn health_antivirus_warning() -> &'static str {
         Language::German => "⚠️  Antivirus hat möglicherweise OnlineFix64.dll gelöscht!",
         Language::ChineseSimplified => "⚠️  杀毒软件可能删除了OnlineFix64.dll！",
         Language::Russian => "⚠️  Антивирус мог удалить OnlineFix64.dll!",
-    }
-}
-
-fn auto_repair_attempting() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "Attempting to repair missing files...",
-        Language::PortugueseBR | Language::PortuguesePT => "Tentando reparar arquivos faltando...",
-        Language::Spanish => "Intentando reparar archivos faltantes...",
-        Language::French => "Tentative de réparation des fichiers manquants...",
-        Language::German => "Versuche fehlende Dateien zu reparieren...",
-        Language::ChineseSimplified => "正在尝试修复缺失的文件...",
-        Language::Russian => "Попытка восстановить недостающие файлы...",
-    }
-}
-
-fn auto_repair_restored() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "restored",
-        Language::PortugueseBR | Language::PortuguesePT => "restaurado",
-        Language::Spanish => "restaurado",
-        Language::French => "restauré",
-        Language::German => "wiederhergestellt",
-        Language::ChineseSimplified => "已恢复",
-        Language::Russian => "восстановлен",
-    }
-}
-
-fn auto_repair_failed() -> &'static str {
-    use crate::i18n::get_language;
-    use crate::i18n::Language;
-    match get_language() {
-        Language::English => "failed to restore (antivirus blocking?)",
-        Language::PortugueseBR | Language::PortuguesePT => "falha ao restaurar (antivírus bloqueando?)",
-        Language::Spanish => "error al restaurar (¿antivirus bloqueando?)",
-        Language::French => "échec de restauration (antivirus bloquant?)",
-        Language::German => "Wiederherstellung fehlgeschlagen (Antivirus blockiert?)",
-        Language::ChineseSimplified => "恢复失败（杀毒软件阻止？）",
-        Language::Russian => "не удалось восстановить (антивирус блокирует?)",
     }
 }
