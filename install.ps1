@@ -683,6 +683,47 @@ function Verify-Installation {
     }
 }
 
+# Legacy bypass file names from older versions (OpenFix, FakeGDK, etc.)
+$Script:LegacyBypassFiles = @(
+    "OpenFix.ini", "OpenFix64.dll", "OpenFix.log",
+    "winmm_orig.dll", "FakeGDK.log", "FullBypass.log",
+    "DirectHook.log", "Monitor.log", "VPMon.log", "XStore.log"
+)
+
+function Test-LegacyBypass {
+    param([string]$ContentPath)
+    
+    $found = @()
+    foreach ($file in $Script:LegacyBypassFiles) {
+        $filePath = Join-Path $ContentPath $file
+        if (Test-Path $filePath) {
+            $found += $file
+        }
+    }
+    return $found
+}
+
+function Remove-LegacyBypass {
+    param([string]$ContentPath)
+    
+    $legacy = Test-LegacyBypass -ContentPath $ContentPath
+    if ($legacy.Count -gt 0) {
+        Write-Warn "Legacy bypass detected! Cleaning $($legacy.Count) old files..."
+        foreach ($file in $legacy) {
+            $filePath = Join-Path $ContentPath $file
+            try {
+                Remove-Item -Path $filePath -Force
+                Write-OK "Removed legacy: $file"
+            } catch {
+                Write-Warn "Failed to remove: $file"
+            }
+        }
+        Write-C ""
+        return $true
+    }
+    return $false
+}
+
 function Test-GamingServices {
     try {
         $service = Get-Service -Name GamingServices -ErrorAction SilentlyContinue
@@ -731,6 +772,9 @@ function Install-Bypass {
     if (Test-MinecraftRunning) {
         Stop-Minecraft
     }
+    
+    # Detect and remove legacy bypass (OpenFix, FakeGDK, etc.)
+    Remove-LegacyBypass -ContentPath $mcPath
     
     # Add antivirus exclusions FIRST
     if (Test-DefenderActive) {
@@ -954,6 +998,7 @@ function Show-Status {
     Write-C "  $(T 'status_bypass'):  " -NoNewline
     if ($mcPath) {
         $verification = Verify-Installation -ContentPath $mcPath
+        $legacy = Test-LegacyBypass -ContentPath $mcPath
         if ($verification.AllPresent) {
             Write-C (T 'status_installed') Green
         } elseif ($verification.Missing.Count -lt 4) {
@@ -963,6 +1008,15 @@ function Show-Status {
             }
         } else {
             Write-C (T 'status_not_installed') Red
+        }
+        # Show legacy bypass warning
+        if ($legacy.Count -gt 0) {
+            Write-C "" 
+            Write-C "  [!] Legacy bypass detected:" Yellow
+            foreach ($f in $legacy) {
+                Write-C "    - $f" Yellow
+            }
+            Write-C "    -> Use [2] Restore to clean, then [1] Install" Yellow
         }
     } else {
         Write-C "N/A" DarkGray
@@ -1094,6 +1148,23 @@ function Show-Diagnostics {
         Passed = $bypassOk
         Message = $bypassMsg
         Hint = if (-not $bypassOk) { "Antivirus likely deleted files! Add exclusion and use [1]." } else { $null }
+    }
+    
+    # 8. Legacy Bypass Detection
+    $legacyOk = $true
+    $legacyMsg = "None found"
+    if ($mcPath) {
+        $legacy = Test-LegacyBypass -ContentPath $mcPath
+        if ($legacy.Count -gt 0) {
+            $legacyOk = $false
+            $legacyMsg = "FOUND $($legacy.Count) old files: $($legacy -join ', ')"
+        }
+    }
+    $checks += @{
+        Name = "Legacy Bypass"
+        Passed = $legacyOk
+        Message = $legacyMsg
+        Hint = if (-not $legacyOk) { "Use [2] Restore to remove old bypass, then [1] Install for new version" } else { $null }
     }
     
     # Print results
