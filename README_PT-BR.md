@@ -21,7 +21,7 @@
 
 > **🔓 Desbloqueie o Minecraft Bedrock Edition DE GRAÇA no Windows 10/11!**
 
-**Minecraft Bedrock grátis** | **Minecraft Windows 10 grátis** | **Minecraft crack 2024** | **Minecraft desbloqueador** | **Minecraft PC grátis** | **Como baixar Minecraft de graça**
+**Minecraft Bedrock grátis** | **Minecraft Windows 10 grátis** | **Minecraft crack 2026** | **Minecraft desbloqueador** | **Minecraft PC grátis** | **Como baixar Minecraft de graça**
 
 Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Edition (GDK)**. **Só funciona com instalações do Xbox App** (NÃO Microsoft Store!).
 

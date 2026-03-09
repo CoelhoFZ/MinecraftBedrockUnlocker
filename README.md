@@ -21,7 +21,7 @@
 
 > **🔓 Unlock Minecraft Bedrock Edition for FREE on Windows 10/11!**
 
-**Minecraft Bedrock free download** | **Minecraft Windows 10 free** | **Minecraft crack 2024** | **Minecraft unlocker** | **Free Minecraft PC**
+**Minecraft Bedrock free download** | **Minecraft Windows 10 free** | **Minecraft crack 2026** | **Minecraft unlocker** | **Free Minecraft PC**
 
 A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only works with Xbox App installations** (NOT Microsoft Store!).
 
