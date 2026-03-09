@@ -45,3 +45,7 @@
 # GitHub Linguist - Force repository language detection
 *.rs linguist-language=Rust
 *.toml linguist-language=TOML
+*.ps1 linguist-language=PowerShell
+
+# Exclude history files from GitHub language detection
+.history/** linguist-excluded=true

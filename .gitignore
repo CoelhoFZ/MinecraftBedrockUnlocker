@@ -34,6 +34,7 @@
 # Windows
 Thumbs.db
 desktop.ini
+Desktop.ini
 *.tmp
 *.temp
 
@@ -72,5 +73,5 @@ venv/
 /build/
 /dist/
 
-# Documentation
+# ===== VS Code PowerShell Extension History =====
 .history/
