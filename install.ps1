@@ -1135,6 +1135,21 @@ function Add-AllAVExclusions {
     $avList = Detect-Antivirus
     $anyAdded = $false
     
+    # Show detected antivirus products
+    if ($avList.Count -gt 0) {
+        foreach ($av in $avList) {
+            $statusText = if ($av.Active) { "Ativo" } else { "Inativo" }
+            if ($Script:Lang -ne "pt") { $statusText = if ($av.Active) { "Active" } else { "Inactive" } }
+            Write-Info "  Antivirus: $($av.Name) ($statusText)"
+        }
+    } else {
+        if ($Script:Lang -eq "pt") {
+            Write-Info "  Nenhum antivirus detectado."
+        } else {
+            Write-Info "  No antivirus detected."
+        }
+    }
+    
     foreach ($av in $avList) {
         switch ($av.Type) {
             "defender" {
@@ -1146,14 +1161,25 @@ function Add-AllAVExclusions {
                     }
                     Add-MpPreference -ExclusionExtension ".dll" -ErrorAction SilentlyContinue
                     Add-MpPreference -ExclusionProcess "Minecraft.Windows.exe" -ErrorAction SilentlyContinue
-                    Write-OK (T 'exclusion_added')
+                    Write-OK "Windows Defender: $(T 'exclusion_added')"
                     $anyAdded = $true
                 } catch {
-                    Write-Info (T 'exclusion_failed')
+                    if ($Script:Lang -eq "pt") {
+                        Write-Warn "Windows Defender: Nao foi possivel adicionar exclusao automaticamente."
+                        Write-Warn "  Adicione manualmente: Seguranca do Windows > Protecao contra virus > Exclusoes > Pasta: $Path"
+                    } else {
+                        Write-Warn "Windows Defender: Could not add exclusion automatically."
+                        Write-Warn "  Add manually: Windows Security > Virus protection > Exclusions > Folder: $Path"
+                    }
                 }
             }
             "bitdefender_free" {
-                # BD Free has no CLI exclusion tool - Technique 5 handles it automatically, nothing to warn about
+                # BD Free has no CLI exclusion tool - handled later in the flow
+                if ($Script:Lang -eq "pt") {
+                    Write-Info "  Bitdefender Free: exclusao sera configurada apos a instalacao."
+                } else {
+                    Write-Info "  Bitdefender Free: exclusion will be configured after installation."
+                }
             }
             "bitdefender" {
                 $bdCmd = $null
@@ -1168,26 +1194,35 @@ function Add-AllAVExclusions {
                 if ($bdCmd) {
                     try {
                         & $bdCmd /c SetExclusion path="$Path" -ErrorAction SilentlyContinue
-                        Write-OK (T 'exclusion_added')
+                        Write-OK "Bitdefender: $(T 'exclusion_added')"
                         $anyAdded = $true
                     } catch {
-                        Write-Warn "$(T 'exclusion_failed') - manual setup needed"
+                        if ($Script:Lang -eq "pt") {
+                            Write-Warn "Bitdefender: Nao foi possivel adicionar exclusao automaticamente."
+                        } else {
+                            Write-Warn "Bitdefender: Could not add exclusion automatically."
+                        }
                     }
                 } else {
-                    Write-Warn "$(T 'exclusion_failed') - manual setup needed"
+                    if ($Script:Lang -eq "pt") {
+                        Write-Warn "Bitdefender: Nao foi possivel adicionar exclusao automaticamente."
+                    } else {
+                        Write-Warn "Bitdefender: Could not add exclusion automatically."
+                    }
                 }
             }
             default {
                 if ($av.Active) {
-                    Write-Warn "$(T 'exclusion_failed') - manual setup needed"
+                    if ($Script:Lang -eq "pt") {
+                        Write-Warn "$($av.Name): Nao foi possivel adicionar exclusao automaticamente."
+                        Write-Warn "  Adicione esta pasta nas exclusoes do seu antivirus: $Path"
+                    } else {
+                        Write-Warn "$($av.Name): Could not add exclusion automatically."
+                        Write-Warn "  Add this folder to your antivirus exclusions: $Path"
+                    }
                 }
             }
         }
-    }
-    
-    $hasBDFreeActive = $avList | Where-Object { $_.Type -eq 'bitdefender_free' -and $_.Active }
-    if (-not $anyAdded -and $avList.Count -gt 0 -and -not $hasBDFreeActive) {
-        Write-Info (T 'exclusion_failed')
     }
     
     return $avList
@@ -2023,7 +2058,14 @@ function Download-OnlineFixFile {
     }
     
     if (-not $bytes -or $bytes.Length -eq 0) {
-        Write-Err "$(T 'download_fail'): $FileName"
+        Write-Err "$(T 'download_fail'): $diskName"
+        if ($Script:Lang -eq "pt") {
+            Write-Warn "  URL: $url"
+            Write-Warn "  Verifique sua conexao ou se o arquivo existe no release do GitHub."
+        } else {
+            Write-Warn "  URL: $url"
+            Write-Warn "  Check your connection or if the file exists in the GitHub release."
+        }
         return "download_failed"
     }
     
@@ -3166,6 +3208,7 @@ function Install-Bypass {
     # ============================================================
     $avBlockedFiles = @()
     $failedFiles = @()
+    $downloadSuccessCount = 0
     
     foreach ($file in $Script:OnlineFixFiles) {
         $result = Download-OnlineFixFile -FileName $file.Name -DestPath $mcPath -ExpectedHash $file.Hash
@@ -3173,6 +3216,8 @@ function Install-Bypass {
             $avBlockedFiles += $file.Name
         } elseif ($result -eq "download_failed") {
             $failedFiles += $file.Name
+        } elseif ($result -eq $true) {
+            $downloadSuccessCount++
         }
     }
     
@@ -3189,6 +3234,63 @@ function Install-Bypass {
         Write-OK (T 'bd_resumed')
     }
 
+    # ============================================================
+    # EARLY EXIT: If ALL downloads failed, don't pretend it worked
+    # ============================================================
+    if ($failedFiles.Count -eq $Script:OnlineFixFiles.Count) {
+        Write-C ""
+        Write-C "  ============================================================" Red
+        if ($Script:Lang -eq "pt") {
+            Write-Err "TODOS OS DOWNLOADS FALHARAM!"
+            Write-C ""
+            Write-C "  Nenhum arquivo foi baixado com sucesso." Yellow
+            Write-C "  Possiveis causas:" Yellow
+            Write-C "  1. Sem conexao com a internet" White
+            Write-C "  2. GitHub esta bloqueado pela sua rede/ISP" White
+            Write-C "  3. Os arquivos nao existem no release do GitHub" White
+            Write-C ""
+            Write-C "  Tente o metodo alternativo:" Cyan
+            Write-C "  iex (curl.exe -s $Script:BaseUrl/install.ps1 | Out-String)" White
+            Write-C ""
+            Write-C "  Ou baixe o EXE (funciona offline):" Cyan
+            Write-C "  $Script:BaseUrl/MinecraftBedrockUnlocker.exe" White
+        } else {
+            Write-Err "ALL DOWNLOADS FAILED!"
+            Write-C ""
+            Write-C "  No files were downloaded successfully." Yellow
+            Write-C "  Possible causes:" Yellow
+            Write-C "  1. No internet connection" White
+            Write-C "  2. GitHub is blocked by your network/ISP" White
+            Write-C "  3. Files don't exist in the GitHub release" White
+            Write-C ""
+            Write-C "  Try the alternative method:" Cyan
+            Write-C "  iex (curl.exe -s $Script:BaseUrl/install.ps1 | Out-String)" White
+            Write-C ""
+            Write-C "  Or download the EXE (works offline):" Cyan
+            Write-C "  $Script:BaseUrl/MinecraftBedrockUnlocker.exe" White
+        }
+        Write-C "  ============================================================" Red
+        Write-C ""
+        Write-Info "Discord: $Script:DiscordUrl"
+        Wait-Enter
+        return
+    }
+
+    # If some downloads failed but not all, show partial warning
+    if ($failedFiles.Count -gt 0) {
+        Write-C ""
+        if ($Script:Lang -eq "pt") {
+            Write-Warn "$($failedFiles.Count) de $($Script:OnlineFixFiles.Count) downloads falharam:"
+        } else {
+            Write-Warn "$($failedFiles.Count) of $($Script:OnlineFixFiles.Count) downloads failed:"
+        }
+        foreach ($f in $failedFiles) {
+            $dn = Get-DiskName -SourceName $f
+            Write-Warn "    - $dn"
+        }
+        Write-C ""
+    }
+
     # Protect files immediately after writing (attributes to resist AV deletion)
     Protect-InstalledFiles -ContentPath $mcPath
     
@@ -3198,9 +3300,50 @@ function Install-Bypass {
     $verification = Verify-Installation -ContentPath $mcPath
     
     # ============================================================
-    # SUCCESS: All files present
+    # SUCCESS: All files present (downloaded OR already existed)
     # ============================================================
     if ($verification.AllPresent) {
+        # If downloads failed but old files exist, warn user
+        if ($failedFiles.Count -gt 0) {
+            Write-C ""
+            if ($Script:Lang -eq "pt") {
+                Write-Warn "Alguns downloads falharam, mas os arquivos ja existem de uma instalacao anterior."
+                Write-Warn "Verificando integridade dos arquivos existentes..."
+            } else {
+                Write-Warn "Some downloads failed, but files already exist from a previous installation."
+                Write-Warn "Verifying integrity of existing files..."
+            }
+            # Verify hashes of existing files
+            $hashMismatch = @()
+            foreach ($file in $Script:OnlineFixFiles) {
+                $diskName = Get-DiskName -SourceName $file.Name
+                $filePath = Join-Path $mcPath $diskName
+                if (Test-Path $filePath) {
+                    try {
+                        $fileBytes = [System.IO.File]::ReadAllBytes($filePath)
+                        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+                        $hashBytes = $sha256.ComputeHash($fileBytes)
+                        $actualHash = -join ($hashBytes | ForEach-Object { $_.ToString("x2") })
+                        # For dlllist.txt, skip hash check (content is patched with safe name)
+                        if ($file.Name -ne "dlllist.txt" -and $actualHash -ne $file.Hash) {
+                            $hashMismatch += $diskName
+                        }
+                    } catch { }
+                }
+            }
+            if ($hashMismatch.Count -gt 0) {
+                Write-C ""
+                if ($Script:Lang -eq "pt") {
+                    Write-Warn "Arquivos com hash diferente (podem estar desatualizados):"
+                } else {
+                    Write-Warn "Files with different hash (may be outdated):"
+                }
+                foreach ($f in $hashMismatch) { Write-Warn "    - $f" }
+            } else {
+                Write-OK (T 'hash_ok')
+            }
+        }
+        
         Write-C ""
         Write-OK (T 'files_ok')
         

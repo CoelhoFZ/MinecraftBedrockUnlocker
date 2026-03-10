@@ -109,11 +109,37 @@ The tool:
 
 ## Troubleshooting
 
+### Antivirus Setup (Important)
+
+Add this folder to exclusions:
+
+`C:\XboxGames\Minecraft for Windows\Content`
+
+#### Bitdefender Free
+
+1. Open Bitdefender.
+2. Go to `Protection`.
+3. Open `Antivirus`.
+4. Click `Settings`.
+5. Open `Manage Exceptions`.
+6. Click `+ Add an Exception`.
+7. Paste `C:\XboxGames\Minecraft for Windows\Content`.
+8. Enable all scan options (On-access, On-demand, ATD/ATC).
+9. Click `Save`.
+
+#### Windows Defender
+
+1. Open `Windows Security`.
+2. Go to `Virus & threat protection`.
+3. Click `Manage settings`.
+4. Scroll to `Exclusions` and click `Add or remove exclusions`.
+5. Click `Add an exclusion` -> `Folder`.
+6. Select `C:\XboxGames\Minecraft for Windows\Content`.
+
 ### Common Issues
 
 | Issue | Solution |
 |-------|----------|
-| Antivirus blocks files | The tool adds exclusions automatically. For Bitdefender Free, a guided step-by-step process is shown |
 | "Minecraft not found" | Install via Xbox App to `C:\XboxGames` |
 | Game shows "Unlock Full Version" | Files were removed — run the tool again |
 | Game crashes | Run Diagnostics [6] and check Gaming Services |
@@ -152,99 +178,3 @@ Join our Discord: https://discord.gg/bfFdyJ3gEj
 ## License
 
 GPLv3 - See [LICENSE](LICENSE)
-
-
-```
-  ============================================================
-   __  __ _                            __ _   
-  |  \/  (_)_ __   ___  ___ _ __ __ _ / _| |_ 
-  | |\/| | | '_ \ / _ \/ __| '__/ _' | |_| __|
-  | |  | | | | | |  __/ (__| | | (_| |  _| |_ 
-  |_|  |_|_|_| |_|\___|\___|_|  \__,_|_|  \__|
-     ____           _                 _        
-    | __ )  ___  __| |_ __ ___   ___| | __    
-    |  _ \ / _ \/ _' | '__/ _ \ / __| |/ /    
-    | |_) |  __/ (_| | | | (_) | (__|   <     
-    |____/ \___|\__,_|_|  \___/ \___|_|\_\    
-                     Unlocker by CoelhoFZ      
-  ============================================================
-
-[1] Install Mod (Unlock Game)
-[2] Restore Original (Back to Trial)
-[3] Open Minecraft
-[4] Install Minecraft (Xbox App)
-[5] Check Status
-[6] System Diagnostics
-[0] Exit
-```
-
-## Features
-
-- 🌍 **Multi-language**: Auto-detects EN, PT-BR, ES
-- 🛡️ **Antivirus handling**: Adds Windows Defender exclusions automatically
-- 🔄 **Auto-retry**: If antivirus deletes files, retries installation
-- 📊 **Diagnostics**: Full system health check
-- 🔧 **Auto-repair**: Fixes missing files when opening Minecraft
-- ✅ **Integrity verification**: SHA256 hash checking after download
-- 📦 **No EXE needed**: Runs 100% in PowerShell - no downloads flagged by antivirus!
-
-## Troubleshooting
-
-### Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| Antivirus blocks files | The script adds exclusions automatically. If still failing, temporarily disable AV |
-| "Minecraft not found" | Install via Xbox App to C:\XboxGames |
-| Game shows "Unlock Full Version" | Antivirus deleted files - run the script again |
-| Game crashes | Run Diagnostics [6] and check Gaming Services |
-
-### Manual Antivirus Exclusion
-
-If the script can't add exclusions automatically:
-
-1. Open **Windows Security**
-2. Go to **Virus & threat protection** → **Manage settings**
-3. Scroll to **Exclusions** → **Add or remove exclusions**
-4. Add folder: `C:\XboxGames\Minecraft for Windows\Content`
-
-> See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed help.
-
-## ⚠️ Antivirus False Positives
-
-The DLL files used may trigger antivirus warnings. **This is expected behavior** - any license bypass tool will trigger heuristic detections.
-
-### What you should know:
-
-1. **Open Source** - You can review 100% of the code in this repository
-2. **OnlineFix Method** - The DLLs used are from the trusted OnlineFix team
-3. **No EXE** - The PowerShell script downloads DLLs directly from GitHub
-4. **No Malware** - This tool does NOT steal data, mine crypto, or harm your PC
-
-## Compatibility
-
-**Supported:**
-- ✅ Minecraft Bedrock Edition 1.21.120+ (GDK) - 2024/2025
-- ✅ Windows 10 (64-bit)
-- ✅ Windows 11 (64-bit)
-- ✅ **Xbox App installations ONLY**
-
-**Not Supported:**
-- ❌ Microsoft Store installations (game must be in C:\XboxGames)
-- ❌ Xbox Console (Xbox One / Series X|S)
-- ❌ Mobile (Android / iOS)
-- ❌ PlayStation / Nintendo Switch
-- ❌ macOS / Linux
-
-## Credits
-
-- OnlineFix team for the bypass method
-- CoelhoFZ for developing the tool
-
-## Community
-
-Join our Discord: https://discord.gg/bfFdyJ3gEj
-
-## License
-
-GPLv3 License - See [LICENSE](LICENSE)
