@@ -619,19 +619,19 @@ function T {
             es = "No se pudo pausar automaticamente. Siga las instrucciones:"
         }
         "bd_onaccess_title" = @{
-            en = "BITDEFENDER - ACTION REQUIRED: ADD EXCLUSION TO PLAY MINECRAFT"
-            pt = "BITDEFENDER - ACAO NECESSARIA: ADICIONE A EXCLUSAO PARA JOGAR MINECRAFT"
-            es = "BITDEFENDER - ACCION REQUERIDA: AGREGUE EXCLUSION PARA JUGAR MINECRAFT"
+            en = "BITDEFENDER - RECOMMENDED: ADD EXCLUSION FOR EXTRA SAFETY"
+            pt = "BITDEFENDER - RECOMENDADO: ADICIONE A EXCLUSAO PARA MAIOR SEGURANCA"
+            es = "BITDEFENDER - RECOMENDADO: AGREGUE EXCLUSION PARA MAYOR SEGURIDAD"
         }
         "bd_onaccess_reason" = @{
-            en = "Bitdefender Free blocks the mod when Minecraft LOADS it (not during install)."
-            pt = "O Bitdefender Free bloqueia o mod quando o Minecraft CARREGA (nao durante a instalacao)."
-            es = "Bitdefender Free bloquea el mod cuando Minecraft lo CARGA (no durante la instalacion)."
+            en = "Bitdefender Free MAY block the mod files in the future."
+            pt = "O Bitdefender Free PODE bloquear os arquivos do mod no futuro."
+            es = "Bitdefender Free PUEDE bloquear los archivos del mod en el futuro."
         }
         "bd_onaccess_cannot_autofix" = @{
-            en = "This CANNOT be fixed automatically - Bitdefender Free has no CLI or API for exclusions."
-            pt = "Isso NAO pode ser corrigido automaticamente - o Bitdefender Free nao tem CLI ou API para exclusoes."
-            es = "Esto NO puede corregirse automaticamente - Bitdefender Free no tiene CLI ni API para exclusiones."
+            en = "Adding the exclusion prevents Bitdefender from interfering later."
+            pt = "Adicionar a exclusao previne que o Bitdefender interfira futuramente."
+            es = "Agregar la exclusion previene que Bitdefender interfiera en el futuro."
         }
         "bd_onaccess_clipboard" = @{
             en = ">> Path COPIED to clipboard - just press Ctrl+V in Bitdefender!"
@@ -654,9 +654,9 @@ function T {
             es = "Exclusion NO detectada aun. Por favor siga los pasos nuevamente."
         }
         "bd_onaccess_skipped" = @{
-            en = "WARNING: Skipped exclusion - Minecraft WILL FAIL to load. See TROUBLESHOOTING.md."
-            pt = "AVISO: Exclusao ignorada - O Minecraft VAI FALHAR ao carregar. Veja TROUBLESHOOTING.md."
-            es = "AVISO: Exclusion omitida - Minecraft FALLARA al cargar. Ver TROUBLESHOOTING.md."
+            en = "Exclusion not configured. If Minecraft has issues later, see TROUBLESHOOTING.md."
+            pt = "Exclusao nao configurada. Se o Minecraft tiver problemas, veja TROUBLESHOOTING.md."
+            es = "Exclusion no configurada. Si Minecraft tiene problemas, vea TROUBLESHOOTING.md."
         }
         "bd_onaccess_attempt" = @{
             en = "Attempt"
@@ -3369,10 +3369,35 @@ function Install-Bypass {
             Write-C ""
             Write-OK (T 'install_ok')
             Write-C ""
+            Write-Info (T 'open_now')
             
-            # BD Free: on-access exclusion is REQUIRED for Minecraft to load the DLLs
+            # BD Free: recommend on-access exclusion (optional, game already works)
             if ($isBDFree) {
-                $null = Request-BDFreeOnAccessExclusion -ContentPath $mcPath
+                Write-C ""
+                if ($Script:Lang -eq "pt") {
+                    Write-C "  O Bitdefender Free foi detectado no seu sistema." Yellow
+                    Write-C "  Adicionar a exclusao e recomendado para evitar problemas futuros." Yellow
+                    Write-C ""
+                    Write-C "  Deseja configurar a exclusao agora? (Recomendado) [S/N]: " White -NoNewline
+                } else {
+                    Write-C "  Bitdefender Free was detected on your system." Yellow
+                    Write-C "  Adding the exclusion is recommended to prevent future issues." Yellow
+                    Write-C ""
+                    Write-C "  Do you want to configure the exclusion now? (Recommended) [Y/N]: " White -NoNewline
+                }
+                $choice = Read-Host
+                if ($choice -match '^[SsYy]') {
+                    $null = Request-BDFreeOnAccessExclusion -ContentPath $mcPath
+                } else {
+                    Write-C ""
+                    if ($Script:Lang -eq "pt") {
+                        Write-Warn "Se o Minecraft apresentar problemas, adicione a exclusao no Bitdefender."
+                        Write-Info "  Pasta: $mcPath"
+                    } else {
+                        Write-Warn "If Minecraft has issues, add the exclusion in Bitdefender."
+                        Write-Info "  Folder: $mcPath"
+                    }
+                }
             } else {
                 if ($Script:Lang -eq "pt") {
                     Write-Info "Voce ja pode reativar a protecao do seu antivirus."
@@ -3380,8 +3405,6 @@ function Install-Bypass {
                     Write-Info (T 'av_reenable')
                 }
             }
-            Write-C ""
-            Write-Info (T 'open_now')
         } else {
             # Files were deleted during watchdog and couldn't be restored
             Write-C ""
