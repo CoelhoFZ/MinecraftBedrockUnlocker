@@ -1135,12 +1135,11 @@ function Add-AllAVExclusions {
     $avList = Detect-Antivirus
     $anyAdded = $false
     
-    # Show detected antivirus products
-    if ($avList.Count -gt 0) {
-        foreach ($av in $avList) {
-            $statusText = if ($av.Active) { "Ativo" } else { "Inativo" }
-            if ($Script:Lang -ne "pt") { $statusText = if ($av.Active) { "Active" } else { "Inactive" } }
-            Write-Info "  Antivirus: $($av.Name) ($statusText)"
+    # Show detected antivirus products (only active ones)
+    $activeAVs = @($avList | Where-Object { $_.Active })
+    if ($activeAVs.Count -gt 0) {
+        foreach ($av in $activeAVs) {
+            Write-Info "  Antivirus: $($av.Name)"
         }
     } else {
         if ($Script:Lang -eq "pt") {
@@ -1151,10 +1150,13 @@ function Add-AllAVExclusions {
     }
     
     foreach ($av in $avList) {
+        # Skip inactive antivirus products entirely
+        if (-not $av.Active) { continue }
+        
         switch ($av.Type) {
             "defender" {
                 try {
-                    Add-MpPreference -ExclusionPath $Path -ErrorAction SilentlyContinue
+                    Add-MpPreference -ExclusionPath $Path -ErrorAction Stop
                     # Individual DLL exclusions
                     foreach ($dll in @("winmm.dll", (Get-DiskName -SourceName "OnlineFix64.dll"))) {
                         Add-MpPreference -ExclusionPath (Join-Path $Path $dll) -ErrorAction SilentlyContinue
@@ -1164,22 +1166,11 @@ function Add-AllAVExclusions {
                     Write-OK "Windows Defender: $(T 'exclusion_added')"
                     $anyAdded = $true
                 } catch {
-                    if ($Script:Lang -eq "pt") {
-                        Write-Warn "Windows Defender: Nao foi possivel adicionar exclusao automaticamente."
-                        Write-Warn "  Adicione manualmente: Seguranca do Windows > Protecao contra virus > Exclusoes > Pasta: $Path"
-                    } else {
-                        Write-Warn "Windows Defender: Could not add exclusion automatically."
-                        Write-Warn "  Add manually: Windows Security > Virus protection > Exclusions > Folder: $Path"
-                    }
+                    # Defender not functional or not installed - skip silently
                 }
             }
             "bitdefender_free" {
-                # BD Free has no CLI exclusion tool - handled later in the flow
-                if ($Script:Lang -eq "pt") {
-                    Write-Info "  Bitdefender Free: exclusao sera configurada apos a instalacao."
-                } else {
-                    Write-Info "  Bitdefender Free: exclusion will be configured after installation."
-                }
+                # BD Free: Technique 5 handles file writing silently, no action needed here
             }
             "bitdefender" {
                 $bdCmd = $null
@@ -1225,7 +1216,7 @@ function Add-AllAVExclusions {
         }
     }
     
-    return $avList
+    return @{ AVList = $avList; AnyAdded = $anyAdded }
 }
 
 function Open-AVSettings {
@@ -3087,19 +3078,9 @@ function Install-Bypass {
     Initialize-SafeDllNames -ContentPath $mcPath
     
     # Detect ALL antivirus and add exclusions
-    $detectedAV = Add-AllAVExclusions -Path $mcPath
-    
-    # Show detected antivirus
-    if ($detectedAV.Count -gt 0) {
-        $hasActiveAV = $detectedAV | Where-Object { $_.Active }
-        if ($hasActiveAV) {
-            if ($Script:Lang -eq "pt") {
-                Write-Info "Antivirus detectado - aplicando protecoes..."
-            } else {
-                Write-Info "Antivirus detected - applying protections..."
-            }
-        }
-    }
+    $avResult = Add-AllAVExclusions -Path $mcPath
+    $detectedAV = $avResult.AVList
+    $anyExclusionAdded = $avResult.AnyAdded
     
     # BITDEFENDER PROACTIVE HANDLING: For BD Free, always suspend (registry exclusions don't work)
     $hasBitdefender = $detectedAV | Where-Object { $_.Type -match "bitdefender" -and $_.Active }
@@ -3114,6 +3095,7 @@ function Install-Bypass {
             $bdExclusionOK = Try-BitdefenderExclusion -FolderPath $mcPath
             if ($bdExclusionOK) {
                 Write-OK (T 'exclusion_added')
+                $anyExclusionAdded = $true
             }
         }
 
@@ -3179,20 +3161,18 @@ function Install-Bypass {
         }
     }
     
-    # Wait for exclusions to propagate
-    Start-Sleep -Seconds 3
+    # Wait for exclusions to propagate (only if any were added)
+    if ($anyExclusionAdded) {
+        Start-Sleep -Seconds 3
+    }
     
-    # Try to disable Defender real-time if it's active (will be re-enabled after)
+    # Try to disable Defender real-time if it's actually active and functional
     $defenderDisabledByUs = $false
-    if (Test-DefenderActive) {
+    $hasActiveDefender = $detectedAV | Where-Object { $_.Type -eq "defender" -and $_.Active }
+    if ($hasActiveDefender -and (Test-DefenderActive)) {
         try {
             Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction Stop
             $defenderDisabledByUs = $true
-            if ($Script:Lang -eq "pt") {
-                Write-OK "Protecao em tempo real pausada temporariamente"
-            } else {
-                Write-OK "Real-time protection temporarily paused"
-            }
         } catch { }
     }
     
