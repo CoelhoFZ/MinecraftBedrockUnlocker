@@ -1325,8 +1325,8 @@ function Test-BDFreeExclusion {
         
         foreach ($entry in $settings.settings.ExcludeMgr.Settings) {
             $normalizedEntry = $entry.path.ToLower().TrimEnd('\')
-            # Check path matches AND has on-access bit (bit 0 = 1)
-            if ($normalizedEntry -eq $normalizedTarget -and ($entry.flags -band 1)) {
+            # Check path matches with any exclusion type (on-access, on-demand, online threat, etc.)
+            if ($normalizedEntry -eq $normalizedTarget) {
                 return $true
             }
         }
@@ -3373,29 +3373,35 @@ function Install-Bypass {
             
             # BD Free: recommend on-access exclusion (optional, game already works)
             if ($isBDFree) {
-                Write-C ""
-                if ($Script:Lang -eq "pt") {
-                    Write-C "  O Bitdefender Free foi detectado no seu sistema." Yellow
-                    Write-C "  Adicionar a exclusao e recomendado para evitar problemas futuros." Yellow
+                # Check if any BD exclusion already exists for this path
+                if (Test-BDFreeExclusion -FolderPath $mcPath) {
                     Write-C ""
-                    Write-C "  Deseja configurar a exclusao agora? (Recomendado) [S/N]: " White -NoNewline
-                } else {
-                    Write-C "  Bitdefender Free was detected on your system." Yellow
-                    Write-C "  Adding the exclusion is recommended to prevent future issues." Yellow
-                    Write-C ""
-                    Write-C "  Do you want to configure the exclusion now? (Recommended) [Y/N]: " White -NoNewline
-                }
-                $choice = Read-Host
-                if ($choice -match '^[SsYy]') {
-                    $null = Request-BDFreeOnAccessExclusion -ContentPath $mcPath
+                    Write-OK (T 'bd_onaccess_verified')
                 } else {
                     Write-C ""
                     if ($Script:Lang -eq "pt") {
-                        Write-Warn "Se o Minecraft apresentar problemas, adicione a exclusao no Bitdefender."
-                        Write-Info "  Pasta: $mcPath"
+                        Write-C "  O Bitdefender Free foi detectado no seu sistema." Yellow
+                        Write-C "  Adicionar a exclusao e recomendado para evitar problemas futuros." Yellow
+                        Write-C ""
+                        Write-C "  Deseja configurar a exclusao agora? (Recomendado) [S/N]: " White -NoNewline
                     } else {
-                        Write-Warn "If Minecraft has issues, add the exclusion in Bitdefender."
-                        Write-Info "  Folder: $mcPath"
+                        Write-C "  Bitdefender Free was detected on your system." Yellow
+                        Write-C "  Adding the exclusion is recommended to prevent future issues." Yellow
+                        Write-C ""
+                        Write-C "  Do you want to configure the exclusion now? (Recommended) [Y/N]: " White -NoNewline
+                    }
+                    $choice = Read-Host
+                    if ($choice -match '^[SsYy]') {
+                        $null = Request-BDFreeOnAccessExclusion -ContentPath $mcPath
+                    } else {
+                        Write-C ""
+                        if ($Script:Lang -eq "pt") {
+                            Write-Warn "Se o Minecraft apresentar problemas, adicione a exclusao no Bitdefender."
+                            Write-Info "  Pasta: $mcPath"
+                        } else {
+                            Write-Warn "If Minecraft has issues, add the exclusion in Bitdefender."
+                            Write-Info "  Folder: $mcPath"
+                        }
                     }
                 }
             } else {
