@@ -17,10 +17,10 @@
 
 Open **PowerShell as Administrator** and paste:
 
-The bootstrap will ask you to disable your antivirus before it downloads the full installer.
+The bootstrap uses a no-cache download and asks you to disable your antivirus before it downloads the full installer.
 
 ```powershell
-irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | iex
+$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=irm -UseBasicParsing -Headers @{'Cache-Control'='no-cache';'Pragma'='no-cache'} -Uri "${u}?cb=$([guid]::NewGuid())"; if([string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download returned empty content'}; iex $s
 ```
 
 ### Step 3: Choose Option [1]
@@ -65,10 +65,10 @@ The script automatically detects your Windows language:
 
 ## 🔄 Alternative Installation (if blocked by ISP/DNS)
 
-If the main command doesn't work:
+If the main command is blocked or returns an empty download:
 
 ```powershell
-iex (curl.exe -L -s https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | Out-String)
+$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $s=(curl.exe -fL -sS --retry 3 --retry-delay 2 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' "${u}?cb=$([guid]::NewGuid())" | Out-String); if($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download failed or returned empty content'}; iex $s
 ```
 
 ---

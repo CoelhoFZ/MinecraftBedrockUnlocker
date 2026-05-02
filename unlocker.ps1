@@ -7,11 +7,11 @@
     Downloads OnlineFix DLLs directly from GitHub and installs them.
     No EXE needed - runs entirely in PowerShell.
     
-    Usage: irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | iex
+    Usage: $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=irm -UseBasicParsing -Headers @{'Cache-Control'='no-cache';'Pragma'='no-cache'} -Uri "${u}?cb=$([guid]::NewGuid())"; if([string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download returned empty content'}; iex $s
     
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.1
+    Version: 3.1.2
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
@@ -21,12 +21,26 @@ $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.1.1"
+$Script:Version = "3.1.2"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
 $Script:BaseUrl = "https://github.com/$RepoOwner/$RepoName/releases/latest/download"
 $Script:DiscordUrl = "https://discord.gg/bfFdyJ3gEj"
+
+function New-CacheBustedUrl {
+    param([Parameter(Mandatory=$true)][string]$Url)
+
+    $separator = if ($Url.Contains('?')) { '&' } else { '?' }
+    return ('{0}{1}cb={2}' -f $Url, $separator, [guid]::NewGuid().ToString('N'))
+}
+
+function Get-NoCacheHeaders {
+    return @{
+        'Cache-Control' = 'no-cache'
+        'Pragma' = 'no-cache'
+    }
+}
 
 # DLL files info (SHA256 hashes for integrity verification)
 # DiskName: when set, the file is written to disk with this name instead of Name.
@@ -808,8 +822,8 @@ function Request-Elevation {
     Write-Info (T 'admin_elevating')
     
     try {
-        $scriptUrl = "$Script:BaseUrl/unlocker.ps1"
-        $cmd = "Set-ExecutionPolicy Bypass -Scope Process -Force; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; iex (irm '$scriptUrl')"
+        $scriptUrl = New-CacheBustedUrl "$Script:BaseUrl/unlocker.ps1"
+        $cmd = "`$ErrorActionPreference='Stop'; Set-ExecutionPolicy Bypass -Scope Process -Force; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `$s=irm -UseBasicParsing -Headers @{'Cache-Control'='no-cache';'Pragma'='no-cache'} -Uri '$scriptUrl'; if([string]::IsNullOrWhiteSpace(`$s)){throw 'unlocker.ps1 download returned empty content'}; iex `$s"
         Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"$cmd`"" -Verb RunAs
         # Close this (non-admin) window automatically after 2 seconds
         Write-OK "Elevated window opened. This window will close..."
@@ -2035,7 +2049,10 @@ function Download-OnlineFixFile {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         $webClient = New-Object System.Net.WebClient
         $webClient.Headers.Add("User-Agent", "Mozilla/5.0")
-        $bytes = $webClient.DownloadData($url)
+        foreach ($header in (Get-NoCacheHeaders).GetEnumerator()) {
+            $webClient.Headers.Add($header.Key, $header.Value)
+        }
+        $bytes = $webClient.DownloadData((New-CacheBustedUrl $url))
     } catch { }
     
     # Fallback download method
@@ -2044,7 +2061,7 @@ function Download-OnlineFixFile {
             Add-Type -AssemblyName System.Net.Http -ErrorAction SilentlyContinue
             $httpClient = New-Object System.Net.Http.HttpClient
             $httpClient.Timeout = [TimeSpan]::FromSeconds(120)
-            $bytes = $httpClient.GetByteArrayAsync($url).Result
+            $bytes = $httpClient.GetByteArrayAsync((New-CacheBustedUrl $url)).Result
         } catch { }
     }
     
@@ -3230,7 +3247,7 @@ function Install-Bypass {
             Write-C "  3. Os arquivos nao existem no release do GitHub" White
             Write-C ""
             Write-C "  Tente o metodo alternativo:" Cyan
-            Write-C "  iex (curl.exe -L -s $Script:BaseUrl/install.ps1 | Out-String)" White
+            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$s=(curl.exe -fL -sS --retry 3 --retry-delay 2 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' `"`${u}?cb=`$([guid]::NewGuid())`" | Out-String); if(`$LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(`$s)){throw 'install.ps1 download failed or returned empty content'}; iex `$s" White
             Write-C ""
             Write-C "  Ou baixe o EXE (funciona offline):" Cyan
             Write-C "  $Script:BaseUrl/MinecraftBedrockUnlocker.exe" White
@@ -3244,7 +3261,7 @@ function Install-Bypass {
             Write-C "  3. Files don't exist in the GitHub release" White
             Write-C ""
             Write-C "  Try the alternative method:" Cyan
-            Write-C "  iex (curl.exe -L -s $Script:BaseUrl/install.ps1 | Out-String)" White
+            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$s=(curl.exe -fL -sS --retry 3 --retry-delay 2 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' `"`${u}?cb=`$([guid]::NewGuid())`" | Out-String); if(`$LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(`$s)){throw 'install.ps1 download failed or returned empty content'}; iex `$s" White
             Write-C ""
             Write-C "  Or download the EXE (works offline):" Cyan
             Write-C "  $Script:BaseUrl/MinecraftBedrockUnlocker.exe" White

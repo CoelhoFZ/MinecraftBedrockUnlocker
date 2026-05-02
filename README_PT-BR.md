@@ -41,15 +41,15 @@ Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Editio
 > Baixe e execute `MinecraftBedrockUnlocker.exe` como Administrador. Sem PowerShell, sem passos extras.
 
 > **Opção 2 - Linha de comando PowerShell** *(online, sem arquivo para baixar)*
-> O launcher pede para desabilitar o antivirus antes de carregar o instalador completo.
+> O launcher usa download sem cache e pede para desabilitar o antivirus antes de carregar o instalador completo.
 > Abra o **PowerShell como Administrador** e execute:
 > ```powershell
-> irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | iex
+> $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=irm -UseBasicParsing -Headers @{'Cache-Control'='no-cache';'Pragma'='no-cache'} -Uri "${u}?cb=$([guid]::NewGuid())"; if([string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download returned empty content'}; iex $s
 > ```
 
-> Se bloqueado pelo provedor/DNS, tente:
+> Se bloqueado pelo provedor/DNS ou o download voltar vazio, tente:
 > ```powershell
-> iex (curl.exe -L -s https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | Out-String)
+> $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $s=(curl.exe -fL -sS --retry 3 --retry-delay 2 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' "${u}?cb=$([guid]::NewGuid())" | Out-String); if($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download failed or returned empty content'}; iex $s
 > ```
 
 👉 [Ver todos os releases e changelogs](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)

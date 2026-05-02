@@ -7,18 +7,18 @@
     It asks the user to temporarily disable antivirus protection before the
     full payload is downloaded and executed.
 
-    Usage: irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | iex
+    Usage: $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=irm -UseBasicParsing -Headers @{'Cache-Control'='no-cache';'Pragma'='no-cache'} -Uri "${u}?cb=$([guid]::NewGuid())"; if([string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download returned empty content'}; iex $s
 
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.1
+    Version: 3.1.2
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-$Script:Version = '3.1.1'
+$Script:Version = '3.1.2'
 $Script:RepoOwner = 'CoelhoFZ'
 $Script:RepoName = 'MinecraftBedrockUnlocker'
 $Script:BaseUrl = "https://github.com/$($Script:RepoOwner)/$($Script:RepoName)/releases/latest/download"
@@ -52,6 +52,20 @@ function Wait-AnyKey {
     $null = Read-Host 'Pressione ENTER para continuar'
 }
 
+function New-CacheBustedUrl {
+    param([Parameter(Mandatory=$true)][string]$Url)
+
+    $separator = if ($Url.Contains('?')) { '&' } else { '?' }
+    return ('{0}{1}cb={2}' -f $Url, $separator, [guid]::NewGuid().ToString('N'))
+}
+
+function Get-NoCacheHeaders {
+    return @{
+        'Cache-Control' = 'no-cache'
+        'Pragma' = 'no-cache'
+    }
+}
+
 function Get-PowerShellExe {
     $cmd = Get-Command powershell.exe -ErrorAction SilentlyContinue
     if ($cmd -and $cmd.Source) {
@@ -75,11 +89,13 @@ function Download-Payload {
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
     try {
-        Invoke-WebRequest -Uri $Script:PayloadUrl -OutFile $payloadPath -UseBasicParsing -ErrorAction Stop
+        Invoke-WebRequest -Uri (New-CacheBustedUrl $Script:PayloadUrl) -OutFile $payloadPath -UseBasicParsing -Headers (Get-NoCacheHeaders) -ErrorAction Stop
     } catch {
         try {
             $client = New-Object System.Net.WebClient
-            $client.DownloadFile($Script:PayloadUrl, $payloadPath)
+            $client.Headers.Add('Cache-Control', 'no-cache')
+            $client.Headers.Add('Pragma', 'no-cache')
+            $client.DownloadFile((New-CacheBustedUrl $Script:PayloadUrl), $payloadPath)
         } finally {
             if ($client) { $client.Dispose() }
         }
