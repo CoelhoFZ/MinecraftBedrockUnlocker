@@ -7,7 +7,7 @@
 ### Quick Fix:
 
 1. Open **PowerShell as Administrator**
-2. Run the script: `irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | iex`
+2. Run the script: `irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | iex`
 3. Choose option **[5] Check Status** to see which files are missing
 4. If files are missing, choose **[1] Install Mod** to reinstall
 5. If files keep disappearing, your antivirus is deleting them immediately
@@ -138,7 +138,7 @@ Use **option [6] System Diagnostics** to check:
 
 #### Solução Rápida:
 1. Abra o **PowerShell como Administrador**
-2. Execute: `irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | iex`
+2. Execute: `irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | iex`
 3. Use opção **[5] Verificar Status** para ver quais arquivos estão faltando
 4. Se faltam, use **[1] Instalar Mod** para reinstalar
 5. Se os arquivos continuam sumindo, adicione exclusão do antivírus

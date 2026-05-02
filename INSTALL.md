@@ -17,8 +17,10 @@
 
 Open **PowerShell as Administrator** and paste:
 
+The bootstrap will ask you to disable your antivirus before it downloads the full installer.
+
 ```powershell
-irm https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | iex
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | iex
 ```
 
 ### Step 3: Choose Option [1]
@@ -66,7 +68,7 @@ The script automatically detects your Windows language:
 If the main command doesn't work:
 
 ```powershell
-iex (curl.exe -s https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1 | Out-String)
+iex (curl.exe -L -s https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | Out-String)
 ```
 
 ---

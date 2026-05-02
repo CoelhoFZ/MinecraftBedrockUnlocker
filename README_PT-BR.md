@@ -37,10 +37,11 @@ Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Editio
   </a>
 </p>
 
-> **Opção 1 — EXE Portátil** *(recomendado, sem configuração)*
+> **Opção 1 - EXE Portátil** *(recomendado, sem configuração)*
 > Baixe e execute `MinecraftBedrockUnlocker.exe` como Administrador. Sem PowerShell, sem passos extras.
 
-> **Opção 2 — Linha de comando PowerShell** *(online, sem arquivo para baixar)*
+> **Opção 2 - Linha de comando PowerShell** *(online, sem arquivo para baixar)*
+> O launcher pede para desabilitar o antivirus antes de carregar o instalador completo.
 > Abra o **PowerShell como Administrador** e execute:
 > ```powershell
 > irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | iex
@@ -48,7 +49,7 @@ Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Editio
 
 > Se bloqueado pelo provedor/DNS, tente:
 > ```powershell
-> iex (curl.exe -s https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | Out-String)
+> iex (curl.exe -L -s https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | Out-String)
 > ```
 
 👉 [Ver todos os releases e changelogs](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
@@ -141,18 +142,18 @@ Adicione esta pasta nas exclusões:
 | Problema | Solução |
 |----------|---------|
 | "Minecraft não encontrado" | Instale via Xbox App em `C:\XboxGames` |
-| Jogo mostra "Desbloquear versão completa" | Arquivos foram removidos — execute a ferramenta novamente |
+| Jogo mostra "Desbloquear versão completa" | Arquivos foram removidos - execute a ferramenta novamente |
 | Jogo crasha | Execute Diagnóstico [6] e verifique Gaming Services |
 
 > Veja [TROUBLESHOOTING.md](TROUBLESHOOTING.md) para ajuda detalhada.
 
 ## ⚠️ Falsos Positivos de Antivírus
 
-Os arquivos usados podem disparar alertas de antivírus — **isso é esperado** com qualquer ferramenta de desbloqueio.
+Os arquivos usados podem disparar alertas de antivírus - **isso é esperado** com qualquer ferramenta de desbloqueio.
 
-1. **Código disponível** — Você pode revisar o script instalador neste repositório
-2. **Sem malware** — Esta ferramenta NÃO rouba dados, minera criptomoedas ou danifica seu PC
-3. **Exclusões guiadas** — A ferramenta guia você para adicionar exceções no seu AV específico
+1. **Código disponível** - Você pode revisar o script instalador neste repositório
+2. **Sem malware** - Esta ferramenta NÃO rouba dados, minera criptomoedas ou danifica seu PC
+3. **Exclusões guiadas** - A ferramenta guia você para adicionar exceções no seu AV específico
 
 ## Compatibilidade
 

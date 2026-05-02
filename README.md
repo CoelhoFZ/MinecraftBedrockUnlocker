@@ -37,10 +37,11 @@ A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only
   </a>
 </p>
 
-> **Option 1 — Portable EXE** *(recommended, no setup required)*
+> **Option 1 - Portable EXE** *(recommended, no setup required)*
 > Download and run `MinecraftBedrockUnlocker.exe` as Administrator. No PowerShell, no manual steps.
 
-> **Option 2 — PowerShell one-liner** *(online, no file to download)*
+> **Option 2 - PowerShell one-liner** *(online, no file to download)*
+> The launcher asks you to disable antivirus protection before loading the full installer.
 > Open **PowerShell as Administrator** and run:
 > ```powershell
 > irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | iex
@@ -48,7 +49,7 @@ A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only
 
 > If blocked by ISP/DNS, try:
 > ```powershell
-> iex (curl.exe -s https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | Out-String)
+> iex (curl.exe -L -s https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1 | Out-String)
 > ```
 
 👉 [View all releases and changelogs](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
@@ -141,18 +142,18 @@ Add this folder to exclusions:
 | Issue | Solution |
 |-------|----------|
 | "Minecraft not found" | Install via Xbox App to `C:\XboxGames` |
-| Game shows "Unlock Full Version" | Files were removed — run the tool again |
+| Game shows "Unlock Full Version" | Files were removed - run the tool again |
 | Game crashes | Run Diagnostics [6] and check Gaming Services |
 
 > See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed help.
 
 ## ⚠️ Antivirus False Positives
 
-The files used may trigger antivirus warnings — **this is expected** with any game unlocker.
+The files used may trigger antivirus warnings - **this is expected** with any game unlocker.
 
-1. **Source available** — You can review the installer script in this repository
-2. **No malware** — This tool does NOT steal data, mine crypto, or harm your PC
-3. **Guided exclusions** — The tool walks you through adding exceptions for your specific AV
+1. **Source available** - You can review the installer script in this repository
+2. **No malware** - This tool does NOT steal data, mine crypto, or harm your PC
+3. **Guided exclusions** - The tool walks you through adding exceptions for your specific AV
 
 ## Compatibility
 
