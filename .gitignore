@@ -1,77 +1,45 @@
-# ===== Rust Build Files =====
-/target/
-**/*.rs.bk
-
-# ===== Executables and Libraries =====
-*.exe
-*.dll
-!dlls/**/*.dll
-*.so
-*.dylib
+# Build output
+/build/.tmp/
+/dist/
 *.pdb
 
-# ===== IDEs =====
-# Visual Studio Code
-.vscode/
-*.code-workspace
-
-# JetBrains (IntelliJ, CLion, RustRover)
-.idea/
-*.iml
-*.iws
-
-# Visual Studio
-.vs/
-*.suo
-*.user
-
-# Other editors
-*.swp
-*.swo
-*~
-
-# ===== Operating System =====
-# Windows
-Thumbs.db
-desktop.ini
-Desktop.ini
-*.tmp
-*.temp
-
-# macOS
-.DS_Store
-
-# Linux
-*~
-
-# ===== Backup Files =====
-*.bak
-*.backup
-*.old
-
-# ===== Python =====
-__pycache__/
-*.py[cod]
-*$py.class
-.Python
-env/
-venv/
-.venv/
-
-# ===== Logs =====
-*.log
-
-# ===== Project Temporary Files =====
-# Executables copied to root
+# Local executables copied during testing
 /minecraft-unlocker-cli.exe
 /mc_unlocker.exe
 
-# Obfuscated files (if any)
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
 *.obf
 
-# ===== Build/Dist Folders =====
-/build/
-/dist/
-
-# ===== VS Code PowerShell Extension History =====
+# Editors and IDEs
+.vscode/
+*.code-workspace
+.idea/
+*.iml
+*.iws
+.vs/
+*.suo
+*.user
+*.swp
+*.swo
+*~
 .history/
+
+# OS files
+Thumbs.db
+desktop.ini
+Desktop.ini
+.DS_Store
+
+# Python helper caches
+__pycache__/
+*.py[cod]
+*$py.class
+env/
+venv/
+.venv/

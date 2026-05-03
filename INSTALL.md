@@ -20,7 +20,7 @@ Open **PowerShell as Administrator** and paste:
 The bootstrap uses a no-cache download and asks you to disable your antivirus before it downloads the full installer.
 
 ```powershell
-$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=irm -UseBasicParsing -Headers @{'Cache-Control'='no-cache';'Pragma'='no-cache'} -Uri "${u}?cb=$([guid]::NewGuid())"; if([string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download returned empty content'}; iex $s
+$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$s=irm -UseBasicParsing -Headers $h -Uri "$u?cb=$([guid]::NewGuid())" -MaximumRedirection 5}catch{Start-Sleep -Seconds 1}}}; if([string]::IsNullOrWhiteSpace($s) -or $s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download failed or returned invalid content'}; iex $s
 ```
 
 ### Step 3: Choose Option [1]
@@ -68,7 +68,7 @@ The script automatically detects your Windows language:
 If the main command is blocked or returns an empty download:
 
 ```powershell
-$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $s=(curl.exe -fL -sS --retry 3 --retry-delay 2 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' "${u}?cb=$([guid]::NewGuid())" | Out-String); if($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download failed or returned empty content'}; iex $s
+$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $tmp=Join-Path $env:TEMP ("mbu-$([guid]::NewGuid().ToString('N')).ps1"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o $tmp "$u?cb=$([guid]::NewGuid())"; if($LASTEXITCODE -ne 0 -or -not (Test-Path $tmp) -or (Get-Item $tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; $s=Get-Content -Raw $tmp; Remove-Item $tmp -Force -ErrorAction SilentlyContinue; if([string]::IsNullOrWhiteSpace($s) -or $s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download returned invalid content'}; iex $s
 ```
 
 ---

@@ -1,26 +1,19 @@
-# Auto detect text files and perform LF normalization
+# Normalize text files
 * text=auto
 
-# Source code
-*.rs text eol=lf
-*.toml text eol=lf
+# Documentation and source
 *.md text eol=lf
-*.py text eol=lf
-
-# Scripts
+*.html text eol=lf
+*.cs text eol=lf
 *.sh text eol=lf
-*.bat text eol=crlf
-*.cmd text eol=crlf
-*.ps1 text eol=crlf
-
-# Config files
-.gitignore text eol=lf
-.gitattributes text eol=lf
-*.json text eol=lf
 *.yml text eol=lf
 *.yaml text eol=lf
+*.json text eol=lf
 
-# Windows specific files
+# Windows scripts/resources
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
 *.rc text eol=crlf
 *.manifest text eol=crlf
 
@@ -36,16 +29,10 @@
 *.zip binary
 *.tar binary
 *.gz binary
-
-# Archives
 *.7z binary
 *.jar binary
 *.rar binary
 
-# GitHub Linguist - Force repository language detection
-*.rs linguist-language=Rust
-*.toml linguist-language=TOML
+# GitHub Linguist
 *.ps1 linguist-language=PowerShell
-
-# Exclude history files from GitHub language detection
 .history/** linguist-excluded=true

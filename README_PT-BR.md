@@ -38,18 +38,18 @@ Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Editio
 </p>
 
 > **Opção 1 - EXE Portátil** *(recomendado, sem configuração)*
-> Baixe e execute `MinecraftBedrockUnlocker.exe` como Administrador. Sem PowerShell, sem passos extras.
+> Baixe e execute `MinecraftBedrockUnlocker.exe` como Administrador. Sem comando PowerShell manual.
 
 > **Opção 2 - Linha de comando PowerShell** *(online, sem arquivo para baixar)*
 > O launcher usa download sem cache e pede para desabilitar o antivirus antes de carregar o instalador completo.
 > Abra o **PowerShell como Administrador** e execute:
 > ```powershell
-> $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=irm -UseBasicParsing -Headers @{'Cache-Control'='no-cache';'Pragma'='no-cache'} -Uri "${u}?cb=$([guid]::NewGuid())"; if([string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download returned empty content'}; iex $s
+> $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$s=irm -UseBasicParsing -Headers $h -Uri "$u?cb=$([guid]::NewGuid())" -MaximumRedirection 5}catch{Start-Sleep -Seconds 1}}}; if([string]::IsNullOrWhiteSpace($s) -or $s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download failed or returned invalid content'}; iex $s
 > ```
 
 > Se bloqueado pelo provedor/DNS ou o download voltar vazio, tente:
 > ```powershell
-> $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $s=(curl.exe -fL -sS --retry 3 --retry-delay 2 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' "${u}?cb=$([guid]::NewGuid())" | Out-String); if($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download failed or returned empty content'}; iex $s
+> $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $tmp=Join-Path $env:TEMP ("mbu-$([guid]::NewGuid().ToString('N')).ps1"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o $tmp "$u?cb=$([guid]::NewGuid())"; if($LASTEXITCODE -ne 0 -or -not (Test-Path $tmp) -or (Get-Item $tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; $s=Get-Content -Raw $tmp; Remove-Item $tmp -Force -ErrorAction SilentlyContinue; if([string]::IsNullOrWhiteSpace($s) -or $s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download returned invalid content'}; iex $s
 > ```
 
 👉 [Ver todos os releases e changelogs](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
@@ -154,6 +154,13 @@ Os arquivos usados podem disparar alertas de antivírus - **isso é esperado** c
 1. **Código disponível** - Você pode revisar o script instalador neste repositório
 2. **Sem malware** - Esta ferramenta NÃO rouba dados, minera criptomoedas ou danifica seu PC
 3. **Exclusões guiadas** - A ferramenta guia você para adicionar exceções no seu AV específico
+
+## O que muda no seu PC
+
+- Instala os arquivos de desbloqueio em `C:\XboxGames\Minecraft for Windows\Content`.
+- Adiciona exclusões de antivírus apenas para a pasta Content do Minecraft e os arquivos instalados.
+- Cria a tarefa agendada `MCContentBridge` e a pasta de backup `%LOCALAPPDATA%\MCBridge` para restaurar os arquivos após reinicialização.
+- A opção `[2] Restaurar Original` remove os arquivos instalados, a tarefa agendada e a pasta de backup.
 
 ## Compatibilidade
 

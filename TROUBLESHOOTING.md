@@ -7,7 +7,7 @@
 ### Quick Fix:
 
 1. Open **PowerShell as Administrator**
-2. Run the script: `$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=irm -UseBasicParsing -Headers @{'Cache-Control'='no-cache';'Pragma'='no-cache'} -Uri "${u}?cb=$([guid]::NewGuid())"; if([string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download returned empty content'}; iex $s`
+2. Run the script: `$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$s=irm -UseBasicParsing -Headers $h -Uri "$u?cb=$([guid]::NewGuid())" -MaximumRedirection 5}catch{Start-Sleep -Seconds 1}}}; if([string]::IsNullOrWhiteSpace($s) -or $s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download failed or returned invalid content'}; iex $s`
 3. Choose option **[5] Check Status** to see which files are missing
 4. If files are missing, choose **[1] Install Mod** to reinstall
 5. If files keep disappearing, your antivirus is deleting them immediately
@@ -138,7 +138,7 @@ Use **option [6] System Diagnostics** to check:
 
 #### Solução Rápida:
 1. Abra o **PowerShell como Administrador**
-2. Execute: `$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=irm -UseBasicParsing -Headers @{'Cache-Control'='no-cache';'Pragma'='no-cache'} -Uri "${u}?cb=$([guid]::NewGuid())"; if([string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download returned empty content'}; iex $s`
+2. Execute: `$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$s=irm -UseBasicParsing -Headers $h -Uri "$u?cb=$([guid]::NewGuid())" -MaximumRedirection 5}catch{Start-Sleep -Seconds 1}}}; if([string]::IsNullOrWhiteSpace($s) -or $s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download failed or returned invalid content'}; iex $s`
 3. Use opção **[5] Verificar Status** para ver quais arquivos estão faltando
 4. Se faltam, use **[1] Instalar Mod** para reinstalar
 5. Se os arquivos continuam sumindo, adicione exclusão do antivírus

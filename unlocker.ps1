@@ -7,11 +7,11 @@
     Downloads OnlineFix DLLs directly from GitHub and installs them.
     No EXE needed - runs entirely in PowerShell.
     
-    Usage: $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=irm -UseBasicParsing -Headers @{'Cache-Control'='no-cache';'Pragma'='no-cache'} -Uri "${u}?cb=$([guid]::NewGuid())"; if([string]::IsNullOrWhiteSpace($s)){throw 'install.ps1 download returned empty content'}; iex $s
+    Usage: $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$s=irm -UseBasicParsing -Headers $h -Uri "$u?cb=$([guid]::NewGuid())" -MaximumRedirection 5}catch{Start-Sleep -Seconds 1}}}; if([string]::IsNullOrWhiteSpace($s) -or $s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download failed or returned invalid content'}; iex $s
     
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.2
+    Version: 3.1.3
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
@@ -21,12 +21,13 @@ $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.1.2"
+$Script:Version = "3.1.3"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
 $Script:BaseUrl = "https://github.com/$RepoOwner/$RepoName/releases/latest/download"
 $Script:DiscordUrl = "https://discord.gg/bfFdyJ3gEj"
+$Script:RawScriptUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/v$($Script:Version)/unlocker.ps1"
 
 function New-CacheBustedUrl {
     param([Parameter(Mandatory=$true)][string]$Url)
@@ -35,11 +36,111 @@ function New-CacheBustedUrl {
     return ('{0}{1}cb={2}' -f $Url, $separator, [guid]::NewGuid().ToString('N'))
 }
 
+function Set-NetworkDefaults {
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls13
+    } catch { }
+    [Net.ServicePointManager]::Expect100Continue = $false
+}
+
 function Get-NoCacheHeaders {
     return @{
-        'Cache-Control' = 'no-cache'
+        'Cache-Control' = 'no-cache, no-store, max-age=0'
         'Pragma' = 'no-cache'
+        'Expires' = '0'
+        'User-Agent' = "MinecraftBedrockUnlocker/$($Script:Version)"
+        'Accept' = 'application/octet-stream,text/plain,*/*'
     }
+}
+
+function Invoke-DownloadBytes {
+    param(
+        [Parameter(Mandatory=$true)][string[]]$Urls,
+        [int]$MinBytes = 1
+    )
+
+    Set-NetworkDefaults
+    $headers = Get-NoCacheHeaders
+    $errors = New-Object System.Collections.Generic.List[string]
+
+    foreach ($url in $Urls) {
+        for ($attempt = 1; $attempt -le 3; $attempt++) {
+            $client = $null
+            try {
+                $client = New-Object System.Net.WebClient
+                foreach ($header in $headers.GetEnumerator()) { $client.Headers[$header.Key] = $header.Value }
+                $bytes = $client.DownloadData((New-CacheBustedUrl $url))
+                if ($bytes -and $bytes.Length -ge $MinBytes) { return $bytes }
+                $length = if ($bytes) { $bytes.Length } else { 0 }
+                throw "empty or short response ($length bytes)"
+            } catch {
+                $errors.Add("WebClient#$attempt $url => $($_.Exception.Message)") | Out-Null
+                Start-Sleep -Milliseconds (250 * $attempt)
+            } finally {
+                if ($client) { $client.Dispose() }
+            }
+        }
+
+        try {
+            Add-Type -AssemblyName System.Net.Http -ErrorAction SilentlyContinue
+            $handler = New-Object System.Net.Http.HttpClientHandler
+            $handler.AllowAutoRedirect = $true
+            $httpClient = New-Object System.Net.Http.HttpClient($handler)
+            $httpClient.Timeout = [TimeSpan]::FromSeconds(120)
+            foreach ($header in $headers.GetEnumerator()) {
+                if ($header.Key -ne 'Accept') { $httpClient.DefaultRequestHeaders.TryAddWithoutValidation($header.Key, [string]$header.Value) | Out-Null }
+            }
+            $httpClient.DefaultRequestHeaders.TryAddWithoutValidation('Accept', [string]$headers['Accept']) | Out-Null
+            $response = $httpClient.GetAsync((New-CacheBustedUrl $url)).Result
+            if (-not $response.IsSuccessStatusCode) { throw "HTTP $([int]$response.StatusCode)" }
+            $bytes = $response.Content.ReadAsByteArrayAsync().Result
+            if ($bytes -and $bytes.Length -ge $MinBytes) { return $bytes }
+            $length = if ($bytes) { $bytes.Length } else { 0 }
+            throw "empty or short response ($length bytes)"
+        } catch {
+            $errors.Add("HttpClient $url => $($_.Exception.Message)") | Out-Null
+        } finally {
+            if ($response) { $response.Dispose() }
+            if ($httpClient) { $httpClient.Dispose() }
+            if ($handler) { $handler.Dispose() }
+        }
+
+        $curl = Get-Command curl.exe -ErrorAction SilentlyContinue
+        if ($curl -and $curl.Source) {
+            $tmpPath = Join-Path ([System.IO.Path]::GetTempPath()) ("mbu-download-{0}.tmp" -f [guid]::NewGuid().ToString('N'))
+            try {
+                & $curl.Source -fL -sS --retry 4 --retry-delay 2 --connect-timeout 15 --max-time 180 `
+                    -H 'Cache-Control: no-cache, no-store, max-age=0' `
+                    -H 'Pragma: no-cache' `
+                    -H "User-Agent: MinecraftBedrockUnlocker/$($Script:Version)" `
+                    -o $tmpPath (New-CacheBustedUrl $url)
+                if ($LASTEXITCODE -ne 0) { throw "curl.exe exited with code $LASTEXITCODE" }
+                if (-not (Test-Path $tmpPath)) { throw 'curl.exe did not create output file' }
+                $bytes = [System.IO.File]::ReadAllBytes($tmpPath)
+                if ($bytes -and $bytes.Length -ge $MinBytes) { return $bytes }
+                $length = if ($bytes) { $bytes.Length } else { 0 }
+                throw "empty or short response ($length bytes)"
+            } catch {
+                $errors.Add("curl.exe $url => $($_.Exception.Message)") | Out-Null
+            } finally {
+                Remove-Item -Path $tmpPath -Force -ErrorAction SilentlyContinue
+            }
+        } else {
+            $errors.Add("curl.exe $url => not found") | Out-Null
+        }
+    }
+
+    $Script:LastDownloadError = ($errors -join ' | ')
+    return $null
+}
+
+function Test-ScriptPayloadText {
+    param([string]$Content)
+
+    if ([string]::IsNullOrWhiteSpace($Content)) { return $false }
+    if ($Content -match '<!DOCTYPE|<html|<body') { return $false }
+    return ($Content -match 'Minecraft Bedrock Unlocker' -and $Content -match 'Start-MainLoop')
 }
 
 # DLL files info (SHA256 hashes for integrity verification)
@@ -51,6 +152,14 @@ $Script:OnlineFixFiles = @(
     @{ Name = "dlllist.txt";      Hash = "fc0befb4aae4b7f0eeb1c398fccea03cc795590e09db6628974520091fcfc516"; DiskName = $null },
     @{ Name = "OnlineFix.ini";    Hash = "d13a4c53389c6a35616ccbe2c09912a43369d904a52b461d734f4ebec212ddfc"; DiskName = $null }
 )
+
+function Test-SafeDllName {
+    param([string]$Name)
+
+    if ([string]::IsNullOrWhiteSpace($Name)) { return $false }
+    $leaf = [System.IO.Path]::GetFileName($Name.Trim())
+    return ($leaf -eq $Name.Trim() -and $leaf -match '^[A-Za-z0-9_.-]+\.dll$')
+}
 
 function Initialize-SafeDllNames {
     <#
@@ -69,8 +178,9 @@ function Initialize-SafeDllNames {
         $existingDllList = Join-Path $ContentPath "dlllist.txt"
         if (Test-Path $existingDllList) {
             $content = (Get-Content $existingDllList -ErrorAction SilentlyContinue | Where-Object { $_.Trim() }) | Select-Object -First 1
-            if ($content -and $content -ne "OnlineFix64.dll" -and $content -match '\.dll$') {
-                $safeName = $content.Trim()
+            $candidate = if ($content) { $content.Trim() } else { $null }
+            if ($candidate -and $candidate -ne "OnlineFix64.dll" -and (Test-SafeDllName -Name $candidate)) {
+                $safeName = $candidate
             }
         }
     }
@@ -820,12 +930,35 @@ function Test-Admin {
 function Request-Elevation {
     Write-Warn (T 'admin_required')
     Write-Info (T 'admin_elevating')
-    
+
     try {
-        $scriptUrl = New-CacheBustedUrl "$Script:BaseUrl/unlocker.ps1"
-        $cmd = "`$ErrorActionPreference='Stop'; Set-ExecutionPolicy Bypass -Scope Process -Force; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `$s=irm -UseBasicParsing -Headers @{'Cache-Control'='no-cache';'Pragma'='no-cache'} -Uri '$scriptUrl'; if([string]::IsNullOrWhiteSpace(`$s)){throw 'unlocker.ps1 download returned empty content'}; iex `$s"
-        Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"$cmd`"" -Verb RunAs
-        # Close this (non-admin) window automatically after 2 seconds
+        $localScriptPath = $null
+        if ($PSCommandPath -and (Test-Path $PSCommandPath)) { $localScriptPath = $PSCommandPath }
+        elseif ($MyInvocation.MyCommand.Path -and (Test-Path $MyInvocation.MyCommand.Path)) { $localScriptPath = $MyInvocation.MyCommand.Path }
+
+        if ($localScriptPath) {
+            Start-Process powershell.exe -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$localScriptPath`"") -Verb RunAs
+            Write-OK "Elevated window opened. This window will close..."
+            Start-Sleep -Seconds 2
+            exit
+        }
+
+        $releaseUrl = New-CacheBustedUrl "$Script:BaseUrl/unlocker.ps1"
+        $rawUrl = New-CacheBustedUrl $Script:RawScriptUrl
+        $cmd = @"
+`$ErrorActionPreference='Stop'
+`$ProgressPreference='SilentlyContinue'
+[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
+try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls13 } catch { }
+`$headers=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker/$($Script:Version)'}
+`$urls=@('$releaseUrl','$rawUrl')
+`$content=`$null
+foreach(`$u in `$urls){try{`$content=Invoke-RestMethod -UseBasicParsing -Headers `$headers -Uri `$u -MaximumRedirection 5 -ErrorAction Stop;if(-not [string]::IsNullOrWhiteSpace(`$content) -and `$content -match 'Minecraft Bedrock Unlocker' -and `$content -match 'Start-MainLoop'){break}}catch{}}
+if([string]::IsNullOrWhiteSpace(`$content)){throw 'unlocker.ps1 download returned empty content'}
+if(`$content -match '<!DOCTYPE|<html|<body'){throw 'unlocker.ps1 download returned an HTML error page'}
+iex `$content
+"@
+        Start-Process powershell.exe -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $cmd) -Verb RunAs
         Write-OK "Elevated window opened. This window will close..."
         Start-Sleep -Seconds 2
         exit
@@ -836,16 +969,31 @@ function Request-Elevation {
         Wait-Enter
     }
 }
-
 function Find-MinecraftPath {
-    # Priority 1: XboxGames on all drives (GDK install - compatible)
+    # Priority 1: known XboxGames path on all drives (GDK install - compatible)
     $drives = @("C") + @((Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -match '^[D-Z]:\\$' }).Name)
     foreach ($driveLetter in $drives) {
         $path = "${driveLetter}:\XboxGames\Minecraft for Windows\Content"
         if (Test-Path $path) { return $path }
     }
 
-    # Priority 2: WindowsApps (UWP - not recommended but detect it)
+    # Priority 2: custom Xbox App library folders under XboxGames
+    foreach ($driveLetter in $drives) {
+        $xboxRoot = "${driveLetter}:\XboxGames"
+        if (-not (Test-Path $xboxRoot)) { continue }
+        try {
+            $contentDirs = Get-ChildItem -Path $xboxRoot -Directory -ErrorAction SilentlyContinue |
+                ForEach-Object { Join-Path $_.FullName 'Content' } |
+                Where-Object { Test-Path $_ }
+            foreach ($contentPath in $contentDirs) {
+                $exePath = Join-Path $contentPath 'Minecraft.Windows.exe'
+                $manifestPath = Join-Path $contentPath 'appxmanifest.xml'
+                if ((Test-Path $exePath) -or (Test-Path $manifestPath)) { return $contentPath }
+            }
+        } catch { }
+    }
+
+    # Priority 3: WindowsApps (UWP - not recommended but detect it)
     $programFiles = $env:ProgramFiles
     if (-not $programFiles) { $programFiles = "C:\Program Files" }
     $windowsApps = Join-Path $programFiles "WindowsApps"
@@ -863,7 +1011,6 @@ function Find-MinecraftPath {
 
     return $null
 }
-
 function Test-MinecraftRunning {
     $processes = Get-Process -Name "Minecraft.Windows" -ErrorAction SilentlyContinue
     return ($null -ne $processes)
@@ -1175,7 +1322,6 @@ function Add-AllAVExclusions {
                     foreach ($dll in @("winmm.dll", (Get-DiskName -SourceName "OnlineFix64.dll"))) {
                         Add-MpPreference -ExclusionPath (Join-Path $Path $dll) -ErrorAction SilentlyContinue
                     }
-                    Add-MpPreference -ExclusionExtension ".dll" -ErrorAction SilentlyContinue
                     Add-MpPreference -ExclusionProcess "Minecraft.Windows.exe" -ErrorAction SilentlyContinue
                     Write-OK "Windows Defender: $(T 'exclusion_added')"
                     $anyAdded = $true
@@ -2041,29 +2187,9 @@ function Download-OnlineFixFile {
     Write-Info "$(T 'downloading') $diskName..."
     
     # ============================================================
-    # STEP 1: Download bytes into memory (this ALWAYS works - AV can't block RAM)
+    # STEP 1: Download bytes into memory with retries and no-cache fallbacks
     # ============================================================
-    $bytes = $null
-    
-    try {
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $webClient = New-Object System.Net.WebClient
-        $webClient.Headers.Add("User-Agent", "Mozilla/5.0")
-        foreach ($header in (Get-NoCacheHeaders).GetEnumerator()) {
-            $webClient.Headers.Add($header.Key, $header.Value)
-        }
-        $bytes = $webClient.DownloadData((New-CacheBustedUrl $url))
-    } catch { }
-    
-    # Fallback download method
-    if (-not $bytes -or $bytes.Length -eq 0) {
-        try {
-            Add-Type -AssemblyName System.Net.Http -ErrorAction SilentlyContinue
-            $httpClient = New-Object System.Net.Http.HttpClient
-            $httpClient.Timeout = [TimeSpan]::FromSeconds(120)
-            $bytes = $httpClient.GetByteArrayAsync((New-CacheBustedUrl $url)).Result
-        } catch { }
-    }
+    $bytes = Invoke-DownloadBytes -Urls @($url) -MinBytes 1
     
     if (-not $bytes -or $bytes.Length -eq 0) {
         Write-Err "$(T 'download_fail'): $diskName"
@@ -2074,6 +2200,7 @@ function Download-OnlineFixFile {
             Write-Warn "  URL: $url"
             Write-Warn "  Check your connection or if the file exists in the GitHub release."
         }
+        if ($Script:LastDownloadError) { Write-Warn "  $($Script:LastDownloadError)" }
         return "download_failed"
     }
     
@@ -2087,6 +2214,9 @@ function Download-OnlineFixFile {
     $hashOK = ($actualHash -eq $ExpectedHash)
     if (-not $hashOK) {
         Write-Warn "$(T 'hash_fail') ($FileName)"
+        Write-Warn "  Expected: $ExpectedHash"
+        Write-Warn "  Actual:   $actualHash"
+        return "hash_failed"
     }
     
     # Cache bytes for potential retry later (so we don't re-download)
@@ -2305,8 +2435,11 @@ function Write-FileToDisk {
                 }
                 
                 # --- Mutation 3: Randomize MajorLinkerVersion / MinorLinkerVersion ---
-                $modBytes[$lfanew + 4 + 2] = [byte]$rng.Next(10, 20)
-                $modBytes[$lfanew + 4 + 3] = [byte]$rng.Next(0, 40)
+                $optHeaderOff = $lfanew + 4 + 20
+                if ($optHeaderOff + 3 -lt $modBytes.Length) {
+                    $modBytes[$optHeaderOff + 2] = [byte]$rng.Next(10, 20)
+                    $modBytes[$optHeaderOff + 3] = [byte]$rng.Next(0, 40)
+                }
                 
                 # --- Mutation 4: Modify MajorOperatingSystemVersion ---
                 $osVerOff = $lfanew + 4 + 20 + 40
@@ -2983,6 +3116,7 @@ function Verify-Installation {
     
     $allPresent = $true
     $missing = @()
+    $invalid = @()
     
     foreach ($file in $Script:OnlineFixFiles) {
         $diskName = Get-DiskName -SourceName $file.Name
@@ -2990,12 +3124,52 @@ function Verify-Installation {
         if (-not (Test-Path $filePath)) {
             $allPresent = $false
             $missing += $diskName
+            continue
+        }
+
+        try {
+            $item = Get-Item -Path $filePath -Force -ErrorAction Stop
+            if ($item.Length -le 0) {
+                $allPresent = $false
+                $invalid += $diskName
+                $missing += $diskName
+                continue
+            }
+
+            if ($diskName -match '\.dll$') {
+                $fs = [System.IO.File]::OpenRead($filePath)
+                try {
+                    $b1 = $fs.ReadByte()
+                    $b2 = $fs.ReadByte()
+                    if ($b1 -ne 0x4D -or $b2 -ne 0x5A) {
+                        $allPresent = $false
+                        $invalid += $diskName
+                        $missing += $diskName
+                    }
+                } finally {
+                    if ($fs) { $fs.Dispose() }
+                }
+            }
+
+            if ($file.Name -eq 'dlllist.txt') {
+                $dllListEntry = (Get-Content $filePath -ErrorAction Stop | Where-Object { $_.Trim() } | Select-Object -First 1)
+                if (-not $dllListEntry -or ($dllListEntry -ne 'OnlineFix64.dll' -and -not (Test-SafeDllName -Name $dllListEntry.Trim()))) {
+                    $allPresent = $false
+                    $invalid += $diskName
+                    $missing += $diskName
+                }
+            }
+        } catch {
+            $allPresent = $false
+            $invalid += $diskName
+            $missing += $diskName
         }
     }
     
     return @{
         AllPresent = $allPresent
-        Missing = $missing
+        Missing = @($missing | Select-Object -Unique)
+        Invalid = @($invalid | Select-Object -Unique)
     }
 }
 
@@ -3040,19 +3214,21 @@ function Remove-LegacyBypass {
 }
 
 function Test-GamingServices {
-    try {
-        $service = Get-Service -Name GamingServices -ErrorAction SilentlyContinue
-        return ($service -and $service.Status -eq 'Running')
-    } catch {
-        return $false
+    $serviceNames = @('GamingServices', 'GamingServicesNet')
+    foreach ($serviceName in $serviceNames) {
+        $service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+        if (-not $service -or $service.Status -ne 'Running') { return $false }
     }
+    return $true
 }
 
 function Start-GamingServices {
     Write-Info (T 'start_gaming')
-    try {
-        Start-Service GamingServices -ErrorAction SilentlyContinue
-    } catch { }
+    foreach ($serviceName in @('GamingServices', 'GamingServicesNet')) {
+        try {
+            Start-Service -Name $serviceName -ErrorAction SilentlyContinue
+        } catch { }
+    }
 }
 
 # ============================================================================
@@ -3211,7 +3387,7 @@ function Install-Bypass {
         $result = Download-OnlineFixFile -FileName $file.Name -DestPath $mcPath -ExpectedHash $file.Hash
         if ($result -eq "av_blocked") {
             $avBlockedFiles += $file.Name
-        } elseif ($result -eq "download_failed") {
+        } elseif ($result -eq "download_failed" -or $result -eq "hash_failed") {
             $failedFiles += $file.Name
         } elseif ($result -eq $true) {
             $downloadSuccessCount++
@@ -3247,7 +3423,7 @@ function Install-Bypass {
             Write-C "  3. Os arquivos nao existem no release do GitHub" White
             Write-C ""
             Write-C "  Tente o metodo alternativo:" Cyan
-            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$s=(curl.exe -fL -sS --retry 3 --retry-delay 2 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' `"`${u}?cb=`$([guid]::NewGuid())`" | Out-String); if(`$LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(`$s)){throw 'install.ps1 download failed or returned empty content'}; iex `$s" White
+            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$tmp=Join-Path `$env:TEMP (`"mbu-`$([guid]::NewGuid().ToString('N')).ps1`"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o `$tmp `"`${u}?cb=`$([guid]::NewGuid())`"; if(`$LASTEXITCODE -ne 0 -or -not (Test-Path `$tmp) -or (Get-Item `$tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; `$s=Get-Content -Raw `$tmp; Remove-Item `$tmp -Force -ErrorAction SilentlyContinue; if([string]::IsNullOrWhiteSpace(`$s) -or `$s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download returned invalid content'}; iex `$s" White
             Write-C ""
             Write-C "  Ou baixe o EXE (funciona offline):" Cyan
             Write-C "  $Script:BaseUrl/MinecraftBedrockUnlocker.exe" White
@@ -3261,7 +3437,7 @@ function Install-Bypass {
             Write-C "  3. Files don't exist in the GitHub release" White
             Write-C ""
             Write-C "  Try the alternative method:" Cyan
-            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$s=(curl.exe -fL -sS --retry 3 --retry-delay 2 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' `"`${u}?cb=`$([guid]::NewGuid())`" | Out-String); if(`$LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace(`$s)){throw 'install.ps1 download failed or returned empty content'}; iex `$s" White
+            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$tmp=Join-Path `$env:TEMP (`"mbu-`$([guid]::NewGuid().ToString('N')).ps1`"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o `$tmp `"`${u}?cb=`$([guid]::NewGuid())`"; if(`$LASTEXITCODE -ne 0 -or -not (Test-Path `$tmp) -or (Get-Item `$tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; `$s=Get-Content -Raw `$tmp; Remove-Item `$tmp -Force -ErrorAction SilentlyContinue; if([string]::IsNullOrWhiteSpace(`$s) -or `$s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download returned invalid content'}; iex `$s" White
             Write-C ""
             Write-C "  Or download the EXE (works offline):" Cyan
             Write-C "  $Script:BaseUrl/MinecraftBedrockUnlocker.exe" White
@@ -3789,8 +3965,9 @@ function Restore-Original {
     $dllListPath = Join-Path $mcPath "dlllist.txt"
     if (Test-Path $dllListPath) {
         $content = (Get-Content $dllListPath -ErrorAction SilentlyContinue | Where-Object { $_.Trim() }) | Select-Object -First 1
-        if ($content -and $content -ne "OnlineFix64.dll" -and $content -match '\\.dll$') {
-            $customDllName = $content.Trim()
+        $candidate = if ($content) { $content.Trim() } else { $null }
+        if ($candidate -and $candidate -ne "OnlineFix64.dll" -and (Test-SafeDllName -Name $candidate)) {
+            $customDllName = $candidate
         }
     }
     
@@ -3915,6 +4092,7 @@ function Open-Minecraft {
     
     # Health check before opening - more robust with file protection
     if ($mcPath) {
+        Initialize-SafeDllNames -ContentPath $mcPath
         $verification = Verify-Installation -ContentPath $mcPath
         if (-not $verification.AllPresent -and $verification.Missing.Count -lt 4) {
             if ($Script:Lang -eq "pt") {
@@ -3932,7 +4110,8 @@ function Open-Minecraft {
             $Script:BytesCache = @{}
             
             foreach ($file in $Script:OnlineFixFiles) {
-                $filePath = Join-Path $mcPath $file.Name
+                $diskName = Get-DiskName -SourceName $file.Name
+                $filePath = Join-Path $mcPath $diskName
                 if (-not (Test-Path $filePath)) {
                     $null = Download-OnlineFixFile -FileName $file.Name -DestPath $mcPath -ExpectedHash $file.Hash
                 }
@@ -4210,6 +4389,7 @@ function Show-Diagnostics {
     $bypassOk = $false
     $bypassMsg = "N/A"
     if ($mcPath) {
+        Initialize-SafeDllNames -ContentPath $mcPath
         $v = Verify-Installation -ContentPath $mcPath
         $bypassOk = $v.AllPresent
         if ($v.AllPresent) {
