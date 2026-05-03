@@ -59,7 +59,7 @@ jobs:
           if grep -R "raw.githubusercontent.com/.*/main" install.ps1 unlocker.ps1; then
             exit 1
           fi
-          if grep -R "mc_unlocker\.exe\|Download 2024\|3\.1\.2" README.md README_PT-BR.md INSTALL.md TROUBLESHOOTING.md docs/index.html install.ps1 unlocker.ps1 build; then
+          if grep -R "mc_unlocker\.exe\|Download 2024\|3\.1\.[0-3]" README.md README_PT-BR.md INSTALL.md TROUBLESHOOTING.md docs/index.html install.ps1 unlocker.ps1 build; then
             exit 1
           fi
 

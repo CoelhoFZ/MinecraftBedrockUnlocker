@@ -7,11 +7,11 @@
     Downloads OnlineFix DLLs directly from GitHub and installs them.
     No EXE needed - runs entirely in PowerShell.
     
-    Usage: $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$s=irm -UseBasicParsing -Headers $h -Uri "$u?cb=$([guid]::NewGuid())" -MaximumRedirection 5}catch{Start-Sleep -Seconds 1}}}; if([string]::IsNullOrWhiteSpace($s) -or $s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download failed or returned invalid content'}; iex $s
+    Usage: $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$r=irm -UseBasicParsing -Headers $h -Uri "${u}?cb=$([guid]::NewGuid())" -MaximumRedirection 5; $s=($r | Out-String)}catch{Start-Sleep -Seconds 1}}}; $t=if($s){$s.TrimStart()}else{''}; if([string]::IsNullOrWhiteSpace($s) -or $t.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or $t.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'install.ps1 download failed or returned invalid content'}; iex $s
     
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.3
+    Version: 3.1.4
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
@@ -21,7 +21,7 @@ $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.1.3"
+$Script:Version = "3.1.4"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
@@ -139,7 +139,8 @@ function Test-ScriptPayloadText {
     param([string]$Content)
 
     if ([string]::IsNullOrWhiteSpace($Content)) { return $false }
-    if ($Content -match '<!DOCTYPE|<html|<body') { return $false }
+    $trimmedContent = $Content.TrimStart()
+    if ($trimmedContent.StartsWith('<!DOCTYPE', [StringComparison]::OrdinalIgnoreCase) -or $trimmedContent.StartsWith('<html', [StringComparison]::OrdinalIgnoreCase)) { return $false }
     return ($Content -match 'Minecraft Bedrock Unlocker' -and $Content -match 'Start-MainLoop')
 }
 
@@ -955,7 +956,8 @@ try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::S
 `$content=`$null
 foreach(`$u in `$urls){try{`$content=Invoke-RestMethod -UseBasicParsing -Headers `$headers -Uri `$u -MaximumRedirection 5 -ErrorAction Stop;if(-not [string]::IsNullOrWhiteSpace(`$content) -and `$content -match 'Minecraft Bedrock Unlocker' -and `$content -match 'Start-MainLoop'){break}}catch{}}
 if([string]::IsNullOrWhiteSpace(`$content)){throw 'unlocker.ps1 download returned empty content'}
-if(`$content -match '<!DOCTYPE|<html|<body'){throw 'unlocker.ps1 download returned an HTML error page'}
+`$trimmedContent=`$content.TrimStart()
+if(`$trimmedContent.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or `$trimmedContent.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'unlocker.ps1 download returned an HTML error page'}
 iex `$content
 "@
         Start-Process powershell.exe -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $cmd) -Verb RunAs
@@ -3423,7 +3425,7 @@ function Install-Bypass {
             Write-C "  3. Os arquivos nao existem no release do GitHub" White
             Write-C ""
             Write-C "  Tente o metodo alternativo:" Cyan
-            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$tmp=Join-Path `$env:TEMP (`"mbu-`$([guid]::NewGuid().ToString('N')).ps1`"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o `$tmp `"`${u}?cb=`$([guid]::NewGuid())`"; if(`$LASTEXITCODE -ne 0 -or -not (Test-Path `$tmp) -or (Get-Item `$tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; `$s=Get-Content -Raw `$tmp; Remove-Item `$tmp -Force -ErrorAction SilentlyContinue; if([string]::IsNullOrWhiteSpace(`$s) -or `$s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download returned invalid content'}; iex `$s" White
+            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$tmp=Join-Path `$env:TEMP (`"mbu-`$([guid]::NewGuid().ToString('N')).ps1`"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o `$tmp `"`${u}?cb=`$([guid]::NewGuid())`"; if(`$LASTEXITCODE -ne 0 -or -not (Test-Path `$tmp) -or (Get-Item `$tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; `$s=Get-Content -Raw `$tmp; Remove-Item `$tmp -Force -ErrorAction SilentlyContinue; `$t=if(`$s){`$s.TrimStart()}else{''}; if([string]::IsNullOrWhiteSpace(`$s) -or `$t.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or `$t.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'install.ps1 download returned invalid content'}; iex `$s" White
             Write-C ""
             Write-C "  Ou baixe o EXE (funciona offline):" Cyan
             Write-C "  $Script:BaseUrl/MinecraftBedrockUnlocker.exe" White
@@ -3437,7 +3439,7 @@ function Install-Bypass {
             Write-C "  3. Files don't exist in the GitHub release" White
             Write-C ""
             Write-C "  Try the alternative method:" Cyan
-            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$tmp=Join-Path `$env:TEMP (`"mbu-`$([guid]::NewGuid().ToString('N')).ps1`"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o `$tmp `"`${u}?cb=`$([guid]::NewGuid())`"; if(`$LASTEXITCODE -ne 0 -or -not (Test-Path `$tmp) -or (Get-Item `$tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; `$s=Get-Content -Raw `$tmp; Remove-Item `$tmp -Force -ErrorAction SilentlyContinue; if([string]::IsNullOrWhiteSpace(`$s) -or `$s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download returned invalid content'}; iex `$s" White
+            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$tmp=Join-Path `$env:TEMP (`"mbu-`$([guid]::NewGuid().ToString('N')).ps1`"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o `$tmp `"`${u}?cb=`$([guid]::NewGuid())`"; if(`$LASTEXITCODE -ne 0 -or -not (Test-Path `$tmp) -or (Get-Item `$tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; `$s=Get-Content -Raw `$tmp; Remove-Item `$tmp -Force -ErrorAction SilentlyContinue; `$t=if(`$s){`$s.TrimStart()}else{''}; if([string]::IsNullOrWhiteSpace(`$s) -or `$t.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or `$t.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'install.ps1 download returned invalid content'}; iex `$s" White
             Write-C ""
             Write-C "  Or download the EXE (works offline):" Cyan
             Write-C "  $Script:BaseUrl/MinecraftBedrockUnlocker.exe" White

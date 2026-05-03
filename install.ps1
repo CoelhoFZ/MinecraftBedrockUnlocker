@@ -7,24 +7,24 @@
     It asks the user to temporarily disable antivirus protection before the
     full payload is downloaded and executed.
 
-    Usage: $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$s=irm -UseBasicParsing -Headers $h -Uri "$u?cb=$([guid]::NewGuid())" -MaximumRedirection 5}catch{Start-Sleep -Seconds 1}}}; if([string]::IsNullOrWhiteSpace($s) -or $s -match '<!DOCTYPE|<html|<body'){throw 'install.ps1 download failed or returned invalid content'}; iex $s
+    Usage: $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$r=irm -UseBasicParsing -Headers $h -Uri "${u}?cb=$([guid]::NewGuid())" -MaximumRedirection 5; $s=($r | Out-String)}catch{Start-Sleep -Seconds 1}}}; $t=if($s){$s.TrimStart()}else{''}; if([string]::IsNullOrWhiteSpace($s) -or $t.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or $t.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'install.ps1 download failed or returned invalid content'}; iex $s
 
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.3
+    Version: 3.1.4
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-$Script:Version = '3.1.3'
+$Script:Version = '3.1.4'
 $Script:RepoOwner = 'CoelhoFZ'
 $Script:RepoName = 'MinecraftBedrockUnlocker'
 $Script:BaseUrl = "https://github.com/$($Script:RepoOwner)/$($Script:RepoName)/releases/latest/download"
 $Script:PayloadUrl = "$($Script:BaseUrl)/unlocker.ps1"
 $Script:RawPayloadUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/v$($Script:Version)/unlocker.ps1"
-$Script:PayloadSha256 = 'e928899dd1368465a4cf728bd55690e111696896195f23a9961832bed87f6d5e'
+$Script:PayloadSha256 = '1cca3a01fe7e07ac659f53f77870596a24c8b456407bb39eb5ad06a48f3d58f7'
 
 function Write-Status {
     param(
@@ -99,7 +99,8 @@ function Test-PayloadFile {
     }
 
     $payloadHead = Get-Content -Path $Path -TotalCount 40 -ErrorAction Stop | Out-String
-    if ($payloadHead -match '<!DOCTYPE|<html|<body') {
+    $payloadHeadTrimmed = $payloadHead.TrimStart()
+    if ($payloadHeadTrimmed.StartsWith('<!DOCTYPE', [StringComparison]::OrdinalIgnoreCase) -or $payloadHeadTrimmed.StartsWith('<html', [StringComparison]::OrdinalIgnoreCase)) {
         throw 'Downloaded payload is an HTML error page.'
     }
     if ($payloadHead -notmatch 'Minecraft Bedrock Unlocker') {
