@@ -11,7 +11,7 @@
     
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.5
+    Version: 3.1.6
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
@@ -21,7 +21,7 @@ $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.1.5"
+$Script:Version = "3.1.6"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
@@ -1971,9 +1971,9 @@ function Watch-InstalledFiles {
     $checkInterval = 1
     
     if ($Script:Lang -eq "pt") {
-        Write-Info "Monitorando arquivos por ${DurationSeconds}s para proteger contra antivirus..."
+        Write-Info "Verificando por ${DurationSeconds}s se o antivirus remove arquivos logo apos a instalacao..."
     } else {
-        Write-Info "Monitoring files for ${DurationSeconds}s to protect against antivirus..."
+        Write-Info "Checking for ${DurationSeconds}s whether antivirus removes files right after install..."
     }
     
     while ((Get-Date) -lt $endTime) {
@@ -2589,9 +2589,9 @@ function Lock-FileFromDeletion {
 function Start-FileGuard {
     <#
     .DESCRIPTION
-        Starts a hidden background PowerShell process that holds open file handles
-        on DLL files. This prevents any process (including AV) from deleting,
-        moving, or renaming the files while the handles are open.
+        Starts a hidden background PowerShell process that holds read handles on
+        DLL files while Minecraft starts. Normal delete/rename attempts fail
+        while the handles are open, but on-access blocking can still happen.
         Handles are shared for ReadWrite so Minecraft can still load the DLLs.
     #>
     param([string]$ContentPath)
@@ -4034,6 +4034,13 @@ function Open-Minecraft {
         } elseif ($verification.AllPresent) {
             # Files exist - refresh protection attributes
             Protect-InstalledFiles -ContentPath $mcPath
+        }
+
+        # Defender/AV often scans on access while Minecraft loads the DLLs.
+        # Keep the guard alive during the actual launch path, not only after install.
+        $launchCheck = Verify-Installation -ContentPath $mcPath
+        if ($launchCheck.AllPresent) {
+            Start-FileGuard -ContentPath $mcPath
         }
     }
     
