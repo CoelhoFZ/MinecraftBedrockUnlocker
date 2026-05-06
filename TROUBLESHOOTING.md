@@ -14,6 +14,20 @@
 
 ---
 
+## ⚠️ Problem: "Failed to load xblcore_*.dll" or Bad Image 0xc0e90007
+
+### Symptoms:
+- Error: `Failed to load xblcore_*.dll from the list. Error code: 4556`
+- Windows dialog: `Minecraft.Windows.exe - Bad Image`
+- Status [5] or Diagnostics [6] says the bypass is installed, but Minecraft does not open
+
+### Solution:
+1. Update to the latest release and run **Install Mod [1]** again.
+2. The status screen now checks the real SHA256 hash of each DLL. If it shows `invalid/corrupted`, run **Install Mod [1]** to replace the bad DLL.
+3. If the same DLL becomes invalid again, add an antivirus exclusion for `C:\XboxGames\Minecraft for Windows\Content` and reinstall.
+
+---
+
 ## ⚠️ Problem: Files Deleted by Antivirus
 
 ### Symptoms:
@@ -142,6 +156,14 @@ Use **option [6] System Diagnostics** to check:
 3. Use opção **[5] Verificar Status** para ver quais arquivos estão faltando
 4. Se faltam, use **[1] Instalar Mod** para reinstalar
 5. Se os arquivos continuam sumindo, adicione exclusão do antivírus
+
+### Erro "Failed to load xblcore_*.dll" ou "Imagem Incorreta" 0xc0e90007
+
+Esse erro geralmente significa que o DLL renomeado do bypass ficou corrompido no disco.
+
+1. Atualize para a versão mais recente e execute **[1] Instalar Mod** novamente.
+2. O status agora valida o hash SHA256 real de cada DLL. Se aparecer `invalid/corrupted`, execute **[1] Instalar Mod** para substituir o DLL ruim.
+3. Se o mesmo DLL voltar a corromper, adicione exclusão do antivírus para `C:\XboxGames\Minecraft for Windows\Content` e reinstale.
 
 ### Como adicionar exclusão no Windows Defender:
 1. Abra **Segurança do Windows**

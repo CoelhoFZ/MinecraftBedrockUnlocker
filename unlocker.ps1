@@ -11,7 +11,7 @@
     
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.4
+    Version: 3.1.5
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
@@ -21,7 +21,7 @@ $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.1.4"
+$Script:Version = "3.1.5"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
@@ -2175,6 +2175,99 @@ function Get-DiskName {
     return $SourceName
 }
 
+function Get-BytesSha256Hex {
+    param([byte[]]$Bytes)
+    if (-not $Bytes) { return $null }
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hashBytes = $sha256.ComputeHash($Bytes)
+        return (-join ($hashBytes | ForEach-Object { $_.ToString("x2") }))
+    } finally {
+        if ($sha256) { $sha256.Dispose() }
+    }
+}
+
+function Get-FileSha256Hex {
+    param([string]$Path)
+    try {
+        if (-not (Test-Path $Path)) { return $null }
+        return (Get-FileHash -Algorithm SHA256 -Path $Path -ErrorAction Stop).Hash.ToLowerInvariant()
+    } catch {
+        return $null
+    }
+}
+
+function Test-PE64File {
+    param([string]$Path)
+
+    try {
+        if (-not (Test-Path $Path)) { return $false }
+        $bytes = [System.IO.File]::ReadAllBytes($Path)
+        if (-not $bytes -or $bytes.Length -lt 0x100) { return $false }
+        if ($bytes[0] -ne 0x4D -or $bytes[1] -ne 0x5A) { return $false }
+        $lfanew = [BitConverter]::ToInt32($bytes, 0x3C)
+        if ($lfanew -lt 0x40 -or $lfanew -gt ($bytes.Length - 0x108)) { return $false }
+        if ($bytes[$lfanew] -ne 0x50 -or $bytes[$lfanew + 1] -ne 0x45 -or $bytes[$lfanew + 2] -ne 0x00 -or $bytes[$lfanew + 3] -ne 0x00) { return $false }
+        $machine = [BitConverter]::ToUInt16($bytes, $lfanew + 4)
+        $magic = [BitConverter]::ToUInt16($bytes, $lfanew + 24)
+        return ($machine -eq 0x8664 -and $magic -eq 0x20B)
+    } catch {
+        return $false
+    }
+}
+
+function Test-FileMatchesBytes {
+    param(
+        [string]$FilePath,
+        [string]$ExpectedHash,
+        [int64]$ExpectedLength
+    )
+
+    try {
+        if (-not (Test-Path $FilePath)) { return $false }
+        $item = Get-Item -Path $FilePath -Force -ErrorAction Stop
+        if ($item.Length -ne $ExpectedLength) { return $false }
+        $actualHash = Get-FileSha256Hex -Path $FilePath
+        return ($actualHash -and $ExpectedHash -and $actualHash -eq $ExpectedHash)
+    } catch {
+        return $false
+    }
+}
+
+function Test-InstalledFileIntegrity {
+    param(
+        [string]$SourceName,
+        [string]$FilePath,
+        [string]$ExpectedHash
+    )
+
+    try {
+        if (-not (Test-Path $FilePath)) { return $false }
+        $item = Get-Item -Path $FilePath -Force -ErrorAction Stop
+        if ($item.Length -le 0) { return $false }
+
+        if ($SourceName -eq 'dlllist.txt') {
+            $dllListEntry = (Get-Content $FilePath -ErrorAction Stop | Where-Object { $_.Trim() } | Select-Object -First 1)
+            if (-not $dllListEntry) { return $false }
+            $dllListEntry = $dllListEntry.Trim()
+            $expectedDllName = Get-DiskName -SourceName 'OnlineFix64.dll'
+            return ($dllListEntry -eq $expectedDllName -and (Test-SafeDllName -Name $dllListEntry))
+        }
+
+        if ($SourceName -match '\.dll$' -and -not (Test-PE64File -Path $FilePath)) { return $false }
+
+        if ($ExpectedHash) {
+            $actualHash = Get-FileSha256Hex -Path $FilePath
+            if (-not $actualHash -or $actualHash -ne $ExpectedHash.ToLowerInvariant()) { return $false }
+        }
+
+        return $true
+    } catch {
+        return $false
+    }
+}
+
 function Download-OnlineFixFile {
     param(
         [string]$FileName,
@@ -2248,7 +2341,11 @@ function Write-FileToDisk {
         [string]$DestFile,
         [byte[]]$Bytes
     )
-    
+
+    $expectedHash = Get-BytesSha256Hex -Bytes $Bytes
+    $expectedLength = if ($Bytes) { [int64]$Bytes.Length } else { 0 }
+    if (-not $expectedHash -or $expectedLength -le 0) { return "hash_failed" }
+
     # Remove existing file first (unprotect if needed)
     if (Test-Path $DestFile) {
         try {
@@ -2266,7 +2363,7 @@ function Write-FileToDisk {
         if (Test-Path $DestFile) {
             Protect-SingleFile -FilePath $DestFile
             Start-Sleep -Milliseconds 500
-            if (Test-Path $DestFile) { return $true }
+            if (Test-FileMatchesBytes -FilePath $DestFile -ExpectedHash $expectedHash -ExpectedLength $expectedLength) { return $true }
         }
     } catch { }
     
@@ -2303,7 +2400,7 @@ function Write-FileToDisk {
         if (Test-Path $DestFile) {
             Protect-SingleFile -FilePath $DestFile
             Start-Sleep -Milliseconds 500
-            if (Test-Path $DestFile) { return $true }
+            if (Test-FileMatchesBytes -FilePath $DestFile -ExpectedHash $expectedHash -ExpectedLength $expectedLength) { return $true }
         }
     } catch { }
     
@@ -2364,7 +2461,7 @@ function Write-FileToDisk {
             
             Protect-SingleFile -FilePath $DestFile
             Start-Sleep -Milliseconds 300
-            if (Test-Path $DestFile) { return $true }
+            if (Test-FileMatchesBytes -FilePath $DestFile -ExpectedHash $expectedHash -ExpectedLength $expectedLength) { return $true }
         }
     } catch { }
     
@@ -2404,7 +2501,7 @@ function Write-FileToDisk {
             
             Protect-SingleFile -FilePath $DestFile
             Start-Sleep -Milliseconds 500
-            if (Test-Path $DestFile) { return $true }
+            if (Test-FileMatchesBytes -FilePath $DestFile -ExpectedHash $expectedHash -ExpectedLength $expectedLength) { return $true }
         }
     } catch { }
     
@@ -2414,229 +2511,37 @@ function Write-FileToDisk {
     }
     
     # ============================================================
-    # Technique 5: Aggressive PE mutation + safe name + hard link + ACL lock
-    # Deep PE structure modification to defeat signature matching,
-    # writes with temp name, hard links, then locks with deny-delete ACL.
+    # Technique 5: safe temp name + hard link + ACL lock
+    # Keep bytes exact. Mutating PE headers or section bytes can make Windows
+    # reject the DLL with Bad Image / 0xc0e90007.
     # ============================================================
     try {
-        $modBytes = [byte[]]$Bytes.Clone()
-        $rng = [System.Random]::new()
-        
-        # If PE file (MZ header), apply deep mutations
-        if ($modBytes.Length -gt 0x200 -and $modBytes[0] -eq 0x4D -and $modBytes[1] -eq 0x5A) {
-            $lfanew = [BitConverter]::ToInt32($modBytes, 0x3C)
-            if ($lfanew -gt 0 -and $lfanew -lt ($modBytes.Length - 200)) {
-                
-                # --- Mutation 1: Randomize TimeDateStamp ---
-                [BitConverter]::GetBytes([uint32]$rng.Next(0, [int]::MaxValue)).CopyTo($modBytes, $lfanew + 8)
-                
-                # --- Mutation 2: Zero out CheckSum ---
-                $ckOff = $lfanew + 4 + 20 + 64
-                if ($ckOff + 4 -lt $modBytes.Length) {
-                    [BitConverter]::GetBytes([uint32]0).CopyTo($modBytes, $ckOff)
-                }
-                
-                # --- Mutation 3: Randomize MajorLinkerVersion / MinorLinkerVersion ---
-                $optHeaderOff = $lfanew + 4 + 20
-                if ($optHeaderOff + 3 -lt $modBytes.Length) {
-                    $modBytes[$optHeaderOff + 2] = [byte]$rng.Next(10, 20)
-                    $modBytes[$optHeaderOff + 3] = [byte]$rng.Next(0, 40)
-                }
-                
-                # --- Mutation 4: Modify MajorOperatingSystemVersion ---
-                $osVerOff = $lfanew + 4 + 20 + 40
-                if ($osVerOff + 2 -lt $modBytes.Length) {
-                    [BitConverter]::GetBytes([uint16]$rng.Next(6, 11)).CopyTo($modBytes, $osVerOff)
-                }
-                
-                # --- Mutation 5: Destroy Rich header (compiler build fingerprint) ---
-                for ($i = 0x80; $i -lt [Math]::Min($lfanew, $modBytes.Length - 4); $i += 4) {
-                    if ($modBytes[$i] -eq 0x52 -and $modBytes[$i+1] -eq 0x69 -and
-                        $modBytes[$i+2] -eq 0x63 -and $modBytes[$i+3] -eq 0x68) {
-                        # Found "Rich" marker - zero from 0x80 to here
-                        $richEnd = $i + 8
-                        for ($j = 0x80; $j -lt $richEnd -and $j -lt $lfanew; $j++) {
-                            $modBytes[$j] = [byte]$rng.Next(0, 256)
-                        }
-                        break
-                    }
-                }
-                
-                # --- Mutation 6: Modify DOS stub message ---
-                $dosMsg = [System.Text.Encoding]::ASCII.GetBytes(
-                    "This program requires Microsoft Windows.`r`n`$")
-                $dosStart = 0x4E
-                if ($dosStart + $dosMsg.Length -lt $lfanew) {
-                    for ($i = 0; $i -lt $dosMsg.Length; $i++) {
-                        $modBytes[$dosStart + $i] = $dosMsg[$i]
-                    }
-                    # Fill rest of DOS stub area with random
-                    for ($i = $dosStart + $dosMsg.Length; $i -lt 0x80 -and $i -lt $lfanew; $i++) {
-                        $modBytes[$i] = [byte]$rng.Next(0, 256)
-                    }
-                }
-                
-                # --- Mutation 7: Null debug directory entries ---
-                $peOptSize = [BitConverter]::ToUInt16($modBytes, $lfanew + 4 + 16)
-                $is64 = ([BitConverter]::ToUInt16($modBytes, $lfanew + 4 + 20) -eq 0x20B)
-                $ddOffset = $lfanew + 4 + 20 + (if ($is64) { 112 } else { 96 })
-                # Debug directory is entry index 6 (each entry = 8 bytes: RVA + Size)
-                $debugDirOff = $ddOffset + (6 * 8)
-                if ($debugDirOff + 8 -lt $modBytes.Length -and $debugDirOff -lt $lfanew + 4 + 20 + $peOptSize) {
-                    for ($i = 0; $i -lt 8; $i++) { $modBytes[$debugDirOff + $i] = 0 }
-                }
-                
-                # --- Mutation 8: Randomize section padding (alignment gaps) ---
-                $numSections = [BitConverter]::ToUInt16($modBytes, $lfanew + 4 + 2)
-                $sectionTableOff = $lfanew + 4 + 20 + $peOptSize
-                $fileAlignment = [BitConverter]::ToUInt32($modBytes, $lfanew + 4 + 20 + 36)
-                if ($fileAlignment -eq 0) { $fileAlignment = 512 }
-                for ($s = 0; $s -lt $numSections -and $s -lt 16; $s++) {
-                    $secOff = $sectionTableOff + ($s * 40)
-                    if ($secOff + 40 -gt $modBytes.Length) { break }
-                    $rawSize = [BitConverter]::ToUInt32($modBytes, $secOff + 16)
-                    $rawPtr  = [BitConverter]::ToUInt32($modBytes, $secOff + 20)
-                    $virtSize = [BitConverter]::ToUInt32($modBytes, $secOff + 8)
-                    if ($rawPtr -gt 0 -and $rawSize -gt 0 -and $virtSize -lt $rawSize) {
-                        # Fill ALL gap between virtual end and raw end with random bytes
-                        $gapStart = $rawPtr + $virtSize
-                        $gapEnd = $rawPtr + $rawSize
-                        if ($gapEnd -le $modBytes.Length -and $gapStart -lt $gapEnd) {
-                            for ($i = $gapStart; $i -lt $gapEnd; $i++) {
-                                $modBytes[$i] = [byte]$rng.Next(0, 256)
-                            }
-                        }
-                    }
-                }
-                
-                # --- Mutation 9: Deep code section INT3→NOP replacement ---
-                # BD fingerprints .text section content for on-access detection.
-                # INT3 (0xCC) padding between functions is never executed.
-                # Replacing with NOP (0x90) changes the code section hash completely.
-                for ($s = 0; $s -lt $numSections -and $s -lt 16; $s++) {
-                    $secOff = $sectionTableOff + ($s * 40)
-                    if ($secOff + 40 -gt $modBytes.Length) { break }
-                    $secChars = [BitConverter]::ToUInt32($modBytes, $secOff + 36)
-                    # CODE section: IMAGE_SCN_CNT_CODE (0x20) or IMAGE_SCN_MEM_EXECUTE (0x20000000)
-                    if (($secChars -band 0x20000020) -ne 0) {
-                        $rawPtr = [BitConverter]::ToUInt32($modBytes, $secOff + 20)
-                        $rawSize = [BitConverter]::ToUInt32($modBytes, $secOff + 16)
-                        $secEnd = [Math]::Min($rawPtr + $rawSize, $modBytes.Length)
-                        # Scan for INT3 runs (2+ consecutive 0xCC bytes)
-                        $run = 0
-                        for ($i = [int]$rawPtr; $i -lt $secEnd; $i++) {
-                            if ($modBytes[$i] -eq 0xCC) {
-                                $run++
-                            } else {
-                                if ($run -ge 2) {
-                                    # Replace INT3 run with NOP (0x90)
-                                    for ($j = $i - $run; $j -lt $i; $j++) {
-                                        $modBytes[$j] = 0x90
-                                    }
-                                }
-                                $run = 0
-                            }
-                        }
-                        if ($run -ge 2) {
-                            for ($j = $secEnd - $run; $j -lt $secEnd; $j++) {
-                                $modBytes[$j] = 0x90
-                            }
-                        }
-                    }
-                }
-                
-                # --- Mutation 10: Randomize section names ---
-                # Windows PE loader ignores section names; they are purely informational.
-                for ($s = 0; $s -lt $numSections -and $s -lt 16; $s++) {
-                    $secOff = $sectionTableOff + ($s * 40)
-                    if ($secOff + 8 -gt $modBytes.Length) { break }
-                    # Generate random section name: dot + 3-6 lowercase letters
-                    $nameLen = $rng.Next(3, 7)
-                    $newName = [byte[]]::new(8)
-                    $newName[0] = 0x2E  # '.'
-                    for ($c = 1; $c -le $nameLen; $c++) {
-                        $newName[$c] = [byte]$rng.Next(97, 123)  # a-z
-                    }
-                    [Array]::Copy($newName, 0, $modBytes, $secOff, 8)
-                }
-                
-                # --- Mutation 11: Replace zero-fill runs in data sections ---
-                # Large runs of 0x00 in .rdata/.data are alignment padding.
-                for ($s = 0; $s -lt $numSections -and $s -lt 16; $s++) {
-                    $secOff = $sectionTableOff + ($s * 40)
-                    if ($secOff + 40 -gt $modBytes.Length) { break }
-                    $secChars = [BitConverter]::ToUInt32($modBytes, $secOff + 36)
-                    # Skip code sections (handled by mutation 9)
-                    if (($secChars -band 0x20000020) -ne 0) { continue }
-                    # Skip writable sections (.data has globals that may be zero-initialized)
-                    if (($secChars -band 0x80000000) -ne 0) { continue }
-                    # Process read-only data sections (.rdata, .pdata)
-                    $rawPtr = [BitConverter]::ToUInt32($modBytes, $secOff + 20)
-                    $rawSize = [BitConverter]::ToUInt32($modBytes, $secOff + 16)
-                    $secEnd = [Math]::Min($rawPtr + $rawSize, $modBytes.Length)
-                    $run = 0
-                    for ($i = [int]$rawPtr; $i -lt $secEnd; $i++) {
-                        if ($modBytes[$i] -eq 0x00) {
-                            $run++
-                        } else {
-                            # Only replace large zero runs (16+ bytes = alignment padding, not string terminators)
-                            if ($run -ge 16) {
-                                for ($j = $i - $run; $j -lt $i; $j++) {
-                                    $modBytes[$j] = [byte]$rng.Next(1, 256)
-                                }
-                            }
-                            $run = 0
-                        }
-                    }
-                    if ($run -ge 16) {
-                        for ($j = $secEnd - $run; $j -lt $secEnd; $j++) {
-                            $modBytes[$j] = [byte]$rng.Next(1, 256)
-                        }
-                    }
-                }
-            }
-        }
-        
-        # --- Final mutation: Append large random overlay data (PE loaders ignore it) ---
-        $overlaySize = $rng.Next(16384, 32769)
-        $overlay = New-Object byte[] $overlaySize
-        $rng.NextBytes($overlay)
-        $finalBytes = New-Object byte[] ($modBytes.Length + $overlaySize)
-        [Array]::Copy($modBytes, $finalBytes, $modBytes.Length)
-        [Array]::Copy($overlay, 0, $finalBytes, $modBytes.Length, $overlaySize)
-        $modBytes = $finalBytes
-        
         $dir = [System.IO.Path]::GetDirectoryName($DestFile)
         $safeName = "gf_" + [Guid]::NewGuid().ToString("N").Substring(0, 8) + ".tmp"
         $safePath = Join-Path $dir $safeName
-        
-        # Write mutated bytes with safe name
-        [System.IO.File]::WriteAllBytes($safePath, $modBytes)
+
+        [System.IO.File]::WriteAllBytes($safePath, $Bytes)
         Start-Sleep -Milliseconds 500
-        
-        if (Test-Path $safePath) {
-            # Remove target if somehow exists
+
+        if (Test-FileMatchesBytes -FilePath $safePath -ExpectedHash $expectedHash -ExpectedLength $expectedLength) {
             if (Test-Path $DestFile) {
                 try { Remove-Item $DestFile -Force -ErrorAction SilentlyContinue } catch { }
             }
-            
-            # Create hard link: real name -> safe name
+
             $null = cmd /c "mklink /H `"$DestFile`" `"$safePath`"" 2>&1
-            
-            if (Test-Path $DestFile) {
+
+            if (Test-FileMatchesBytes -FilePath $DestFile -ExpectedHash $expectedHash -ExpectedLength $expectedLength) {
                 Remove-Item $safePath -Force -ErrorAction SilentlyContinue
                 Protect-SingleFile -FilePath $DestFile
-                # Apply anti-quarantine ACL (deny SYSTEM delete)
                 Lock-FileFromDeletion -FilePath $DestFile
                 Start-Sleep -Milliseconds 500
-                if (Test-Path $DestFile) { return $true }
+                if (Test-FileMatchesBytes -FilePath $DestFile -ExpectedHash $expectedHash -ExpectedLength $expectedLength) { return $true }
             }
-            
-            # Cleanup temp file
+
             Remove-Item $safePath -Force -ErrorAction SilentlyContinue
         }
     } catch { }
-    
+
     # All techniques failed
     return "av_blocked"
 }
@@ -3138,28 +3043,10 @@ function Verify-Installation {
                 continue
             }
 
-            if ($diskName -match '\.dll$') {
-                $fs = [System.IO.File]::OpenRead($filePath)
-                try {
-                    $b1 = $fs.ReadByte()
-                    $b2 = $fs.ReadByte()
-                    if ($b1 -ne 0x4D -or $b2 -ne 0x5A) {
-                        $allPresent = $false
-                        $invalid += $diskName
-                        $missing += $diskName
-                    }
-                } finally {
-                    if ($fs) { $fs.Dispose() }
-                }
-            }
-
-            if ($file.Name -eq 'dlllist.txt') {
-                $dllListEntry = (Get-Content $filePath -ErrorAction Stop | Where-Object { $_.Trim() } | Select-Object -First 1)
-                if (-not $dllListEntry -or ($dllListEntry -ne 'OnlineFix64.dll' -and -not (Test-SafeDllName -Name $dllListEntry.Trim()))) {
-                    $allPresent = $false
-                    $invalid += $diskName
-                    $missing += $diskName
-                }
+            if (-not (Test-InstalledFileIntegrity -SourceName $file.Name -FilePath $filePath -ExpectedHash $file.Hash)) {
+                $allPresent = $false
+                $invalid += $diskName
+                $missing += $diskName
             }
         } catch {
             $allPresent = $false
@@ -3374,6 +3261,9 @@ function Install-Bypass {
     Write-C ""
     Write-Info (T 'installing')
     Write-C ""
+
+    # Remove previous read-only/ACL protection so a corrupted safe DLL can be replaced.
+    Unprotect-InstalledFiles -ContentPath $mcPath
     
     # Initialize bytes cache for potential retry
     $Script:BytesCache = @{}
@@ -4114,7 +4004,7 @@ function Open-Minecraft {
             foreach ($file in $Script:OnlineFixFiles) {
                 $diskName = Get-DiskName -SourceName $file.Name
                 $filePath = Join-Path $mcPath $diskName
-                if (-not (Test-Path $filePath)) {
+                if ((-not (Test-Path $filePath)) -or ($verification.Invalid -contains $diskName)) {
                     $null = Download-OnlineFixFile -FileName $file.Name -DestPath $mcPath -ExpectedHash $file.Hash
                 }
             }
@@ -4244,10 +4134,13 @@ function Show-Status {
         $legacy = Test-LegacyBypass -ContentPath $mcPath
         if ($verification.AllPresent) {
             Write-C (T 'status_installed') Green
-        } elseif ($verification.Missing.Count -lt 4) {
+        } elseif ($verification.Invalid.Count -gt 0 -or $verification.Missing.Count -lt 4) {
             Write-C (T 'status_partial') Yellow
-            foreach ($f in $verification.Missing) {
-                Write-C "    - $f" Yellow
+            foreach ($f in $verification.Invalid) {
+                Write-C "    - invalid/corrupted: $f" Yellow
+            }
+            foreach ($f in ($verification.Missing | Where-Object { $verification.Invalid -notcontains $_ })) {
+                Write-C "    - missing: $f" Yellow
             }
         } else {
             Write-C (T 'status_not_installed') Red
@@ -4395,7 +4288,9 @@ function Show-Diagnostics {
         $v = Verify-Installation -ContentPath $mcPath
         $bypassOk = $v.AllPresent
         if ($v.AllPresent) {
-            $bypassMsg = "All files present"
+            $bypassMsg = "All files present and hash-valid"
+        } elseif ($v.Invalid.Count -gt 0) {
+            $bypassMsg = "Invalid/corrupted: $($v.Invalid -join ', ')"
         } elseif ($v.Missing.Count -lt 4) {
             $bypassMsg = "Missing: $($v.Missing -join ', ')"
         } else {
