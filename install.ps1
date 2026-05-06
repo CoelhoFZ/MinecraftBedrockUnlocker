@@ -11,20 +11,20 @@
 
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.6
+    Version: 3.1.7
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-$Script:Version = '3.1.6'
+$Script:Version = '3.1.7'
 $Script:RepoOwner = 'CoelhoFZ'
 $Script:RepoName = 'MinecraftBedrockUnlocker'
 $Script:BaseUrl = "https://github.com/$($Script:RepoOwner)/$($Script:RepoName)/releases/latest/download"
 $Script:PayloadUrl = "$($Script:BaseUrl)/unlocker.ps1"
 $Script:RawPayloadUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/v$($Script:Version)/unlocker.ps1"
-$Script:PayloadSha256 = '6bfdc5acc47a9fc5d8487b0a6029f090b62698aaa43791d2549c695576837467'
+$Script:PayloadSha256 = 'e104b0a56eab72045bd7110e79466ad62b9cd9bffc2ddd15de13cc704f318a09'
 
 function Write-Status {
     param(

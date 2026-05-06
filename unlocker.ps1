@@ -11,7 +11,7 @@
     
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.6
+    Version: 3.1.7
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
@@ -21,7 +21,7 @@ $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.1.6"
+$Script:Version = "3.1.7"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
@@ -3412,14 +3412,11 @@ function Install-Bypass {
         Write-C ""
         Write-OK (T 'files_ok')
         
-        # Run watchdog: monitor files for 30s to catch delayed AV deletion
+        # Launch Minecraft now: Defender/AV usually scans these DLLs on access.
         Write-C ""
-        $watchDuration = 30
-        $watchOK = Watch-InstalledFiles -ContentPath $mcPath -DurationSeconds $watchDuration
-        
-        # Final verification after watchdog
-        $finalCheck = Verify-Installation -ContentPath $mcPath
-        if ($finalCheck.AllPresent) {
+        $launchValidation = Invoke-MinecraftLaunchValidation -ContentPath $mcPath -DurationSeconds 30
+        $finalCheck = $launchValidation.FinalCheck
+        if ($finalCheck -and $finalCheck.AllPresent) {
             # Install reboot persistence (Scheduled Task + encrypted backup)
             $persistOK = Install-Persistence -ContentPath $mcPath
             if ($persistOK) {
@@ -3433,8 +3430,6 @@ function Install-Bypass {
             
             Write-C ""
             Write-OK (T 'install_ok')
-            Write-C ""
-            Write-Info (T 'open_now')
             
             # BD Free: recommend on-access exclusion (optional, game already works)
             if ($isBDFree) {
@@ -3483,12 +3478,12 @@ function Install-Bypass {
             foreach ($f in $finalCheck.Missing) { Write-Warn "    - $f" }
             Write-C ""
             if ($Script:Lang -eq "pt") {
-                Write-C "  O antivirus deletou os arquivos mesmo apos o monitoramento." Yellow
-                Write-C "  Voce PRECISA adicionar a exclusao no antivirus antes de instalar." White
+                Write-C "  O antivirus removeu os arquivos durante ou logo apos abrir o Minecraft." Yellow
+                Write-C "  Adicione a exclusao no antivirus e instale novamente." White
                 Write-C "  Pasta: $mcPath" Cyan
             } else {
-                Write-C "  Antivirus deleted files even after monitoring." Yellow
-                Write-C "  You MUST add the antivirus exclusion before installing." White
+                Write-C "  Antivirus removed files during or right after opening Minecraft." Yellow
+                Write-C "  Add the antivirus exclusion and install again." White
                 Write-C "  Folder: $mcPath" Cyan
             }
         }
@@ -3544,13 +3539,11 @@ function Install-Bypass {
             Write-C ""
             Write-OK (T 'files_ok')
             
-            # Run watchdog to ensure files survive
+            # Launch Minecraft now: Defender/AV usually scans these DLLs on access.
             Write-C ""
-            $watchDuration2 = 30
-            $watchOK = Watch-InstalledFiles -ContentPath $mcPath -DurationSeconds $watchDuration2
-            
-            $finalRetry = Verify-Installation -ContentPath $mcPath
-            if ($finalRetry.AllPresent) {
+            $retryLaunchValidation = Invoke-MinecraftLaunchValidation -ContentPath $mcPath -DurationSeconds 30
+            $finalRetry = $retryLaunchValidation.FinalCheck
+            if ($finalRetry -and $finalRetry.AllPresent) {
                 $null = Install-Persistence -ContentPath $mcPath
                 Start-FileGuard -ContentPath $mcPath
                 Write-C ""
@@ -3565,8 +3558,6 @@ function Install-Bypass {
                         Write-OK "You can now RE-ENABLE your antivirus protection!"
                     }
                 }
-                Write-C ""
-                Write-Info (T 'open_now')
             } else {
                 Write-C ""
                 Write-Err (T 'files_missing')
@@ -3631,12 +3622,11 @@ function Install-Bypass {
             Write-C ""
             Write-OK (T 'files_ok')
             
-            # Final watchdog
+            # Launch Minecraft now: Defender/AV usually scans these DLLs on access.
             Write-C ""
-            $null = Watch-InstalledFiles -ContentPath $mcPath -DurationSeconds 15
-            
-            $finalCheck3 = Verify-Installation -ContentPath $mcPath
-            if ($finalCheck3.AllPresent) {
+            $thirdLaunchValidation = Invoke-MinecraftLaunchValidation -ContentPath $mcPath -DurationSeconds 30
+            $finalCheck3 = $thirdLaunchValidation.FinalCheck
+            if ($finalCheck3 -and $finalCheck3.AllPresent) {
                 $null = Install-Persistence -ContentPath $mcPath
                 Start-FileGuard -ContentPath $mcPath
                 Write-C ""
@@ -3651,8 +3641,6 @@ function Install-Bypass {
                         Write-OK "You can now RE-ENABLE your antivirus protection!"
                     }
                 }
-                Write-C ""
-                Write-Info (T 'open_now')
             } else {
                 Write-C ""
                 Write-Err (T 'files_missing')
@@ -3979,9 +3967,94 @@ function Restore-Original {
     Wait-Enter
 }
 
+function Start-MinecraftApp {
+    $opened = $false
+
+    # Method 1: shell:AppsFolder (most reliable, works even without minecraft: URI)
+    try {
+        Start-Process "shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App" -ErrorAction Stop
+        $opened = $true
+    } catch { }
+
+    # Method 2: minecraft: URI protocol
+    if (-not $opened) {
+        try {
+            Start-Process "minecraft:" -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
+            if (Test-MinecraftRunning) { $opened = $true }
+        } catch { }
+    }
+
+    # Method 3: Direct exe via Get-AppxPackage
+    if (-not $opened) {
+        try {
+            $pkg = Get-AppxPackage -Name "MICROSOFT.MINECRAFTUWP" -ErrorAction SilentlyContinue
+            if ($pkg) {
+                $exe = Join-Path $pkg.InstallLocation "Minecraft.Windows.exe"
+                if (Test-Path $exe) {
+                    Start-Process $exe -ErrorAction Stop
+                    $opened = $true
+                }
+            }
+        } catch { }
+    }
+
+    return $opened
+}
+
+function Invoke-MinecraftLaunchValidation {
+    param(
+        [string]$ContentPath,
+        [int]$DurationSeconds = 30
+    )
+
+    if (-not $ContentPath) {
+        return @{ Opened = $false; AllPresent = $false; FinalCheck = $null }
+    }
+
+    $beforeLaunch = Verify-Installation -ContentPath $ContentPath
+    if (-not $beforeLaunch.AllPresent) {
+        return @{ Opened = $false; AllPresent = $false; FinalCheck = $beforeLaunch }
+    }
+
+    if (-not (Test-GamingServices)) {
+        Start-GamingServices
+        Start-Sleep -Seconds 2
+    }
+
+    if ($Script:Lang -eq "pt") {
+        Write-Info "Abrindo Minecraft para validar o carregamento das DLLs com o antivirus ativo..."
+    } else {
+        Write-Info "Opening Minecraft to validate DLL loading with antivirus active..."
+    }
+
+    Start-FileGuard -ContentPath $ContentPath
+    $opened = Start-MinecraftApp
+
+    if ($opened) {
+        Write-OK (T 'mc_opened')
+    } else {
+        if ($Script:Lang -eq "pt") {
+            Write-Warn "Minecraft nao abriu automaticamente. Ainda vou verificar se os arquivos continuam presentes."
+        } else {
+            Write-Warn "Minecraft did not open automatically. Validation will still check whether files remain present."
+        }
+    }
+
+    if ($Script:Lang -eq "pt") {
+        Write-Info "Aguardando ${DurationSeconds}s apos abrir o Minecraft para ver se o antivirus remove as DLLs..."
+    } else {
+        Write-Info "Waiting ${DurationSeconds}s after opening Minecraft to see whether antivirus removes DLLs..."
+    }
+
+    Start-Sleep -Seconds $DurationSeconds
+    $finalCheck = Verify-Installation -ContentPath $ContentPath
+    return @{ Opened = $opened; AllPresent = $finalCheck.AllPresent; FinalCheck = $finalCheck }
+}
+
 function Open-Minecraft {
     $mcPath = Find-MinecraftPath
-    
+
     # Health check before opening - more robust with file protection
     if ($mcPath) {
         Initialize-SafeDllNames -ContentPath $mcPath
@@ -3997,10 +4070,10 @@ function Open-Minecraft {
             # Try Bitdefender exclusion
             $null = Try-BitdefenderExclusion -FolderPath $mcPath
             Start-Sleep -Milliseconds 500
-            
+
             # Initialize cache for watchdog
             $Script:BytesCache = @{}
-            
+
             foreach ($file in $Script:OnlineFixFiles) {
                 $diskName = Get-DiskName -SourceName $file.Name
                 $filePath = Join-Path $mcPath $diskName
@@ -4010,8 +4083,7 @@ function Open-Minecraft {
             }
             # Protect repaired files
             Protect-InstalledFiles -ContentPath $mcPath
-            
-            # Quick watchdog (5s) to ensure files survive
+
             Start-Sleep -Seconds 2
             $repairCheck = Verify-Installation -ContentPath $mcPath
             if ($repairCheck.AllPresent) {
@@ -4035,57 +4107,22 @@ function Open-Minecraft {
             # Files exist - refresh protection attributes
             Protect-InstalledFiles -ContentPath $mcPath
         }
+    }
 
-        # Defender/AV often scans on access while Minecraft loads the DLLs.
-        # Keep the guard alive during the actual launch path, not only after install.
-        $launchCheck = Verify-Installation -ContentPath $mcPath
-        if ($launchCheck.AllPresent) {
-            Start-FileGuard -ContentPath $mcPath
-        }
-    }
-    
-    # Check Gaming Services
-    if (-not (Test-GamingServices)) {
-        Start-GamingServices
-        Start-Sleep -Seconds 2
-    }
-    
     Write-Info (T 'opening_mc')
-    
     $opened = $false
-    
-    # Method 1: shell:AppsFolder (most reliable, works even without minecraft: URI)
-    try {
-        Start-Process "shell:AppsFolder\Microsoft.MinecraftUWP_8wekyb3d8bbwe!App" -ErrorAction Stop
-        $opened = $true
-    } catch { }
-    
-    # Method 2: minecraft: URI protocol
-    if (-not $opened) {
-        try {
-            Start-Process "minecraft:" -ErrorAction SilentlyContinue
-            Start-Sleep -Seconds 2
-            if (Test-MinecraftRunning) { $opened = $true }
-        } catch { }
-    }
-    
-    # Method 3: Direct exe via Get-AppxPackage
-    if (-not $opened) {
-        try {
-            $pkg = Get-AppxPackage -Name "MICROSOFT.MINECRAFTUWP" -ErrorAction SilentlyContinue
-            if ($pkg) {
-                $exe = Join-Path $pkg.InstallLocation "Minecraft.Windows.exe"
-                if (Test-Path $exe) {
-                    Start-Process $exe -ErrorAction Stop
-                    $opened = $true
-                }
-            }
-        } catch { }
-    }
-    
-    if ($opened) {
-        Write-OK (T 'mc_opened')
+    if ($mcPath) {
+        $launchResult = Invoke-MinecraftLaunchValidation -ContentPath $mcPath -DurationSeconds 5
+        $opened = $launchResult.Opened
+        if (-not $launchResult.AllPresent) {
+            Write-Err (T 'files_missing')
+            foreach ($f in $launchResult.FinalCheck.Missing) { Write-Warn "    - $f" }
+        }
     } else {
+        $opened = Start-MinecraftApp
+    }
+
+    if (-not $opened) {
         Write-Err "Failed to open Minecraft. Please open manually from the Start Menu."
     }
     Wait-Enter
