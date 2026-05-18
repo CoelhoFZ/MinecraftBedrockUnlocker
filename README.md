@@ -151,9 +151,15 @@ Add this folder to exclusions:
 
 The files used may trigger antivirus warnings - **this is expected** with any game unlocker.
 
-1. **Source available** - You can review the installer script in this repository
-2. **No malware** - This tool does NOT steal data, mine crypto, or harm your PC
+1. **Installer source available** - You can review the GPLv3 PowerShell installer and EXE wrapper source in this repository
+2. **Runtime DLLs are third-party** - `winmm.dll` and `OnlineFix64.dll` are closed-source Online-Fix components documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 3. **Guided exclusions** - The tool walks you through adding exceptions for your specific AV
+
+## Source code and license scope
+
+The installer, launcher wrapper and documentation authored in this repository remain licensed under **GPLv3**. See [SOURCE.md](SOURCE.md) for the source map and build instructions.
+
+The runtime unlock DLLs are closed-source Online-Fix components. CoelhoFZ does not have access to their source code, so they are documented separately in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and are not relicensed by this repository.
 
 ## What changes on your PC
 
@@ -180,9 +186,11 @@ Join our Discord: https://discord.gg/bfFdyJ3gEj
 
 ## Credits
 
-- OnlineFix team
-- CoelhoFZ for developing the tool
+- OnlineFix team for the closed-source runtime DLLs used by the unlock flow
+- CoelhoFZ for developing the GPLv3 installer and launcher wrapper
 
 ## License
 
-GPLv3 - See [LICENSE](LICENSE)
+Repository-authored installer, launcher wrapper and documentation: GPLv3 - See [LICENSE](LICENSE).
+
+Third-party Online-Fix runtime binaries are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and are not relicensed by this repository.

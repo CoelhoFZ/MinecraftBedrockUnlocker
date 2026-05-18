@@ -151,9 +151,15 @@ Adicione esta pasta nas exclusões:
 
 Os arquivos usados podem disparar alertas de antivírus - **isso é esperado** com qualquer ferramenta de desbloqueio.
 
-1. **Código disponível** - Você pode revisar o script instalador neste repositório
-2. **Sem malware** - Esta ferramenta NÃO rouba dados, minera criptomoedas ou danifica seu PC
+1. **Código do instalador disponível** - Você pode revisar o instalador PowerShell GPLv3 e o source do wrapper EXE neste repositório
+2. **DLLs de runtime são third-party** - `winmm.dll` e `OnlineFix64.dll` são componentes fechados da Online-Fix documentados em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 3. **Exclusões guiadas** - A ferramenta guia você para adicionar exceções no seu AV específico
+
+## Escopo do código-fonte e licença
+
+O instalador, o wrapper launcher e a documentação criados neste repositório continuam licenciados sob **GPLv3**. Veja [SOURCE.md](SOURCE.md) para o mapa de source e instruções de build.
+
+As DLLs de runtime que fazem o desbloqueio são componentes fechados da Online-Fix. CoelhoFZ não tem acesso ao código-fonte delas, então elas são documentadas separadamente em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) e não são relicenciadas por este repositório.
 
 ## O que muda no seu PC
 
@@ -180,9 +186,11 @@ Entre no nosso Discord: https://discord.gg/bfFdyJ3gEj
 
 ## Créditos
 
-- Equipe OnlineFix
-- CoelhoFZ pelo desenvolvimento da ferramenta
+- Equipe OnlineFix pelas DLLs de runtime fechadas usadas pelo fluxo de desbloqueio
+- CoelhoFZ pelo desenvolvimento do instalador e wrapper GPLv3
 
 ## Licença
 
-GPLv3 - Veja [LICENSE](LICENSE)
+Instalador, wrapper launcher e documentação criados neste repositório: GPLv3 - Veja [LICENSE](LICENSE).
+
+Binários third-party de runtime da Online-Fix estão documentados em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) e não são relicenciados por este repositório.

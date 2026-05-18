@@ -139,6 +139,11 @@ To remove the bypass and restore the game to Trial mode:
 3. **Xbox App required**
    - Microsoft Store installations are NOT compatible
 
+4. **Source and license scope**
+   - Installer, launcher wrapper and documentation authored in this repository are GPLv3
+   - Online-Fix runtime DLLs are closed-source third-party components documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+   - See [SOURCE.md](SOURCE.md) for the build/source map
+
 ---
 
 ## 🆘 Need Help?
