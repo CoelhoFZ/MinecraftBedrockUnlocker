@@ -28,7 +28,7 @@ GPLv3 does not turn the third-party Online-Fix runtime DLLs into GPLv3 source co
 
 ## Current release hashes
 
-For release `v3.1.7`, the published hashes were:
+For release `v3.1.8`, the published hashes were:
 
 ```text
 cb8baaa2054a11628b96e474e1428a430c95321f8ac3b89764255cbd6628a9d6  winmm.dll
