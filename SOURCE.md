@@ -8,6 +8,8 @@ The source code authored in this repository remains licensed under GPLv3. The ru
 
 | Component | Source path | Notes |
 |---|---|---|
+| Short EXE bootstrap | `e.ps1` | Downloads, verifies and starts the latest EXE release asset. |
+| Short installer bootstrap | `i.ps1` | Downloads, verifies and runs the latest `install.ps1` release asset. |
 | PowerShell bootstrap | `install.ps1` | Downloads and verifies the full installer payload. |
 | PowerShell installer | `unlocker.ps1` | Detects Minecraft, installs files, validates hashes, repairs and restores. |
 | Windows EXE wrapper | `build/Launcher.cs` | Small C# launcher that embeds and runs `install.ps1`. |

@@ -37,19 +37,16 @@ A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only
   </a>
 </p>
 
-> **Option 1 - Portable EXE** *(recommended, no setup required)*
-> Download and run `MinecraftBedrockUnlocker.exe` as Administrator. No manual PowerShell command needed.
-
-> **Option 2 - PowerShell one-liner** *(online, no file to download)*
-> The launcher uses a no-cache download and asks you to disable antivirus protection before loading the full installer.
-> Open **PowerShell as Administrator** and run:
+> **Option 1 - Portable EXE** *(recommended)*
+> Downloads the latest EXE, verifies SHA256, then starts it as Administrator:
 > ```powershell
-> $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$r=irm -UseBasicParsing -Headers $h -Uri "${u}?cb=$([guid]::NewGuid())" -MaximumRedirection 5; $s=($r | Out-String)}catch{Start-Sleep -Seconds 1}}}; $t=if($s){$s.TrimStart()}else{''}; if([string]::IsNullOrWhiteSpace($s) -or $t.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or $t.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'install.ps1 download failed or returned invalid content'}; iex $s
+> irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
 > ```
 
-> If blocked by ISP/DNS or the download returns empty, try:
+> **Option 2 - PowerShell installer** *(online, no EXE download)*
+> Downloads the latest installer, verifies SHA256, then runs the interactive menu:
 > ```powershell
-> $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $tmp=Join-Path $env:TEMP ("mbu-$([guid]::NewGuid().ToString('N')).ps1"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o $tmp "${u}?cb=$([guid]::NewGuid())"; if($LASTEXITCODE -ne 0 -or -not (Test-Path $tmp) -or (Get-Item $tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; $s=Get-Content -Raw $tmp; Remove-Item $tmp -Force -ErrorAction SilentlyContinue; $t=if($s){$s.TrimStart()}else{''}; if([string]::IsNullOrWhiteSpace($s) -or $t.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or $t.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'install.ps1 download returned invalid content'}; iex $s
+> irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 > ```
 
 👉 [View all releases and changelogs](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)

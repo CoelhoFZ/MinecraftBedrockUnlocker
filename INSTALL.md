@@ -15,13 +15,21 @@
 
 ### Step 2: Run the Unlocker
 
-Open **PowerShell as Administrator** and paste:
+Open **PowerShell as Administrator** and paste one of these short commands:
 
-The bootstrap uses a no-cache download and asks you to disable your antivirus before it downloads the full installer.
+**Option 1 - download and start the EXE:**
 
 ```powershell
-$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$r=irm -UseBasicParsing -Headers $h -Uri "${u}?cb=$([guid]::NewGuid())" -MaximumRedirection 5; $s=($r | Out-String)}catch{Start-Sleep -Seconds 1}}}; $t=if($s){$s.TrimStart()}else{''}; if([string]::IsNullOrWhiteSpace($s) -or $t.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or $t.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'install.ps1 download failed or returned invalid content'}; iex $s
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
 ```
+
+**Option 2 - run the PowerShell installer directly:**
+
+```powershell
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
+```
+
+Both short bootstraps download the latest release assets with cache-busting, reject empty or HTML responses and verify SHA256 before running anything.
 
 ### Step 3: Choose Option [1]
 
@@ -63,12 +71,12 @@ The script automatically detects your Windows language:
 
 ---
 
-## 🔄 Alternative Installation (if blocked by ISP/DNS)
+## 🔄 Alternative Installation (if GitHub raw is blocked)
 
-If the main command is blocked or returns an empty download:
+If a short command is blocked, use the release-hosted installer directly:
 
 ```powershell
-$u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $tmp=Join-Path $env:TEMP ("mbu-$([guid]::NewGuid().ToString('N')).ps1"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o $tmp "${u}?cb=$([guid]::NewGuid())"; if($LASTEXITCODE -ne 0 -or -not (Test-Path $tmp) -or (Get-Item $tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; $s=Get-Content -Raw $tmp; Remove-Item $tmp -Force -ErrorAction SilentlyContinue; $t=if($s){$s.TrimStart()}else{''}; if([string]::IsNullOrWhiteSpace($s) -or $t.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or $t.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'install.ps1 download returned invalid content'}; iex $s
+$s=irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1|Out-String;$t=$s.TrimStart();if(!$t -or $t -match '(?i)^(<!doctype|<html)'){throw 'bad download'};iex $s
 ```
 
 ---
