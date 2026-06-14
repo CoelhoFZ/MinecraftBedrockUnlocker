@@ -54,7 +54,7 @@ internal static class Program
             var startInfo = new ProcessStartInfo
             {
                 FileName = shellPath,
-                Arguments = BuildPowerShellArguments(scriptPath, tempDir, args),
+                Arguments = "-NoExit " + BuildPowerShellArguments(scriptPath, tempDir, args),
                 UseShellExecute = false,
                 RedirectStandardInput = false,
                 RedirectStandardOutput = false,
@@ -77,6 +77,12 @@ internal static class Program
         catch (Exception ex)
         {
             Console.Error.WriteLine(ex.Message);
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("The launcher encountered a critical error before PowerShell could start.");
+            Console.Error.WriteLine("If your antivirus caused this: disable it temporarily and run again.");
+            Console.Error.WriteLine();
+            Console.Error.Write("Press ENTER to exit...");
+            Console.ReadLine();
             return 1;
         }
         finally

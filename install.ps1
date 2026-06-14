@@ -18,6 +18,19 @@
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
+trap {
+    Write-Host ''
+    Write-Host '============================================================' -ForegroundColor Red
+    Write-Host 'BOOTSTRAP ERROR:' $_.Exception.Message -ForegroundColor Red
+    Write-Host '============================================================' -ForegroundColor Red
+    Write-Host ''
+    Write-Host 'The installer bootstrap failed.' -ForegroundColor Yellow
+    Write-Host 'If your antivirus caused this: disable it temporarily and run again.' -ForegroundColor Yellow
+    Write-Host ''
+    Read-Host 'Press ENTER to exit'
+    break
+}
+
 param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
 
 $Script:Version = '3.1.8'

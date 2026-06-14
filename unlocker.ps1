@@ -18,6 +18,22 @@
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
 
+trap {
+    Write-Host ''
+    Write-Host '  ============================================================' -ForegroundColor Red
+    Write-Host ''
+    Write-Host "  CRITICAL ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host ''
+    Write-Host '  The script encountered an unexpected error.' -ForegroundColor Yellow
+    Write-Host '  Please take a screenshot and report this error.' -ForegroundColor Yellow
+    Write-Host '  If your antivirus caused this: disable it and run again.' -ForegroundColor Yellow
+    Write-Host ''
+    Write-Host '  ============================================================' -ForegroundColor Red
+    Write-Host ''
+    Read-Host '  Press ENTER to exit'
+    break
+}
+
 param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
 
 param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
@@ -947,7 +963,7 @@ function Request-Elevation {
 
         if ($localScriptPath) {
             $extraArgs = if ($Script:IsSelfContained) { @('-ResourceDir', $Script:ResourceDir) } else { @() }
-            Start-Process powershell.exe -ArgumentList (@('-NoProfile', '-ExecutionPolicy', '-Bypass', '-File', "`"$localScriptPath`"") + $extraArgs) -Verb RunAs
+            Start-Process powershell.exe -ArgumentList (@('-NoProfile', '-NoExit', '-ExecutionPolicy', '-Bypass', '-File', "`"$localScriptPath`"") + $extraArgs) -Verb RunAs
             Write-OK "Elevated window opened. This window will close..."
             Start-Sleep -Seconds 2
             exit
@@ -969,7 +985,7 @@ if([string]::IsNullOrWhiteSpace(`$content)){throw 'unlocker.ps1 download returne
 if(`$trimmedContent.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or `$trimmedContent.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'unlocker.ps1 download returned an HTML error page'}
 iex `$content
 "@
-        Start-Process powershell.exe -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', $cmd) -Verb RunAs
+        Start-Process powershell.exe -ArgumentList @('-NoProfile', '-NoExit', '-ExecutionPolicy', 'Bypass', '-Command', $cmd) -Verb RunAs
         Write-OK "Elevated window opened. This window will close..."
         Start-Sleep -Seconds 2
         exit

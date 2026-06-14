@@ -1,6 +1,21 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 
+trap {
+    Write-Host ''
+    Write-Host '============================================================' -ForegroundColor Red
+    Write-Host '[MBU] ERROR:' $_.Exception.Message -ForegroundColor Red
+    Write-Host '============================================================' -ForegroundColor Red
+    Write-Host ''
+    Write-Host 'The bootstrap failed. Possible causes:' -ForegroundColor Yellow
+    Write-Host '  1. No internet connection or GitHub is unreachable' -ForegroundColor Yellow
+    Write-Host '  2. Antivirus blocked the download' -ForegroundColor Yellow
+    Write-Host '  3. The release asset was not found (try again later)' -ForegroundColor Yellow
+    Write-Host ''
+    Read-Host 'Press ENTER to exit'
+    break
+}
+
 if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
     throw 'MinecraftBedrockUnlocker.exe must be run on Windows.'
 }
@@ -48,4 +63,14 @@ for ($attempt = 1; $attempt -le 3; $attempt++) {
         Start-Sleep -Seconds $attempt
     }
 }
-throw $lastError
+Write-Host ''
+Write-Host '============================================================' -ForegroundColor Red
+Write-Host '[MBU] All download attempts failed.' -ForegroundColor Red
+if ($lastError) { Write-Host "[MBU] Last error: $($lastError.Exception.Message)" -ForegroundColor Red }
+Write-Host '============================================================' -ForegroundColor Red
+Write-Host ''
+Write-Host 'Check your internet connection and try again.' -ForegroundColor Yellow
+Write-Host 'If the problem persists, the GitHub release may be unavailable.' -ForegroundColor Yellow
+Write-Host ''
+Read-Host 'Press ENTER to exit'
+exit 1
