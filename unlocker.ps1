@@ -3193,12 +3193,11 @@ function Install-Bypass {
     # Detect ALL antivirus and add exclusions
     $avResult = Add-AllAVExclusions -Path $mcPath
     
-    # Self-contained mode: also exclude the temp resource dir from AV scanning
-    if ($Script:IsSelfContained -and $Script:ResourceDir) {
-        try {
-            Add-MpPreference -ExclusionPath $Script:ResourceDir -ErrorAction SilentlyContinue
-            Write-Info "Temp resource dir added to AV exclusions: $($Script:ResourceDir)"
-        } catch { }
+    # Self-contained mode: exclude parent temp dir (persistent, covers all future runs)
+    if ($Script:IsSelfContained) {
+        $tempParent = Join-Path ([System.IO.Path]::GetTempPath()) "MinecraftBedrockUnlocker"
+        try { Add-MpPreference -ExclusionPath $tempParent -ErrorAction SilentlyContinue } catch { }
+    }
     }
     $detectedAV = $avResult.AVList
     $anyExclusionAdded = $avResult.AnyAdded
