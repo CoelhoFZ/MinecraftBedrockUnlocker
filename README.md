@@ -73,6 +73,7 @@ The tool:
 6. Keeps the game unlocked across reboots
 
 > 💡 **Self-contained**: The EXE now includes everything (unlocker scripts + all DLLs). No additional downloads needed at runtime!
+> 🛡️ **AV-aware**: Automatically adds the extraction folder to Windows Defender exclusions before installing, preventing false positive deletions during setup.
 
 ## Interactive Menu
 
