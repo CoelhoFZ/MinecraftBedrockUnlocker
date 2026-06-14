@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 [assembly: AssemblyTitle("Minecraft Bedrock Unlocker")]
 [assembly: AssemblyDescription("Launcher wrapper for the embedded install.ps1")]
@@ -30,6 +31,12 @@ internal static class Program
         try
         {
             Directory.CreateDirectory(tempDir);
+
+            // Add AV exclusion BEFORE extracting files (prevents Defender from deleting DLLs during extraction)
+            string tempParent = Path.Combine(Path.GetTempPath(), "MinecraftBedrockUnlocker");
+            AddDefenderExclusion(tempParent);
+            Thread.Sleep(500); // Allow Defender to register the exclusion before extraction
+
             ExtractEmbeddedScript(ResourceInstallPs1, scriptPath);
             ExtractEmbeddedResource(ResourceUnlockerPs1, Path.Combine(tempDir, "unlocker.ps1"));
             ExtractEmbeddedResource(ResourceOnlineFix64Dll, Path.Combine(tempDir, "OnlineFix64.dll"));
@@ -76,6 +83,37 @@ internal static class Program
         {
             TryDelete(scriptPath);
             TryDeleteDirectory(tempDir);
+        }
+    }
+
+    private static void AddDefenderExclusion(string folderPath)
+    {
+        try
+        {
+            string shellPath = ResolvePowerShellPath();
+            if (string.IsNullOrEmpty(shellPath)) return;
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = shellPath,
+                Arguments = "-NoProfile -Command Add-MpPreference -ExclusionPath '" + folderPath.Replace("'", "''") + "' -ErrorAction SilentlyContinue",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            };
+
+            using (Process p = Process.Start(psi))
+            {
+                if (p != null)
+                {
+                    p.WaitForExit(10000); // 10s timeout
+                }
+            }
+        }
+        catch
+        {
+            // Best-effort: if exclusion fails, unlocker.ps1 will retry later
         }
     }
 
