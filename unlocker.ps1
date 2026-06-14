@@ -15,6 +15,8 @@
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
+param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
+
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
 
@@ -24,19 +26,25 @@ trap {
     Write-Host ''
     Write-Host "  CRITICAL ERROR: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host ''
-    Write-Host '  The script encountered an unexpected error.' -ForegroundColor Yellow
-    Write-Host '  Please take a screenshot and report this error.' -ForegroundColor Yellow
-    Write-Host '  If your antivirus caused this: disable it and run again.' -ForegroundColor Yellow
+    if ($Script:Lang -eq 'pt') {
+        Write-Host '  O script encontrou um erro inesperado.' -ForegroundColor Yellow
+        Write-Host '  Por favor, tire um print desta tela e reporte o erro.' -ForegroundColor Yellow
+        Write-Host '  Se foi o antivirus: execute novamente apos desativa-lo.' -ForegroundColor Yellow
+    } else {
+        Write-Host '  The script encountered an unexpected error.' -ForegroundColor Yellow
+        Write-Host '  Please take a screenshot and report this error.' -ForegroundColor Yellow
+        Write-Host '  If your antivirus caused this: disable it and run again.' -ForegroundColor Yellow
+    }
     Write-Host ''
     Write-Host '  ============================================================' -ForegroundColor Red
     Write-Host ''
-    Read-Host '  Press ENTER to exit'
+    if ($Script:Lang -eq 'pt') {
+        Read-Host '  Pressione ENTER para sair'
+    } else {
+        Read-Host '  Press ENTER to exit'
+    }
     break
 }
-
-param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
-
-param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
 
 # ============================================================================
 # Configuration
@@ -46,8 +54,6 @@ $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
 $Script:BaseUrl = "https://github.com/$RepoOwner/$RepoName/releases/latest/download"
-$Script:ResourceDir = $ResourceDir
-$Script:IsSelfContained = ($ResourceDir -and (Test-Path (Join-Path $ResourceDir "OnlineFix64.dll")))
 $Script:ResourceDir = $ResourceDir
 $Script:IsSelfContained = ($ResourceDir -and (Test-Path (Join-Path $ResourceDir "OnlineFix64.dll")))
 $Script:DiscordUrl = "https://discord.gg/byDkXzhvuZ"

@@ -15,8 +15,17 @@
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
+param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
+
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
+
+# Detect system language for error messages
+$Script:BootstrapLang = 'en'
+try {
+    $culture = (Get-Culture).Name
+    if ($culture -like 'pt-*') { $Script:BootstrapLang = 'pt' }
+} catch { }
 
 trap {
     Write-Host ''
@@ -24,14 +33,21 @@ trap {
     Write-Host 'BOOTSTRAP ERROR:' $_.Exception.Message -ForegroundColor Red
     Write-Host '============================================================' -ForegroundColor Red
     Write-Host ''
-    Write-Host 'The installer bootstrap failed.' -ForegroundColor Yellow
-    Write-Host 'If your antivirus caused this: disable it temporarily and run again.' -ForegroundColor Yellow
+    if ($Script:BootstrapLang -eq 'pt') {
+        Write-Host 'O bootstrap do instalador falhou.' -ForegroundColor Yellow
+        Write-Host 'Se foi o antivirus: desative-o temporariamente e execute novamente.' -ForegroundColor Yellow
+    } else {
+        Write-Host 'The installer bootstrap failed.' -ForegroundColor Yellow
+        Write-Host 'If your antivirus caused this: disable it temporarily and run again.' -ForegroundColor Yellow
+    }
     Write-Host ''
-    Read-Host 'Press ENTER to exit'
+    if ($Script:BootstrapLang -eq 'pt') {
+        Read-Host 'Pressione ENTER para sair'
+    } else {
+        Read-Host 'Press ENTER to exit'
+    }
     break
 }
-
-param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
 
 $Script:Version = '3.1.8'
 $Script:RepoOwner = 'CoelhoFZ'
@@ -56,7 +72,11 @@ function Write-Status {
 
 function Wait-AnyKey {
     Write-Status ''
-    Write-Status 'Desabilite o seu antivirus antes de executar, quando desabilitar, pressione qualquer tecla para continuar' ([ConsoleColor]::Yellow)
+        if ($Script:BootstrapLang -eq 'pt') {
+        Write-Status 'Desabilite o seu antivirus antes de executar, quando desabilitar, pressione qualquer tecla para continuar' ([ConsoleColor]::Yellow)
+    } else {
+        Write-Status 'Disable your antivirus before running, then press any key to continue' ([ConsoleColor]::Yellow)
+    }
     Write-Status ''
 
     try {
@@ -262,12 +282,22 @@ function Start-Bootstrap {
         }
         $exitCode = if ($LASTEXITCODE -is [int]) { $LASTEXITCODE } else { 0 }
         if ($exitCode -ne 0) {
+        if ($exitCode -ne 0) {
             Write-Status "unlocker exited with code $exitCode" ([ConsoleColor]::Red)
             Write-Status ""
-            Write-Status "The unlocker encountered an error. Check the message above." ([ConsoleColor]::Yellow)
-            Write-Status "If your antivirus caused this: disable it temporarily and run again." ([ConsoleColor]::Yellow)
+            if ($Script:BootstrapLang -eq 'pt') {
+                Write-Status "O unlocker encontrou um erro. Veja a mensagem acima." ([ConsoleColor]::Yellow)
+                Write-Status "Se foi o antivirus: desative-o temporariamente e execute novamente." ([ConsoleColor]::Yellow)
+            } else {
+                Write-Status "The unlocker encountered an error. Check the message above." ([ConsoleColor]::Yellow)
+                Write-Status "If your antivirus caused this: disable it temporarily and run again." ([ConsoleColor]::Yellow)
+            }
             Write-Status ""
-            Read-Host "Press ENTER to close this window"
+            if ($Script:BootstrapLang -eq 'pt') {
+                Read-Host "Pressione ENTER para fechar esta janela"
+            } else {
+                Read-Host "Press ENTER to close this window"
+            }
         }
     } finally {
         $payloadDir = Split-Path -Parent $payloadPath
