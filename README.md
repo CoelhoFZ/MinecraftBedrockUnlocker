@@ -11,11 +11,11 @@
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/stargazers">
     <img src="https://img.shields.io/github/stars/CoelhoFZ/MinecraftBedrockUnlocker?style=for-the-badge&color=yellow" alt="Stars"/>
   </a>
+  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases">
+    <img src="https://img.shields.io/github/downloads/CoelhoFZ/MinecraftBedrockUnlocker/total?style=for-the-badge&color=blue" alt="Downloads"/>
+  </a>
   <a href="https://discord.gg/byDkXzhvuZ">
     <img src="https://img.shields.io/badge/DISCORD-JOIN-7289da?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"/>
-  </a>
-  <a href="README_PT-BR.md">
-    <img src="https://img.shields.io/badge/lang-PT--BR-009c3b?style=for-the-badge" alt="PT-BR"/>
   </a>
 </p>
 
