@@ -6,19 +6,19 @@
 
 <p align="center">
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases">
-    <img src="https://badgen.net/github/assets-dl/CoelhoFZ/MinecraftBedrockUnlocker?icon=github&label=downloads&color=blue&scale=1.5" alt="Downloads"/>
+    <img src="https://img.shields.io/github/downloads/CoelhoFZ/MinecraftBedrockUnlocker/total?style=for-the-badge&color=blue&label=DOWNLOADS" alt="Downloads"/>
   </a>
 </p>
 
 <p align="center">
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest">
-    <img src="https://badgen.net/github/release/CoelhoFZ/MinecraftBedrockUnlocker?icon=github&label=latest+version&color=green&scale=1.5" alt="Latest Version"/>
+    <img src="https://img.shields.io/github/v/release/CoelhoFZ/MinecraftBedrockUnlocker?style=for-the-badge&color=brightgreen&label=LATEST+VERSION" alt="Latest Version"/>
   </a>
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/stargazers">
-    <img src="https://badgen.net/github/stars/CoelhoFZ/MinecraftBedrockUnlocker?icon=github&label=stars&color=yellow&scale=1.5" alt="Stars"/>
+    <img src="https://img.shields.io/github/stars/CoelhoFZ/MinecraftBedrockUnlocker?style=for-the-badge&color=yellow" alt="Stars"/>
   </a>
   <a href="https://discord.gg/byDkXzhvuZ">
-    <img src="https://badgen.net/badge/discord/join/7289da?icon=discord&label=&scale=1.5" alt="Discord"/>
+    <img src="https://img.shields.io/badge/DISCORD-JOIN-7289da?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"/>
   </a>
 </p>
 
