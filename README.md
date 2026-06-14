@@ -12,7 +12,7 @@
     <img src="https://img.shields.io/github/stars/CoelhoFZ/MinecraftBedrockUnlocker?style=for-the-badge&color=yellow" alt="Stars"/>
   </a>
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases">
-    <img src="https://img.shields.io/github/downloads/CoelhoFZ/MinecraftBedrockUnlocker/total?style=for-the-badge&color=blue&label=DOWNLOADS" alt="Downloads"/>
+    <img src="https://badgen.net/github/assets-dl/CoelhoFZ/MinecraftBedrockUnlocker?icon=github&label=downloads&color=blue&scale=1.5" alt="Downloads"/>
   </a>
   <a href="https://discord.gg/byDkXzhvuZ">
     <img src="https://img.shields.io/badge/DISCORD-JOIN-7289da?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"/>
