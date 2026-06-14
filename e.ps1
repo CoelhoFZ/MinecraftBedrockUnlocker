@@ -31,12 +31,15 @@ $Headers = @{
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 function Get-DownloadFolder {
-    $profile = [Environment]::GetFolderPath('UserProfile')
-    if (-not [string]::IsNullOrWhiteSpace($profile)) {
-        $downloads = Join-Path $profile 'Downloads'
-        if (Test-Path -LiteralPath $downloads) { return $downloads }
+    # Use TEMP instead of Downloads: Windows Defender is less aggressive scanning temp files,
+    # and the EXE already adds %TEMP%\MinecraftBedrockUnlocker to Defender exclusions.
+    $tempParent = Join-Path ([System.IO.Path]::GetTempPath()) 'MinecraftBedrockUnlocker'
+    if (-not (Test-Path -LiteralPath $tempParent)) {
+        New-Item -ItemType Directory -Path $tempParent -Force | Out-Null
     }
-    return $env:TEMP
+    # Best-effort: try to add Defender exclusion (may fail if not admin - that's OK)
+    try { Add-MpPreference -ExclusionPath $tempParent -ErrorAction SilentlyContinue } catch { }
+    return $tempParent
 }
 
 $lastError = $null
@@ -66,11 +69,25 @@ for ($attempt = 1; $attempt -le 3; $attempt++) {
 Write-Host ''
 Write-Host '============================================================' -ForegroundColor Red
 Write-Host '[MBU] All download attempts failed.' -ForegroundColor Red
-if ($lastError) { Write-Host "[MBU] Last error: $($lastError.Exception.Message)" -ForegroundColor Red }
+if ($lastError) {
+    $errMsg = $lastError.Exception.Message
+    Write-Host "[MBU] Last error: $errMsg" -ForegroundColor Red
+}
 Write-Host '============================================================' -ForegroundColor Red
 Write-Host ''
-Write-Host 'Check your internet connection and try again.' -ForegroundColor Yellow
-Write-Host 'If the problem persists, the GitHub release may be unavailable.' -ForegroundColor Yellow
+if ($lastError -and $errMsg -match 'v.rus|software.*indesej|unwanted|potentially|acesso negado|access.*denied|opera..o.*v.lida') {
+    Write-Host 'WINDOWS DEFENDER IS BLOCKING THE FILE!' -ForegroundColor Red
+    Write-Host 'The file was downloaded but Windows Defender blocked access to it.' -ForegroundColor Yellow
+    Write-Host ''
+    Write-Host 'QUICK FIX - Run this command as Administrator, then try again:' -ForegroundColor Cyan
+    Write-Host '  Add-MpPreference -ExclusionPath "$downloadFolder"' -ForegroundColor White
+    Write-Host ''
+    Write-Host 'OR: Temporarily disable Real-time protection in Windows Security,' -ForegroundColor Yellow
+    Write-Host '     run this script, then re-enable it after.' -ForegroundColor Yellow
+} else {
+    Write-Host 'Check your internet connection and try again.' -ForegroundColor Yellow
+    Write-Host 'If the problem persists, the GitHub release may be unavailable.' -ForegroundColor Yellow
+}
 Write-Host ''
 Read-Host 'Press ENTER to exit'
 exit 1
