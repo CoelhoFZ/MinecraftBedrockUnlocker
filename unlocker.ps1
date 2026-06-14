@@ -4459,12 +4459,12 @@ function Start-MainLoop {
         Show-Banner
         
         switch ($choice.Trim()) {
-            "1" { Install-Bypass }
-            "2" { Restore-Original }
-            "3" { Open-Minecraft }
-            "4" { Open-XboxApp }
-            "5" { Show-Status }
-            "6" { Show-Diagnostics }
+            "1" { try { Install-Bypass } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
+            "2" { try { Restore-Original } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
+            "3" { try { Open-Minecraft } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
+            "4" { try { Open-XboxApp } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
+            "5" { try { Show-Status } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
+            "6" { try { Show-Diagnostics } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
             "0" {
                 Write-C ""
                 Write-Info (T 'exiting')
@@ -4479,4 +4479,25 @@ function Start-MainLoop {
 # ============================================================================
 # Entry Point
 # ============================================================================
-Start-MainLoop
+try {
+    Start-MainLoop
+} catch {
+    Write-C ""
+    Write-C "  ============================================================" Red
+    Write-C ""
+    Write-Err "Critical error: $($_.Exception.Message)"
+    Write-C ""
+    if ($Script:Lang -eq 'pt') {
+        Write-C "  O script encontrou um erro inesperado e nao pode continuar." Yellow
+        Write-C "  Por favor, tire um print desta mensagem e reporte o erro." Yellow
+        Write-C "  Se foi o antivirus: execute novamente apos desativa-lo." Yellow
+    } else {
+        Write-C "  The script encountered an unexpected error and cannot continue." Yellow
+        Write-C "  Please take a screenshot of this message and report it." Yellow
+        Write-C "  If it was your antivirus: run again after disabling it." Yellow
+    }
+    Write-C ""
+    Write-C "  ============================================================" Red
+    Write-C ""
+    Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para sair' } else { 'Press ENTER to exit' })"
+}

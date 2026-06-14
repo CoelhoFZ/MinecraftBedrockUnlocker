@@ -248,6 +248,14 @@ function Start-Bootstrap {
             & $powershellExe -NoProfile -ExecutionPolicy Bypass -File $payloadPath
         }
         $exitCode = if ($LASTEXITCODE -is [int]) { $LASTEXITCODE } else { 0 }
+        if ($exitCode -ne 0) {
+            Write-Status "unlocker exited with code $exitCode" ([ConsoleColor]::Red)
+            Write-Status ""
+            Write-Status "The unlocker encountered an error. Check the message above." ([ConsoleColor]::Yellow)
+            Write-Status "If your antivirus caused this: disable it temporarily and run again." ([ConsoleColor]::Yellow)
+            Write-Status ""
+            Read-Host "Press ENTER to close this window"
+        }
     } finally {
         $payloadDir = Split-Path -Parent $payloadPath
         # Only clean up downloaded payload, not resource dir (EXE handles that)
