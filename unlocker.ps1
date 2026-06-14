@@ -26,7 +26,7 @@ $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
 $Script:BaseUrl = "https://github.com/$RepoOwner/$RepoName/releases/latest/download"
-$Script:DiscordUrl = "https://discord.gg/bfFdyJ3gEj"
+$Script:DiscordUrl = "https://discord.gg/byDkXzhvuZ"
 $Script:RawScriptUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/v$($Script:Version)/unlocker.ps1"
 
 function New-CacheBustedUrl {

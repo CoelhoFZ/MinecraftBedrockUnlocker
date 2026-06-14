@@ -156,7 +156,7 @@ To remove the bypass and restore the game to Trial mode:
 
 ## 🆘 Need Help?
 
-- **Discord:** https://discord.gg/bfFdyJ3gEj
+- **Discord:** https://discord.gg/byDkXzhvuZ
 - **Issues:** [Report a bug](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/issues)
 
 ---

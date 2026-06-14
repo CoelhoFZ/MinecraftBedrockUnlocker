@@ -11,7 +11,7 @@
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/stargazers">
     <img src="https://img.shields.io/github/stars/CoelhoFZ/MinecraftBedrockUnlocker?style=for-the-badge&color=yellow" alt="Stars"/>
   </a>
-  <a href="https://discord.gg/bfFdyJ3gEj">
+  <a href="https://discord.gg/byDkXzhvuZ">
     <img src="https://img.shields.io/badge/DISCORD-ENTRAR-7289da?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"/>
   </a>
   <a href="README.md">
@@ -179,7 +179,7 @@ As DLLs de runtime que fazem o desbloqueio são componentes fechados da Online-F
 
 ## Comunidade
 
-Entre no nosso Discord: https://discord.gg/bfFdyJ3gEj
+Entre no nosso Discord: https://discord.gg/byDkXzhvuZ
 
 ## Créditos
 

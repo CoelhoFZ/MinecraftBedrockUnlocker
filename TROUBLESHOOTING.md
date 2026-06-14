@@ -138,7 +138,7 @@ Use **option [6] System Diagnostics** to check:
 
 ## ❓ Still Not Working?
 
-1. **Join our Discord**: https://discord.gg/bfFdyJ3gEj
+1. **Join our Discord**: https://discord.gg/byDkXzhvuZ
 2. **Create an Issue**: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/issues
 3. **Include the Diagnostics output** (option [6])
 
