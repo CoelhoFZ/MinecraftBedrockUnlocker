@@ -14,7 +14,12 @@ using System.Text;
 
 internal static class Program
 {
-    private const string ResourceName = "MinecraftBedrockUnlocker.Payload.install.ps1";
+    private const string ResourceInstallPs1 = "MinecraftBedrockUnlocker.Payload.install.ps1";
+    private const string ResourceUnlockerPs1 = "MinecraftBedrockUnlocker.Payload.unlocker.ps1";
+    private const string ResourceOnlineFix64Dll = "MinecraftBedrockUnlocker.Payload.OnlineFix64.dll";
+    private const string ResourceWinmmDll = "MinecraftBedrockUnlocker.Payload.winmm.dll";
+    private const string ResourceDlllistTxt = "MinecraftBedrockUnlocker.Payload.dlllist.txt";
+    private const string ResourceOnlineFixIni = "MinecraftBedrockUnlocker.Payload.OnlineFix.ini";
 
     [STAThread]
     private static int Main(string[] args)
@@ -25,7 +30,12 @@ internal static class Program
         try
         {
             Directory.CreateDirectory(tempDir);
-            ExtractEmbeddedScript(scriptPath);
+            ExtractEmbeddedScript(ResourceInstallPs1, scriptPath);
+            ExtractEmbeddedResource(ResourceUnlockerPs1, Path.Combine(tempDir, "unlocker.ps1"));
+            ExtractEmbeddedResource(ResourceOnlineFix64Dll, Path.Combine(tempDir, "OnlineFix64.dll"));
+            ExtractEmbeddedResource(ResourceWinmmDll, Path.Combine(tempDir, "winmm.dll"));
+            ExtractEmbeddedResource(ResourceDlllistTxt, Path.Combine(tempDir, "dlllist.txt"));
+            ExtractEmbeddedResource(ResourceOnlineFixIni, Path.Combine(tempDir, "OnlineFix.ini"));
 
             string shellPath = ResolvePowerShellPath();
             if (string.IsNullOrEmpty(shellPath))
@@ -37,7 +47,7 @@ internal static class Program
             var startInfo = new ProcessStartInfo
             {
                 FileName = shellPath,
-                Arguments = BuildPowerShellArguments(scriptPath, args),
+                Arguments = BuildPowerShellArguments(scriptPath, tempDir, args),
                 UseShellExecute = false,
                 RedirectStandardInput = false,
                 RedirectStandardOutput = false,
@@ -69,20 +79,37 @@ internal static class Program
         }
     }
 
-    private static void ExtractEmbeddedScript(string destinationPath)
+    private static void ExtractEmbeddedScript(string resourceName, string destinationPath)
     {
         Assembly assembly = Assembly.GetExecutingAssembly();
-        using (Stream stream = assembly.GetManifestResourceStream(ResourceName))
+        using (Stream stream = assembly.GetManifestResourceStream(resourceName))
         {
             if (stream == null)
             {
-                throw new InvalidOperationException("Embedded PowerShell payload was not found.");
+                throw new InvalidOperationException("Embedded PowerShell payload was not found: " + resourceName);
             }
 
             using (var reader = new StreamReader(stream, Encoding.UTF8, true))
             {
                 string content = reader.ReadToEnd();
                 File.WriteAllText(destinationPath, content, new UTF8Encoding(false));
+            }
+        }
+    }
+
+    private static void ExtractEmbeddedResource(string resourceName, string destinationPath)
+    {
+        Assembly assembly = Assembly.GetExecutingAssembly();
+        using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+        {
+            if (stream == null)
+            {
+                throw new InvalidOperationException("Embedded resource was not found: " + resourceName);
+            }
+
+            using (var fileStream = File.Create(destinationPath))
+            {
+                stream.CopyTo(fileStream);
             }
         }
     }
@@ -118,11 +145,13 @@ internal static class Program
         return null;
     }
 
-    private static string BuildPowerShellArguments(string scriptPath, string[] args)
+    private static string BuildPowerShellArguments(string scriptPath, string resourceDir, string[] args)
     {
         var builder = new StringBuilder();
         builder.Append("-NoLogo -NoProfile -ExecutionPolicy Bypass -File ");
         builder.Append(Quote(scriptPath));
+        builder.Append(" -ResourceDir ");
+        builder.Append(Quote(resourceDir));
 
         if (args != null)
         {

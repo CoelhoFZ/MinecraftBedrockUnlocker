@@ -18,6 +18,10 @@
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
 
+param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
+
+param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
+
 # ============================================================================
 # Configuration
 # ============================================================================
@@ -26,6 +30,10 @@ $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
 $Script:BaseUrl = "https://github.com/$RepoOwner/$RepoName/releases/latest/download"
+$Script:ResourceDir = $ResourceDir
+$Script:IsSelfContained = ($ResourceDir -and (Test-Path (Join-Path $ResourceDir "OnlineFix64.dll")))
+$Script:ResourceDir = $ResourceDir
+$Script:IsSelfContained = ($ResourceDir -and (Test-Path (Join-Path $ResourceDir "OnlineFix64.dll")))
 $Script:DiscordUrl = "https://discord.gg/byDkXzhvuZ"
 $Script:RawScriptUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/v$($Script:Version)/unlocker.ps1"
 
@@ -938,7 +946,8 @@ function Request-Elevation {
         elseif ($MyInvocation.MyCommand.Path -and (Test-Path $MyInvocation.MyCommand.Path)) { $localScriptPath = $MyInvocation.MyCommand.Path }
 
         if ($localScriptPath) {
-            Start-Process powershell.exe -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$localScriptPath`"") -Verb RunAs
+            $extraArgs = if ($Script:IsSelfContained) { @('-ResourceDir', $Script:ResourceDir) } else { @() }
+            Start-Process powershell.exe -ArgumentList (@('-NoProfile', '-ExecutionPolicy', '-Bypass', '-File', "`"$localScriptPath`"") + $extraArgs) -Verb RunAs
             Write-OK "Elevated window opened. This window will close..."
             Start-Sleep -Seconds 2
             exit
@@ -2280,6 +2289,28 @@ function Download-OnlineFixFile {
     $destFile = Join-Path $DestPath $diskName
     
     Write-Info "$(T 'downloading') $diskName..."
+    # ============================================================
+    # Self-contained mode - use embedded resource instead of downloading
+    # ============================================================
+    if ($Script:IsSelfContained) {
+        $resourcePath = Join-Path $Script:ResourceDir $FileName
+        if (Test-Path $resourcePath) {
+            try {
+                $bytes = [System.IO.File]::ReadAllBytes($resourcePath)
+                if (-not $bytes -or $bytes.Length -eq 0) {
+                    Write-Err "Embedded resource is empty: $FileName"
+                    return "resource_empty"
+                }
+            } catch {
+                Write-Err "Failed to read embedded resource: $FileName"
+                return "resource_failed"
+            }
+        } else {
+            Write-Err "Embedded resource not found: $FileName"
+            return "resource_not_found"
+        }
+        Write-OK "$diskName (embedded)"
+    } else {
     
     # ============================================================
     # STEP 1: Download bytes into memory with retries and no-cache fallbacks

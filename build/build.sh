@@ -10,6 +10,13 @@ RESOURCE_FILE="${BUILD_DIR}/launcher.res"
 RC_FILE="${BUILD_DIR}/launcher.rc"
 
 mkdir -p "${DIST_DIR}" "${BUILD_DIR}"
+
+# Download latest DLLs from GitHub release for embedding (skip if already present)
+if [ ! -f "${DIST_DIR}/OnlineFix64.dll" ]; then
+  echo "Fetching DLLs from latest GitHub release..."
+  gh release download --repo CoelhoFZ/MinecraftBedrockUnlocker --pattern '*.dll' --pattern 'dlllist.txt' --pattern 'OnlineFix.ini' --dir "${DIST_DIR}" 2>/dev/null || echo "  -> Could not auto-fetch DLLs. Place them in dist/ manually."
+fi
+
 trap 'rm -f "${RESOURCE_FILE}" "${RC_FILE}"' EXIT
 
 cat > "${RC_FILE}" <<EOF
@@ -32,6 +39,11 @@ mcs \
   -out:"${OUTPUT_FILE}" \
   -win32res:"${RESOURCE_FILE}" \
   -resource:"${REPO_DIR}/install.ps1,MinecraftBedrockUnlocker.Payload.install.ps1" \
+  -resource:"${REPO_DIR}/unlocker.ps1,MinecraftBedrockUnlocker.Payload.unlocker.ps1" \
+  -resource:"${REPO_DIR}/dist/OnlineFix64.dll,MinecraftBedrockUnlocker.Payload.OnlineFix64.dll" \
+  -resource:"${REPO_DIR}/dist/winmm.dll,MinecraftBedrockUnlocker.Payload.winmm.dll" \
+  -resource:"${REPO_DIR}/dist/dlllist.txt,MinecraftBedrockUnlocker.Payload.dlllist.txt" \
+  -resource:"${REPO_DIR}/dist/OnlineFix.ini,MinecraftBedrockUnlocker.Payload.OnlineFix.ini" \
   "${REPO_DIR}/build/Launcher.cs"
 
 file "${OUTPUT_FILE}"

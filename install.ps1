@@ -18,6 +18,8 @@
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
+param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
+
 $Script:Version = '3.1.8'
 $Script:RepoOwner = 'CoelhoFZ'
 $Script:RepoName = 'MinecraftBedrockUnlocker'
@@ -223,20 +225,35 @@ function Start-Bootstrap {
 
     Wait-AnyKey
 
-    Write-Status ''
-    Write-Status 'Baixando instalador completo...' ([ConsoleColor]::Cyan)
-    $payloadPath = Download-Payload
-    Write-Status 'Instalador baixado. Iniciando...' ([ConsoleColor]::Green)
-    Write-Status ''
+    if ($ResourceDir -and (Test-Path (Join-Path $ResourceDir 'unlocker.ps1'))) {
+        # Self-contained mode: unlocker.ps1 and DLLs are already embedded in the EXE
+        Write-Status ''
+        Write-Status 'Executando instalador self-contained...' ([ConsoleColor]::Cyan)
+        Write-Status ''
+        $payloadPath = Join-Path $ResourceDir 'unlocker.ps1'
+    } else {
+        Write-Status ''
+        Write-Status 'Baixando instalador completo...' ([ConsoleColor]::Cyan)
+        $payloadPath = Download-Payload
+        Write-Status 'Instalador baixado. Iniciando...' ([ConsoleColor]::Green)
+        Write-Status ''
+    }
 
     $powershellExe = Get-PowerShellExe
     $exitCode = 1
     try {
-        & $powershellExe -NoProfile -ExecutionPolicy Bypass -File $payloadPath
+        if ($ResourceDir) {
+            & $powershellExe -NoProfile -ExecutionPolicy Bypass -File $payloadPath -ResourceDir $ResourceDir
+        } else {
+            & $powershellExe -NoProfile -ExecutionPolicy Bypass -File $payloadPath
+        }
         $exitCode = if ($LASTEXITCODE -is [int]) { $LASTEXITCODE } else { 0 }
     } finally {
         $payloadDir = Split-Path -Parent $payloadPath
-        Remove-Item -Path $payloadDir -Recurse -Force -ErrorAction SilentlyContinue
+        # Only clean up downloaded payload, not resource dir (EXE handles that)
+        if (-not $ResourceDir) {
+            Remove-Item -Path $payloadDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
     }
     exit $exitCode
 }

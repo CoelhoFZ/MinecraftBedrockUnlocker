@@ -40,14 +40,14 @@ A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only
   </a>
 </p>
 
-> **Option 1 - Portable EXE** *(recommended)*
-> Downloads the latest EXE, verifies SHA256, then starts it as Administrator:
+> **Option 1 - PowerShell one-liner** *(recommended)*
+> Downloads the latest self-contained EXE, verifies SHA256, then starts it as Administrator:
 > ```powershell
 > irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
 > ```
 
-> **Option 2 - PowerShell installer** *(online, no EXE download)*
-> Downloads the latest installer, verifies SHA256, then runs the interactive menu:
+> **Option 2 - Alternative bootstrap**
+> Same as Option 1, uses a different download method:
 > ```powershell
 > irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 > ```
@@ -65,12 +65,14 @@ A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only
 ## What it does
 
 The tool:
-1. Auto-detects your language (EN, PT-BR, ES)
+1. Auto-detects your language (EN, PT-BR, ES, RU)
 2. Requests Administrator privileges if needed
 3. Finds your Minecraft installation
 4. Handles antivirus exclusions automatically
 5. Installs and verifies the bypass files
 6. Keeps the game unlocked across reboots
+
+> 💡 **Self-contained**: The EXE now includes everything (unlocker scripts + all DLLs). No additional downloads needed at runtime!
 
 ## Interactive Menu
 

@@ -37,14 +37,14 @@ Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Editio
   </a>
 </p>
 
-> **Opção 1 - EXE Portátil** *(recomendado)*
-> Baixa o EXE mais recente, verifica SHA256 e inicia como Administrador:
+> **Opção 1 - PowerShell one-liner** *(recomendado)*
+> Baixa o EXE self-contained mais recente, verifica SHA256 e inicia como Administrador:
 > ```powershell
 > irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
 > ```
 
-> **Opção 2 - Instalador PowerShell** *(online, sem baixar o EXE)*
-> Baixa o instalador mais recente, verifica SHA256 e abre o menu interativo:
+> **Opção 2 - Bootstrap alternativo**
+> Igual à Opção 1, usa um método de download diferente:
 > ```powershell
 > irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 > ```
