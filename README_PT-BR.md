@@ -21,8 +21,6 @@
 
 > **🔓 Desbloqueie o Minecraft Bedrock Edition DE GRAÇA no Windows 10/11!**
 
-**Minecraft Bedrock grátis** | **Minecraft Windows 10 grátis** | **Minecraft crack 2026** | **Minecraft desbloqueador** | **Minecraft PC grátis** | **Como baixar Minecraft de graça**
-
 Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Edition (GDK)**. **Só funciona com instalações do Xbox App** (NÃO Microsoft Store!).
 
 > ⚠️ **Aviso**: Este projeto é apenas para fins educacionais. Por favor, apoie os desenvolvedores comprando o jogo.
@@ -65,8 +63,8 @@ A ferramenta:
 1. Detecta seu idioma automaticamente (PT-BR, EN, ES)
 2. Solicita privilégios de Administrador se necessário
 3. Encontra sua instalação do Minecraft
-4. Gerencia exclusões de antivírus automaticamente
-5. Instala e verifica os arquivos de desbloqueio
+4. Guia a configuração de exclusões do antivírus quando necessário
+5. Instala e verifica os arquivos do mod
 6. Mantém o jogo desbloqueado após reinicializações
 
 ## Menu Interativo
@@ -98,7 +96,7 @@ A ferramenta:
 ## Funcionalidades
 
 - 🌍 **Multi-idioma**: Detecta automaticamente EN, PT-BR, ES
-- 🛡️ **Tratamento de antivírus**: Adiciona exclusões automaticamente para Windows Defender, Bitdefender Free e outros
+- 🛡️ **Orientação de AV**: Guia você nas exclusões do antivírus para reduzir falsos positivos durante a instalação
 - 🔄 **Tentativa automática**: Se o antivírus remover os arquivos, tenta novamente
 - 📊 **Diagnóstico**: Verificação completa de saúde do sistema
 - 🔧 **Auto-reparo**: Corrige arquivos faltando ao abrir o Minecraft
@@ -146,21 +144,21 @@ Adicione esta pasta nas exclusões:
 
 ## ⚠️ Falsos Positivos de Antivírus
 
-Os arquivos usados podem disparar alertas de antivírus - **isso é esperado** com qualquer ferramenta de desbloqueio.
+Alguns arquivos usados na instalação podem disparar alertas de antivírus - **isso pode acontecer com instaladores de mods e componentes de runtime relacionados**.
 
 1. **Código do instalador disponível** - Você pode revisar o instalador PowerShell GPLv3 e o source do wrapper EXE neste repositório
-2. **DLLs de runtime são third-party** - `winmm.dll` e `OnlineFix64.dll` são componentes fechados da Online-Fix documentados em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
-3. **Exclusões guiadas** - A ferramenta guia você para adicionar exceções no seu AV específico
+2. **Avisos sobre componentes third-party** - Os detalhes dos componentes de runtime estão documentados em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+3. **Exclusões guiadas** - O passo a passo de instalação e troubleshooting está em [INSTALL.md](INSTALL.md) e [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ## Escopo do código-fonte e licença
 
 O instalador, o wrapper launcher e a documentação criados neste repositório continuam licenciados sob **GPLv3**. Veja [SOURCE.md](SOURCE.md) para o mapa de source e instruções de build.
 
-As DLLs de runtime que fazem o desbloqueio são componentes fechados da Online-Fix. CoelhoFZ não tem acesso ao código-fonte delas, então elas são documentadas separadamente em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) e não são relicenciadas por este repositório.
+Os componentes third-party de runtime são documentados separadamente em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) e não são relicenciados por este repositório.
 
 ## O que muda no seu PC
 
-- Instala os arquivos de desbloqueio em `C:\XboxGames\Minecraft for Windows\Content`.
+- Instala os arquivos do mod em `C:\XboxGames\Minecraft for Windows\Content`.
 - Adiciona exclusões de antivírus apenas para a pasta Content do Minecraft e os arquivos instalados.
 - Cria a tarefa agendada `MCContentBridge` e a pasta de backup `%LOCALAPPDATA%\MCBridge` para restaurar os arquivos após reinicialização.
 - A opção `[2] Restaurar Original` remove os arquivos instalados, a tarefa agendada e a pasta de backup.
@@ -183,7 +181,6 @@ Entre no nosso Discord: https://discord.gg/byDkXzhvuZ
 
 ## Créditos
 
-- Equipe OnlineFix pelas DLLs de runtime fechadas usadas pelo fluxo de desbloqueio
 - CoelhoFZ pelo desenvolvimento do instalador e wrapper GPLv3
 
 ## Licença

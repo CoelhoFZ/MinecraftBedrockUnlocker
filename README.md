@@ -24,8 +24,6 @@
 
 > **🔓 Unlock Minecraft Bedrock Edition for FREE on Windows 10/11!**
 
-**Minecraft Bedrock free download** | **Minecraft Windows 10 free** | **Minecraft crack 2026** | **Minecraft unlocker** | **Free Minecraft PC**
-
 A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only works with Xbox App installations** (NOT Microsoft Store!).
 
 > ⚠️ **Disclaimer**: This project is for educational purposes only. Please support the developers by purchasing the game.
@@ -68,12 +66,12 @@ The tool:
 1. Auto-detects your language (EN, PT-BR, ES, RU)
 2. Requests Administrator privileges if needed
 3. Finds your Minecraft installation
-4. Handles antivirus exclusions automatically
-5. Installs and verifies the bypass files
+4. Guides antivirus exclusion setup when needed
+5. Installs and verifies the mod files
 6. Keeps the game unlocked across reboots
 
 > 💡 **Self-contained**: The EXE now includes everything (unlocker scripts + all DLLs). No additional downloads needed at runtime!
-> 🛡️ **AV-aware**: Automatically adds the extraction folder to Windows Defender exclusions before installing, preventing false positive deletions during setup.
+> 🛡️ **AV-aware**: Helps reduce false positive deletions during setup and points you to the relevant AV exclusion steps when needed.
 
 ## Interactive Menu
 
@@ -104,7 +102,7 @@ The tool:
 ## Features
 
 - 🌍 **Multi-language**: Auto-detects EN, PT-BR, ES, RU
-- 🛡️ **Antivirus handling**: Adds exclusions automatically for Windows Defender, BD Free, and others
+- 🛡️ **AV guidance**: Guides you through antivirus exclusions to reduce false positives during setup
 - 🔄 **Auto-retry**: If antivirus removes files, retries installation
 - 📊 **Diagnostics**: Full system health check
 - 🔧 **Auto-repair**: Fixes missing files when opening Minecraft
@@ -152,21 +150,21 @@ Add this folder to exclusions:
 
 ## ⚠️ Antivirus False Positives
 
-The files used may trigger antivirus warnings - **this is expected** with any game unlocker.
+Some files used by the setup may trigger antivirus warnings - **this can happen with game mod installers and related runtime components**.
 
 1. **Installer source available** - You can review the GPLv3 PowerShell installer and EXE wrapper source in this repository
-2. **Runtime DLLs are third-party** - `winmm.dll` and `OnlineFix64.dll` are closed-source Online-Fix components documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
-3. **Guided exclusions** - The tool walks you through adding exceptions for your specific AV
+2. **Third-party component notices** - Runtime component details are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+3. **Guided exclusions** - Setup and troubleshooting steps are documented in [INSTALL.md](INSTALL.md) and [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ## Source code and license scope
 
 The installer, launcher wrapper and documentation authored in this repository remain licensed under **GPLv3**. See [SOURCE.md](SOURCE.md) for the source map and build instructions.
 
-The runtime unlock DLLs are closed-source Online-Fix components. CoelhoFZ does not have access to their source code, so they are documented separately in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and are not relicensed by this repository.
+Third-party runtime components are documented separately in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and are not relicensed by this repository.
 
 ## What changes on your PC
 
-- Installs the unlock files inside `C:\XboxGames\Minecraft for Windows\Content`.
+- Installs the mod files inside `C:\XboxGames\Minecraft for Windows\Content`.
 - Adds scoped antivirus exclusions for the Minecraft content folder and installed files.
 - Creates the scheduled task `MCContentBridge` and backup folder `%LOCALAPPDATA%\MCBridge` so the files can be restored after reboot.
 - Option `[2] Restore Original` removes the installed files, scheduled task and backup folder.
@@ -189,7 +187,6 @@ Join our Discord: https://discord.gg/byDkXzhvuZ
 
 ## Credits
 
-- OnlineFix team for the closed-source runtime DLLs used by the unlock flow
 - CoelhoFZ for developing the GPLv3 installer and launcher wrapper
 
 ## License
