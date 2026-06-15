@@ -11,14 +11,17 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest">
+  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest" aria-label="Latest Version" title="Latest Version">
     <img src="https://img.shields.io/github/v/release/CoelhoFZ/MinecraftBedrockUnlocker?style=for-the-badge&color=brightgreen&label=LATEST+VERSION" alt="Latest Version"/>
+    <sup>Latest Version</sup>
   </a>
-  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/stargazers">
+  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/stargazers" aria-label="Stars" title="Stars">
     <img src="https://img.shields.io/github/stars/CoelhoFZ/MinecraftBedrockUnlocker?style=for-the-badge&color=yellow" alt="Stars"/>
+    <sup>Stars</sup>
   </a>
-  <a href="https://discord.gg/byDkXzhvuZ">
+  <a href="https://discord.gg/byDkXzhvuZ" aria-label="Discord" title="Discord">
     <img src="https://img.shields.io/badge/DISCORD-JOIN-7289da?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"/>
+    <sup>Discord</sup>
   </a>
 </p>
 

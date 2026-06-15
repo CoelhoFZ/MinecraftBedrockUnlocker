@@ -5,17 +5,21 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest">
+  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest" aria-label="Última Versão" title="Última Versão">
     <img src="https://img.shields.io/github/v/release/CoelhoFZ/MinecraftBedrockUnlocker?style=for-the-badge&color=brightgreen&label=ÚLTIMA+VERSÃO" alt="Última Versão"/>
+    <sup>Última Versão</sup>
   </a>
-  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/stargazers">
+  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/stargazers" aria-label="Stars" title="Stars">
     <img src="https://img.shields.io/github/stars/CoelhoFZ/MinecraftBedrockUnlocker?style=for-the-badge&color=yellow" alt="Stars"/>
+    <sup>Stars</sup>
   </a>
-  <a href="https://discord.gg/byDkXzhvuZ">
+  <a href="https://discord.gg/byDkXzhvuZ" aria-label="Discord" title="Discord">
     <img src="https://img.shields.io/badge/DISCORD-ENTRAR-7289da?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"/>
+    <sup>Discord</sup>
   </a>
-  <a href="README.md">
+  <a href="README.md" aria-label="English" title="English">
     <img src="https://img.shields.io/badge/lang-EN-012169?style=for-the-badge" alt="English"/>
+    <sup>English</sup>
   </a>
 </p>
 
