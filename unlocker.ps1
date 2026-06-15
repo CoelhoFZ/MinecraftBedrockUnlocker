@@ -49,7 +49,7 @@ trap {
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.1.10"
+$Script:Version = "3.1.11"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
@@ -2331,7 +2331,24 @@ function Download-OnlineFixFile {
             Write-Err "Embedded resource not found: $FileName"
             return "resource_not_found"
         }
-        Write-OK "$diskName (embedded)"
+        
+        # Cache bytes for potential retry later (so we don't re-download)
+        if (-not $Script:BytesCache) { $Script:BytesCache = @{} }
+        $Script:BytesCache[$FileName] = $bytes
+        
+        # For dlllist.txt: replace OnlineFix64.dll reference with safe name
+        if ($FileName -eq "dlllist.txt" -and $Script:SafeDllName) {
+            $textContent = [System.Text.Encoding]::UTF8.GetString($bytes)
+            $textContent = $textContent -replace 'OnlineFix64\.dll', $Script:SafeDllName
+            $bytes = [System.Text.Encoding]::UTF8.GetBytes($textContent)
+        }
+        
+        # Write to disk (self-contained mode)
+        $writeResult = Write-FileToDisk -FileName $diskName -DestFile $destFile -Bytes $bytes
+        if ($writeResult -eq $true) {
+            Write-OK "$(T 'download_ok'): $diskName (embedded)"
+        }
+        return $writeResult
     } else {
     
     # ============================================================
@@ -3093,19 +3110,16 @@ function Verify-Installation {
             if ($item.Length -le 0) {
                 $allPresent = $false
                 $invalid += $diskName
-                $missing += $diskName
                 continue
             }
 
             if (-not (Test-InstalledFileIntegrity -SourceName $file.Name -FilePath $filePath -ExpectedHash $file.Hash)) {
                 $allPresent = $false
                 $invalid += $diskName
-                $missing += $diskName
             }
         } catch {
             $allPresent = $false
             $invalid += $diskName
-            $missing += $diskName
         }
     }
     
@@ -3346,18 +3360,9 @@ function Install-Bypass {
         }
     }
     
-    # Re-enable Defender if we disabled it
-    if ($defenderDisabledByUs) {
-        try {
-            Set-MpPreference -DisableRealtimeMonitoring $false -ErrorAction SilentlyContinue
-        } catch { }
-    }
-
-    # Resume Bitdefender if we suspended it
-    if ($bdWasSuspended) {
-        Resume-Bitdefender
-        Write-OK (T 'bd_resumed')
-    }
+    # NOTE: Defender/Bitdefender stay disabled until after verification to prevent
+    # deletion of freshly written files during the verify wait period.
+    # They are re-enabled after the protection+verify cycle below.
 
     # ============================================================
     # EARLY EXIT: If ALL downloads failed, don't pretend it worked
@@ -3428,6 +3433,17 @@ function Install-Bypass {
     # SUCCESS: All files present (downloaded OR already existed)
     # ============================================================
     if ($verification.AllPresent) {
+        # Re-enable Defender now that files are verified present
+        if ($defenderDisabledByUs) {
+            try {
+                Set-MpPreference -DisableRealtimeMonitoring $false -ErrorAction SilentlyContinue
+            } catch { }
+        }
+        if ($bdWasSuspended) {
+            Resume-Bitdefender
+            Write-OK (T 'bd_resumed')
+        }
+
         # If downloads failed but old files exist, warn user
         if ($failedFiles.Count -gt 0) {
             Write-C ""
@@ -3585,17 +3601,18 @@ function Install-Bypass {
         # Protect files immediately
         Protect-InstalledFiles -ContentPath $mcPath
         
-        if ($defenderDisabledByUs) {
-            try {
-                Set-MpPreference -DisableRealtimeMonitoring $false -ErrorAction SilentlyContinue
-            } catch { }
-        }
-        
-        # Wait longer and verify
+        # Wait longer and verify (Defender stays disabled until after verify)
         Start-Sleep -Seconds 5
         $verification2 = Verify-Installation -ContentPath $mcPath
         
         if ($verification2.AllPresent) {
+            # Re-enable Defender now that files are verified present
+            if ($defenderDisabledByUs) {
+                try {
+                    Set-MpPreference -DisableRealtimeMonitoring $false -ErrorAction SilentlyContinue
+                } catch { }
+            }
+
             Write-C ""
             Write-OK (T 'files_ok')
             
@@ -3679,6 +3696,13 @@ function Install-Bypass {
         $verification3 = Verify-Installation -ContentPath $mcPath
         
         if ($verification3.AllPresent) {
+            # Re-enable Defender now that files are verified present
+            if ($defenderDisabledByUs) {
+                try {
+                    Set-MpPreference -DisableRealtimeMonitoring $false -ErrorAction SilentlyContinue
+                } catch { }
+            }
+
             Write-C ""
             Write-OK (T 'files_ok')
             
@@ -3746,6 +3770,15 @@ function Install-Bypass {
         }
         Write-C "  ============================================================" Red
         Write-C ""
+        # Re-enable Defender before exiting on failure
+        if ($defenderDisabledByUs) {
+            try {
+                Set-MpPreference -DisableRealtimeMonitoring $false -ErrorAction SilentlyContinue
+            } catch { }
+        }
+        if ($bdWasSuspended) {
+            Resume-Bitdefender
+        }
         Wait-Enter
         return
     }
@@ -3753,6 +3786,15 @@ function Install-Bypass {
     # ============================================================
     # NON-AV FAILURE: Network/other issues
     # ============================================================
+    # Re-enable Defender before exiting on failure
+    if ($defenderDisabledByUs) {
+        try {
+            Set-MpPreference -DisableRealtimeMonitoring $false -ErrorAction SilentlyContinue
+        } catch { }
+    }
+    if ($bdWasSuspended) {
+        Resume-Bitdefender
+    }
     Write-C ""
     Write-Err (T 'install_fail')
     foreach ($f in $failedFiles) {
