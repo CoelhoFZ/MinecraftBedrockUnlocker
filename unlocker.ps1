@@ -11,7 +11,7 @@
     
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.9
+    Version: 3.1.10
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
@@ -49,7 +49,7 @@ trap {
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.1.9"
+$Script:Version = "3.1.10"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
@@ -2387,6 +2387,7 @@ function Download-OnlineFixFile {
     }
     return $writeResult
 }
+}
 
 function Write-FileToDisk {
     param(
@@ -3219,7 +3220,6 @@ function Install-Bypass {
     if ($Script:IsSelfContained) {
         $tempParent = Join-Path ([System.IO.Path]::GetTempPath()) "MinecraftBedrockUnlocker"
         try { Add-MpPreference -ExclusionPath $tempParent -ErrorAction SilentlyContinue } catch { }
-    }
     }
     $detectedAV = $avResult.AVList
     $anyExclusionAdded = $avResult.AnyAdded
