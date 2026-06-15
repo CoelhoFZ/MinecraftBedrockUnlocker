@@ -11,7 +11,7 @@
 
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.8
+    Version: 3.1.9
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
@@ -49,13 +49,13 @@ trap {
     break
 }
 
-$Script:Version = '3.1.8'
+$Script:Version = '3.1.9'
 $Script:RepoOwner = 'CoelhoFZ'
 $Script:RepoName = 'MinecraftBedrockUnlocker'
 $Script:BaseUrl = "https://github.com/$($Script:RepoOwner)/$($Script:RepoName)/releases/latest/download"
 $Script:PayloadUrl = "$($Script:BaseUrl)/unlocker.ps1"
 $Script:RawPayloadUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/v$($Script:Version)/unlocker.ps1"
-$Script:PayloadSha256 = '608bd2f998b7c01240aedd6858401727cc623438fce2a36f6e29672b249b7db5'
+$Script:PayloadSha256 = 'c3bbf659aa4460940277c072727377fd96ec13636b255dafc04df3870777d3cc'
 
 function Write-Status {
     param(
@@ -281,7 +281,6 @@ function Start-Bootstrap {
             & $powershellExe -NoProfile -ExecutionPolicy Bypass -File $payloadPath
         }
         $exitCode = if ($LASTEXITCODE -is [int]) { $LASTEXITCODE } else { 0 }
-        if ($exitCode -ne 0) {
         if ($exitCode -ne 0) {
             Write-Status "unlocker exited with code $exitCode" ([ConsoleColor]::Red)
             Write-Status ""

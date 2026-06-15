@@ -10,8 +10,8 @@ using System.Threading;
 [assembly: AssemblyCompany("CoelhoFZ")]
 [assembly: AssemblyProduct("MinecraftBedrockUnlocker")]
 [assembly: AssemblyCopyright("GPLv3")]
-[assembly: AssemblyVersion("3.1.8.0")]
-[assembly: AssemblyFileVersion("3.1.8.0")]
+[assembly: AssemblyVersion("3.1.9.0")]
+[assembly: AssemblyFileVersion("3.1.9.0")]
 
 internal static class Program
 {

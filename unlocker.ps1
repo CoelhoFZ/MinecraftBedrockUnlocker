@@ -11,7 +11,7 @@
     
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.8
+    Version: 3.1.9
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
@@ -49,7 +49,7 @@ trap {
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.1.8"
+$Script:Version = "3.1.9"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"

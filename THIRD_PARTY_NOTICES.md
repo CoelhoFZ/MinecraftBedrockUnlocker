@@ -28,9 +28,12 @@ GPLv3 does not turn the third-party Online-Fix runtime DLLs into GPLv3 source co
 
 ## Current release hashes
 
-For release `v3.1.8`, the published hashes were:
+For release `v3.1.9`, the published hashes were:
 
 ```text
+eb735b06545a9b84a53ac17ff023b2181a5fd8ad1def11be3999fc5b0f230e3f  install.ps1
+c3bbf659aa4460940277c072727377fd96ec13636b255dafc04df3870777d3cc  unlocker.ps1
+6f7a43502a8632e7904a10b0467c3cc061190f3905cea88d8fab7b4205a06c46  MinecraftBedrockUnlocker.exe
 cb8baaa2054a11628b96e474e1428a430c95321f8ac3b89764255cbd6628a9d6  winmm.dll
 52cb3902999034e01bae63c6a06612d1798b0e0addc1bd4ce7680891b0229953  OnlineFix64.dll
 fc0befb4aae4b7f0eeb1c398fccea03cc795590e09db6628974520091fcfc516  dlllist.txt
