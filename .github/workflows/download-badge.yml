@@ -1,0 +1,71 @@
+name: Update Download Badge
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-badge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch download count and generate badge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO="CoelhoFZ/MinecraftBedrockUnlocker"
+
+          TOTAL=$(gh api "repos/$REPO/releases" --paginate \
+            -q '[.[].assets[] | .download_count] | add // 0')
+
+          if [ "$TOTAL" -ge 1000 ]; then
+            LABEL=$(echo "scale=1; $TOTAL / 1000" | bc)
+            DISPLAY="${LABEL}k"
+          else
+            DISPLAY="$TOTAL"
+          fi
+
+          WIDTH=$(( ${#DISPLAY} * 10 + 100 ))
+
+          cat > docs/downloads-badge.svg <<SVG
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${WIDTH}" height="28" role="img" aria-label="DOWNLOADS: ${TOTAL}">
+            <title>DOWNLOADS: ${TOTAL}</title>
+            <linearGradient id="s" x2="0" y2="100%">
+              <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+              <stop offset="1" stop-opacity=".1"/>
+            </linearGradient>
+            <clipPath id="r">
+              <rect width="${WIDTH}" height="28" rx="5" fill="#fff"/>
+            </clipPath>
+            <g clip-path="url(#r)">
+              <rect width="102" height="28" fill="#555"/>
+              <rect x="102" width="$((WIDTH - 102))" height="28" fill="#007ec6"/>
+              <rect width="${WIDTH}" height="28" fill="url(#s)"/>
+            </g>
+            <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="100">
+              <text aria-hidden="true" x="511" y="175" fill="#010101" fill-opacity=".3" transform="scale(.1)">DOWNLOADS</text>
+              <text x="511" y="175" transform="scale(.1)" fill="#fff">DOWNLOADS</text>
+              <text aria-hidden="true" x="${511 + (WIDTH - 102) / 2}" y="175" fill="#010101" fill-opacity=".3" transform="scale(.1)">${DISPLAY}</text>
+              <text x="${511 + (WIDTH - 102) / 2}" y="175" transform="scale(.1)" fill="#fff" font-weight="bold">${DISPLAY}</text>
+            </g>
+          </svg>
+          SVG
+
+          sed -i 's/^          //' docs/downloads-badge.svg
+
+          echo "Total downloads: $TOTAL | Badge: $DISPLAY"
+
+      - name: Commit badge
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/downloads-badge.svg
+          git diff --cached --quiet || git commit -m "docs: update download badge [skip ci]"
+          git push

@@ -5,9 +5,13 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases">
+    <img src="https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/docs/downloads-badge.svg" alt="Downloads"/>
+  </a>
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest" aria-label="Última Versão" title="Última Versão">
     <img src="https://img.shields.io/badge/ÚLTIMA-VERSÃO-brightgreen?style=for-the-badge" alt="Última Versão"/>
   </a>
+</p>
   <a href="https://buymeacoffee.com/coelhofz" aria-label="Buy Me a Coffee" title="Buy Me a Coffee">
     <img src="https://img.shields.io/badge/BUY%20ME%20A%20COFFEE-APOIAR-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=000000" alt="Buy Me a Coffee"/>
   </a>
