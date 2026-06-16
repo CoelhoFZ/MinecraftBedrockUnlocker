@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases">
-    <img src="https://img.shields.io/github/downloads/CoelhoFZ/MinecraftBedrockUnlocker/total?style=for-the-badge&color=blue&label=DOWNLOADS" alt="Downloads"/>
+    <img src="https://img.shields.io/github/downloads/CoelhoFZ/MinecraftBedrockUnlocker/total?style=for-the-badge&color=blue&label=DOWNLOADS&cacheSeconds=3600" alt="Downloads"/>
   </a>
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest" aria-label="Latest Version" title="Latest Version">
     <img src="https://img.shields.io/badge/LATEST-VERSION-brightgreen?style=for-the-badge" alt="Latest Version"/>
