@@ -6,14 +6,14 @@
 
 <p align="center">
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases">
-    <img src="https://img.shields.io/github/downloads/CoelhoFZ/MinecraftBedrockUnlocker/total?style=for-the-badge&color=blue&label=DOWNLOADS" alt="Downloads"/>
+    <img src="https://img.shields.io/badge/DOWNLOADS-WINDOWS-blue?style=for-the-badge&logo=windows" alt="Downloads"/>
+  </a>
+  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest" aria-label="Latest Version" title="Latest Version">
+    <img src="https://img.shields.io/badge/LATEST-VERSION-brightgreen?style=for-the-badge" alt="Latest Version"/>
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest" aria-label="Latest Version" title="Latest Version">
-    <img src="https://img.shields.io/github/v/release/CoelhoFZ/MinecraftBedrockUnlocker?style=for-the-badge&color=brightgreen&label=LATEST+VERSION" alt="Latest Version"/>
-  </a>
   <a href="https://buymeacoffee.com/coelhofz" aria-label="Buy Me a Coffee" title="Buy Me a Coffee">
     <img src="https://img.shields.io/badge/BUY%20ME%20A%20COFFEE-SUPPORT-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=000000" alt="Buy Me a Coffee"/>
   </a>
