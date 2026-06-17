@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Minecraft Bedrock Unlocker - PowerShell Script
     
@@ -209,16 +209,16 @@ function Invoke-DownloadBytes {
 
     $Script:LastDownloadError = ($errors -join ' | ')
 
-    # v3.1.12: detect GitHub release asset 404s and print a clear remediation hint.
+    # v3.2.0: detect GitHub release asset 404s and print a clear remediation hint.
     $has404 = ($errors | Where-Object { $_ -match '404|Not Found|HTTP 404' })
     if ($has404) {
         Write-Warn ''
-        Write-Warn '[v3.1.12] One or more release assets returned HTTP 404 from GitHub.'
-        Write-Warn '[v3.1.12] This usually means the CoelhoFZ release ships only the EXE,'
-        Write-Warn '[v3.1.12] but the PowerShell installer is trying to fetch OnlineFix binaries.'
-        Write-Warn '[v3.1.12] Recommended fix: download the self-contained EXE instead:'
-        Write-Warn "[v3.1.12]   $Script:BaseUrl/MinecraftBedrockUnlocker.exe"
-        Write-Warn '[v3.1.12] The EXE bundles all required DLLs internally.'
+        Write-Warn '[v3.2.0] One or more release assets returned HTTP 404 from GitHub.'
+        Write-Warn '[v3.2.0] This usually means the CoelhoFZ release ships only the EXE,'
+        Write-Warn '[v3.2.0] but the PowerShell installer is trying to fetch OnlineFix binaries.'
+        Write-Warn '[v3.2.0] Recommended fix: download the self-contained EXE instead:'
+        Write-Warn "[v3.2.0]   $Script:BaseUrl/MinecraftBedrockUnlocker.exe"
+        Write-Warn '[v3.2.0] The EXE bundles all required DLLs internally.'
         Write-Warn ''
     }
     return $null
@@ -298,16 +298,17 @@ function Initialize-SafeDllNames {
 # ============================================================================
 $Script:Lang = "en"
 
+# Top 7 most-spoken languages worldwide (Ethnologue 2023, native + L2).
+# Detection uses Windows OS culture (Get-Culture), never IP geolocation.
 function Detect-Language {
     try {
         $culture = (Get-Culture).Name
         switch -Wildcard ($culture) {
-            "pt-BR" { $Script:Lang = "pt" }
-            "pt-*"  { $Script:Lang = "pt" }
+            "zh-*"  { $Script:Lang = "zh" }
+            "hi-*"  { $Script:Lang = "hi" }
             "es-*"  { $Script:Lang = "es" }
             "fr-*"  { $Script:Lang = "fr" }
-            "de-*"  { $Script:Lang = "de" }
-            "zh-*"  { $Script:Lang = "zh" }
+            "ar-*"  { $Script:Lang = "ar" }
             "ru-*"  { $Script:Lang = "ru" }
             default  { $Script:Lang = "en" }
         }
@@ -322,560 +323,1056 @@ function T {
     $translations = @{
         "admin_required" = @{
             en = "Administrator privileges required!"
-            pt = "Privilegios de Administrador necessarios!"
-            es = "Se requieren privilegios de Administrador!"
+            zh = "需要管理员权限！"
+            hi = "प्रशासकीय विशेषाधिकार आवश्यक!"
+            es = "¡Se requieren privilegios de administrador!"
+            fr = "Privilèges d'administrateur requis !"
+            ar = "امتيازات المسؤول المطلوبة!"
+            ru = "Требуются права администратора!"
         }
         "admin_elevating" = @{
             en = "Requesting elevation..."
-            pt = "Solicitando elevacao..."
-            es = "Solicitando elevacion..."
+            zh = "请求海拔..."
+            hi = "उन्नयन का अनुरोध..."
+            es = "Solicitando elevación..."
+            fr = "Demande d'élévation..."
+            ar = "طلب الارتفاع..."
+            ru = "Запрос на повышение..."
         }
         "admin_ok" = @{
             en = "Running with Administrator privileges"
-            pt = "Executando com privilegios de Administrador"
-            es = "Ejecutando con privilegios de Administrador"
+            zh = "以管理员权限运行"
+            hi = "प्रशासकीय विशेषाधिकारों के साथ चल रहा है"
+            es = "Ejecutar con privilegios de administrador"
+            fr = "Exécution avec les privilèges d'administrateur"
+            ar = "التشغيل مع امتيازات المسؤول"
+            ru = "Запуск с правами администратора"
         }
         "menu_title" = @{
             en = "Available Options"
-            pt = "Opcoes Disponiveis"
-            es = "Opciones Disponibles"
+            zh = "可用选项"
+            hi = "उपलब्ध विकल्प"
+            es = "Opciones disponibles"
+            fr = "Options disponibles"
+            ar = "الخيارات المتاحة"
+            ru = "Доступные опции"
         }
         "menu_1" = @{
             en = "Install Mod (Unlock Game)"
-            pt = "Instalar Mod (Desbloquear Jogo)"
-            es = "Instalar Mod (Desbloquear Juego)"
+            zh = "安装模组（解锁游戏）"
+            hi = "मॉड स्थापित करें (गेम अनलॉक करें)"
+            es = "Instalar Mod (Desbloquear juego)"
+            fr = "Installer le module (déverrouiller le jeu)"
+            ar = "تثبيت Mod (فتح اللعبة)"
+            ru = "Установить мод (разблокировать игру)"
         }
         "menu_2" = @{
             en = "Restore Original (Back to Trial)"
-            pt = "Restaurar Original (Voltar ao Trial)"
-            es = "Restaurar Original (Volver a Trial)"
+            zh = "恢复原始（返回试用）"
+            hi = "मूल पुनर्स्थापित करें (परीक्षण पर वापस जाएं)"
+            es = "Restaurar original (volver a prueba)"
+            fr = "Restaurer l'original (retour à l'essai)"
+            ar = "استعادة النسخة الأصلية (العودة إلى النسخة التجريبية)"
+            ru = "Восстановить оригинал (возврат к пробной версии)"
         }
         "menu_3" = @{
             en = "Open Minecraft"
-            pt = "Abrir Minecraft"
+            zh = "打开我的世界"
+            hi = "Minecraft खोलें"
             es = "Abrir Minecraft"
+            fr = "Ouvrez Minecraft"
+            ar = "افتح ماينكرافت"
+            ru = "Открыть Майнкрафт"
         }
         "menu_4" = @{
             en = "Install Minecraft (Xbox App)"
-            pt = "Instalar Minecraft (Xbox App)"
-            es = "Instalar Minecraft (Xbox App)"
+            zh = "安装 Minecraft（Xbox 应用程序）"
+            hi = "Minecraft इंस्टॉल करें (Xbox ऐप)"
+            es = "Instalar Minecraft (aplicación Xbox)"
+            fr = "Installer Minecraft (application Xbox)"
+            ar = "تثبيت لعبة Minecraft (تطبيق Xbox)"
+            ru = "Установите Minecraft (приложение Xbox)"
         }
         "menu_5" = @{
             en = "Check Status"
-            pt = "Verificar Status"
-            es = "Verificar Estado"
+            zh = "检查状态"
+            hi = "स्थिति जाँचिए"
+            es = "Verificar estado"
+            fr = "Vérifier l'état"
+            ar = "التحقق من الحالة"
+            ru = "Проверить статус"
         }
         "menu_6" = @{
             en = "System Diagnostics"
-            pt = "Diagnostico do Sistema"
-            es = "Diagnostico del Sistema"
+            zh = "系统诊断"
+            hi = "सिस्टम डायग्नोस्टिक्स"
+            es = "Diagnóstico del sistema"
+            fr = "Diagnostic du système"
+            ar = "تشخيص النظام"
+            ru = "Диагностика системы"
         }
         "menu_0" = @{
             en = "Exit"
-            pt = "Sair"
-            es = "Salir"
+            zh = "出口"
+            hi = "बाहर निकलना"
+            es = "Salida"
+            fr = "Sortie"
+            ar = "مخرج"
+            ru = "Выход"
         }
         "choose" = @{
             en = "Choose an option"
-            pt = "Escolha uma opcao"
-            es = "Elija una opcion"
+            zh = "选择一个选项"
+            hi = "एक विकल्प चुनें"
+            es = "Elige una opción"
+            fr = "Choisissez une option"
+            ar = "اختر خيارًا"
+            ru = "Выберите вариант"
         }
         "invalid" = @{
             en = "Invalid option!"
-            pt = "Opcao invalida!"
-            es = "Opcion invalida!"
+            zh = "无效选项！"
+            hi = "अमान्य विकल्प!"
+            es = "¡Opción no válida!"
+            fr = "Option invalide !"
+            ar = "خيار غير صالح!"
+            ru = "Неверный вариант!"
         }
         "mc_not_found" = @{
             en = "Minecraft NOT FOUND!"
-            pt = "Minecraft NAO ENCONTRADO!"
-            es = "Minecraft NO ENCONTRADO!"
+            zh = "我的世界未找到！"
+            hi = "Minecraft नहीं मिला!"
+            es = "Minecraft ¡NO ENCONTRADO!"
+            fr = "Minecraft INTROUVABLE !"
+            ar = "ماين كرافت غير موجودة!"
+            ru = "Майнкрафт НЕ НАЙДЕН!"
         }
         "mc_found" = @{
             en = "Minecraft found"
-            pt = "Minecraft encontrado"
-            es = "Minecraft encontrado"
+            zh = "我的世界找到了"
+            hi = "माइनक्राफ्ट मिला"
+            es = "minecraft encontrado"
+            fr = "Minecraft trouvé"
+            ar = "تم العثور على ماينكرافت"
+            ru = "Майнкрафт найден"
         }
         "mc_path" = @{
             en = "Path"
-            pt = "Caminho"
-            es = "Ruta"
+            zh = "小路"
+            hi = "पथ"
+            es = "Camino"
+            fr = "Chemin"
+            ar = "طريق"
+            ru = "Путь"
         }
         "installing" = @{
             en = "Installing bypass..."
-            pt = "Instalando bypass..."
-            es = "Instalando bypass..."
+            zh = "正在安装旁路..."
+            hi = "बायपास स्थापित किया जा रहा है..."
+            es = "Instalando derivación..."
+            fr = "Installation du contournement..."
+            ar = "جارٍ تثبيت التجاوز..."
+            ru = "Установка байпаса..."
         }
         "adding_exclusions" = @{
             en = "Adding antivirus exclusions..."
-            pt = "Adicionando exclusoes de antivirus..."
+            zh = "添加防病毒排除项..."
+            hi = "एंटीवायरस बहिष्करण जोड़ा जा रहा है..."
             es = "Agregando exclusiones de antivirus..."
+            fr = "Ajout d'exclusions antivirus..."
+            ar = "جارٍ إضافة استثناءات برامج مكافحة الفيروسات..."
+            ru = "Добавляем исключения антивируса..."
         }
         "exclusion_added" = @{
             en = "Windows Defender exclusion added"
-            pt = "Exclusao do Windows Defender adicionada"
-            es = "Exclusion de Windows Defender agregada"
+            zh = "添加了 Windows Defender 排除项"
+            hi = "विंडोज़ डिफ़ेंडर बहिष्करण जोड़ा गया"
+            es = "Se agregó la exclusión de Windows Defender"
+            fr = "Exclusion de Windows Defender ajoutée"
+            ar = "تمت إضافة استثناء Windows Defender"
+            ru = "Добавлено исключение Защитника Windows."
         }
         "exclusion_failed" = @{
             en = "Could not add exclusion (may need manual setup)"
-            pt = "Nao foi possivel adicionar exclusao (pode precisar configurar manualmente)"
-            es = "No se pudo agregar exclusion (puede necesitar configuracion manual)"
+            zh = "无法添加排除（可能需要手动设置）"
+            hi = "बहिष्करण नहीं जोड़ा जा सका (मैन्युअल सेटअप की आवश्यकता हो सकती है)"
+            es = "No se pudo agregar la exclusión (es posible que necesite configuración manual)"
+            fr = "Impossible d'ajouter l'exclusion (une configuration manuelle peut être nécessaire)"
+            ar = "تعذر إضافة الاستثناء (قد يحتاج إلى إعداد يدوي)"
+            ru = "Не удалось добавить исключение (возможно, потребуется настройка вручную)."
         }
         "downloading" = @{
             en = "Downloading"
-            pt = "Baixando"
+            zh = "正在下载"
+            hi = "डाउनलोड"
             es = "Descargando"
+            fr = "Téléchargement"
+            ar = "جارٍ التنزيل"
+            ru = "Загрузка"
         }
         "download_ok" = @{
             en = "Downloaded successfully"
-            pt = "Baixado com sucesso"
+            zh = "下载成功"
+            hi = "सफलतापूर्वक डाउनलोड किया गया"
             es = "Descargado exitosamente"
+            fr = "Téléchargé avec succès"
+            ar = "تم التنزيل بنجاح"
+            ru = "Загружено успешно"
         }
         "download_fail" = @{
             en = "Download FAILED"
-            pt = "Download FALHOU"
-            es = "Descarga FALLO"
+            zh = "下载失败"
+            hi = "डाउनलोड विफल"
+            es = "Descargar FALLÓ"
+            fr = "ÉCHEC du téléchargement"
+            ar = "فشل التنزيل"
+            ru = "Загрузить НЕ удалось"
         }
         "hash_ok" = @{
             en = "Integrity verified"
-            pt = "Integridade verificada"
+            zh = "完整性已验证"
+            hi = "सत्यनिष्ठा सत्यापित"
             es = "Integridad verificada"
+            fr = "Intégrité vérifiée"
+            ar = "التحقق من النزاهة"
+            ru = "Целостность проверена"
         }
         "hash_fail" = @{
             en = "INTEGRITY CHECK FAILED! File may be corrupted."
-            pt = "VERIFICACAO DE INTEGRIDADE FALHOU! Arquivo pode estar corrompido."
-            es = "VERIFICACION DE INTEGRIDAD FALLO! Archivo puede estar corrupto."
+            zh = "完整性检查失败！文件可能已损坏。"
+            hi = "सत्यनिष्ठा जांच विफल! फ़ाइल दूषित हो सकती है."
+            es = "¡FALLÓ LA VERIFICACIÓN DE INTEGRIDAD! Es posible que el archivo esté dañado."
+            fr = "ÉCHEC DU CONTRÔLE D'INTÉGRITÉ ! Le fichier est peut-être corrompu."
+            ar = "فشل التحقق من النزاهة! قد يكون الملف تالفًا."
+            ru = "ПРОВЕРКА ЦЕЛОСТНОСТИ НЕ ПРОЙДЕНА! Возможно, файл поврежден."
         }
         "install_ok" = @{
             en = "Bypass installed successfully!"
-            pt = "Bypass instalado com sucesso!"
-            es = "Bypass instalado exitosamente!"
+            zh = "绕过安装成功！"
+            hi = "बाईपास सफलतापूर्वक स्थापित हो गया!"
+            es = "¡Bypass instalado exitosamente!"
+            fr = "Bypass installé avec succès !"
+            ar = "تم تثبيت التجاوز بنجاح!"
+            ru = "Байпас успешно установлен!"
         }
         "install_fail" = @{
             en = "Installation failed"
-            pt = "Instalacao falhou"
-            es = "Instalacion fallo"
+            zh = "安装失败"
+            hi = "स्थापना विफल"
+            es = "La instalación falló"
+            fr = "L'installation a échoué"
+            ar = "فشل التثبيت"
+            ru = "Установка не удалась"
         }
         "verifying" = @{
             en = "Verifying installation..."
-            pt = "Verificando instalacao..."
-            es = "Verificando instalacion..."
+            zh = "正在验证安装..."
+            hi = "संस्थापन की पुष्टि कर रहा..."
+            es = "Verificando la instalación..."
+            fr = "Vérification de l'installation..."
+            ar = "جارٍ التحقق من التثبيت..."
+            ru = "Проверка установки..."
         }
         "files_ok" = @{
             en = "All files present and verified!"
-            pt = "Todos os arquivos presentes e verificados!"
-            es = "Todos los archivos presentes y verificados!"
+            zh = "所有文件均已存在并已验证！"
+            hi = "सभी फ़ाइलें मौजूद हैं और सत्यापित हैं!"
+            es = "¡Todos los archivos presentes y verificados!"
+            fr = "Tous les fichiers présents et vérifiés !"
+            ar = "جميع الملفات موجودة وتم التحقق منها!"
+            ru = "Все файлы присутствуют и проверены!"
         }
         "files_missing" = @{
             en = "FILES WERE DELETED BY ANTIVIRUS!"
-            pt = "ARQUIVOS FORAM DELETADOS PELO ANTIVIRUS!"
-            es = "ARCHIVOS FUERON ELIMINADOS POR EL ANTIVIRUS!"
+            zh = "文件已被防病毒软件删除！"
+            hi = "फ़ाइलें एंटीवायरस द्वारा हटा दी गईं!"
+            es = "¡LOS ARCHIVOS FUERON BORRADOS POR EL ANTIVIRUS!"
+            fr = "LES FICHIERS ONT ÉTÉ SUPPRIMÉS PAR ANTIVIRUS !"
+            ar = "تم حذف الملفات بواسطة برنامج مكافحة الفيروسات!"
+            ru = "ФАЙЛЫ УДАЛЕНЫ АНТИВИРУСОМ!"
         }
         "retry_install" = @{
             en = "Retrying installation..."
-            pt = "Tentando novamente..."
-            es = "Reintentando instalacion..."
+            zh = "正在重试安装..."
+            hi = "इंस्टालेशन का पुनः प्रयास किया जा रहा है..."
+            es = "Reintentando la instalación..."
+            fr = "Nouvelle tentative d'installation..."
+            ar = "جارٍ إعادة محاولة التثبيت..."
+            ru = "Повторная попытка установки..."
         }
         "av_disable" = @{
             en = "PLEASE DISABLE YOUR ANTIVIRUS TEMPORARILY:"
-            pt = "POR FAVOR DESATIVE SEU ANTIVIRUS TEMPORARIAMENTE:"
+            zh = "请暂时禁用您的防病毒软件："
+            hi = "कृपया अपना एंटीवायरस अस्थायी रूप से अक्षम करें:"
             es = "POR FAVOR DESACTIVE SU ANTIVIRUS TEMPORALMENTE:"
+            fr = "VEUILLEZ DÉSACTIVER VOTRE ANTIVIRUS TEMPORAIREMENT :"
+            ar = "الرجاء تعطيل برنامج مكافحة الفيروسات الخاص بك مؤقتًا:"
+            ru = "ПОЖАЛУЙСТА, ВРЕМЕННО ОТКЛЮЧИТЕ АНТИВИРУС:"
         }
         "av_step1" = @{
             en = "1. Open Windows Security"
-            pt = "1. Abra Seguranca do Windows"
+            zh = "1.打开Windows安全"
+            hi = "1. विंडोज़ सुरक्षा खोलें"
             es = "1. Abra Seguridad de Windows"
+            fr = "1. Ouvrez la sécurité Windows"
+            ar = "1. افتح أمان Windows"
+            ru = "1. Откройте Безопасность Windows."
         }
         "av_step2" = @{
             en = "2. Go to Virus & threat protection"
-            pt = "2. Va em Protecao contra virus e ameacas"
-            es = "2. Vaya a Proteccion contra virus y amenazas"
+            zh = "2. 转到病毒和威胁防护"
+            hi = "2. वायरस और ख़तरे से सुरक्षा पर जाएँ"
+            es = "2. Vaya a Protección contra virus y amenazas."
+            fr = "2. Accédez à Protection contre les virus et les menaces"
+            ar = "2. انتقل إلى الحماية من الفيروسات والتهديدات"
+            ru = "2. Перейдите в раздел Защита от вирусов и угроз."
         }
         "av_step3" = @{
             en = "3. Click 'Manage settings'"
-            pt = "3. Clique em 'Gerenciar configuracoes'"
-            es = "3. Haga clic en 'Administrar configuracion'"
+            zh = "3. 单击\`"管理设置\`""
+            hi = "3. 'सेटिंग्स प्रबंधित करें' पर क्लिक करें"
+            es = "3. Haga clic en 'Administrar configuración'"
+            fr = "3. Cliquez sur « Gérer les paramètres »"
+            ar = "3. انقر فوق \\\`"إدارة الإعدادات\\\`""
+            ru = "3. Нажмите «Управление настройками»."
         }
         "av_step4" = @{
             en = "4. Turn OFF Real-time protection"
-            pt = "4. Desative a Protecao em tempo real"
-            es = "4. Desactive la Proteccion en tiempo real"
+            zh = "4. 关闭实时保护"
+            hi = "4. रीयल-टाइम सुरक्षा बंद करें"
+            es = "4. Desactive la protección en tiempo real"
+            fr = "4. Désactivez la protection en temps réel"
+            ar = "4. قم بإيقاف تشغيل الحماية في الوقت الحقيقي"
+            ru = "4. Выключите постоянную защиту."
         }
         "av_step5" = @{
             en = "5. Run this script again"
-            pt = "5. Execute este script novamente"
+            zh = "5. 再次运行此脚本"
+            hi = "5. इस स्क्रिप्ट को दोबारा चलाएँ"
             es = "5. Ejecute este script nuevamente"
+            fr = "5. Exécutez à nouveau ce script"
+            ar = "5. قم بتشغيل هذا البرنامج النصي مرة أخرى"
+            ru = "5. Запустите этот скрипт еще раз."
         }
         "av_folder" = @{
             en = "OR add this folder to exclusions:"
-            pt = "OU adicione esta pasta as exclusoes:"
+            zh = "或者将此文件夹添加到排除项："
+            hi = "या इस फ़ोल्डर को बहिष्करण में जोड़ें:"
             es = "O agregue esta carpeta a las exclusiones:"
+            fr = "OU ajoutez ce dossier aux exclusions :"
+            ar = "أو أضف هذا المجلد إلى الاستثناءات:"
+            ru = "ИЛИ добавьте эту папку в исключения:"
         }
         "av_detected_blocking" = @{
             en = "Your antivirus DELETED the file after download!"
-            pt = "Seu antivirus DELETOU o arquivo apos o download!"
-            es = "Su antivirus ELIMINO el archivo despues de la descarga!"
+            zh = "下载后您的防病毒软件删除了该文件！"
+            hi = "आपके एंटीवायरस ने डाउनलोड के बाद फ़ाइल हटा दी!"
+            es = "¡Su antivirus ELIMINÓ el archivo después de la descarga!"
+            fr = "Votre antivirus a SUPPRIMÉ le fichier après téléchargement !"
+            ar = "برنامج مكافحة الفيروسات الخاص بك قام بحذف الملف بعد التنزيل!"
+            ru = "Ваш антивирус УДАЛИЛ файл после загрузки!"
         }
         "av_need_disable" = @{
             en = "You need to TEMPORARILY DISABLE your antivirus protection."
-            pt = "Voce precisa DESATIVAR TEMPORARIAMENTE a protecao do seu antivirus."
-            es = "Necesita DESACTIVAR TEMPORALMENTE la proteccion de su antivirus."
+            zh = "您需要暂时禁用防病毒保护。"
+            hi = "आपको अपनी एंटीवायरस सुरक्षा को अस्थायी रूप से अक्षम करना होगा।"
+            es = "Necesita DESACTIVAR TEMPORALMENTE su protección antivirus."
+            fr = "Vous devez DÉSACTIVER TEMPORAIREMENT votre protection antivirus."
+            ar = "تحتاج إلى تعطيل الحماية من الفيروسات مؤقتًا."
+            ru = "Вам необходимо ВРЕМЕННО ОТКЛЮЧИТЬ антивирусную защиту."
         }
         "av_press_enter" = @{
             en = "After disabling your antivirus, press ENTER to continue..."
-            pt = "Apos desativar seu antivirus, pressione ENTER para continuar..."
-            es = "Despues de desactivar su antivirus, presione ENTER para continuar..."
+            zh = "禁用防病毒软件后，按 ENTER 继续..."
+            hi = "अपने एंटीवायरस को अक्षम करने के बाद, जारी रखने के लिए ENTER दबाएँ..."
+            es = "Después de desactivar su antivirus, presione ENTER para continuar..."
+            fr = "Après avoir désactivé votre antivirus, appuyez sur ENTRÉE pour continuer..."
+            ar = "بعد تعطيل برنامج مكافحة الفيروسات لديك، اضغط على ENTER للمتابعة..."
+            ru = "После отключения антивируса нажмите ENTER, чтобы продолжить..."
         }
         "av_retrying_after_disable" = @{
             en = "Retrying download (antivirus should be disabled now)..."
-            pt = "Tentando download novamente (antivirus deve estar desativado)..."
-            es = "Reintentando descarga (antivirus deberia estar desactivado)..."
+            zh = "正在重试下载（现在应该禁用防病毒软件）..."
+            hi = "डाउनलोड का पुनः प्रयास किया जा रहा है (एंटीवायरस अब अक्षम होना चाहिए)..."
+            es = "Reintentando la descarga (el antivirus debería estar desactivado ahora)..."
+            fr = "Nouvelle tentative de téléchargement (l'antivirus devrait être désactivé maintenant)..."
+            ar = "جارٍ إعادة محاولة التنزيل (يجب تعطيل برنامج مكافحة الفيروسات الآن)..."
+            ru = "Повторная попытка загрузки (антивирус должен быть отключен сейчас)..."
         }
         "av_still_blocking" = @{
             en = "Files are STILL being blocked! Make sure your antivirus is fully disabled."
-            pt = "Arquivos AINDA estao sendo bloqueados! Certifique-se que seu antivirus esta completamente desativado."
-            es = "Los archivos SIGUEN siendo bloqueados! Asegurese que su antivirus esta completamente desactivado."
+            zh = "文件仍然被阻止！确保您的防病毒软件已完全禁用。"
+            hi = "फ़ाइलें अभी भी अवरुद्ध की जा रही हैं! सुनिश्चित करें कि आपका एंटीवायरस पूरी तरह अक्षम है।"
+            es = "¡Los archivos TODAVÍA están bloqueados! Asegúrese de que su antivirus esté completamente desactivado."
+            fr = "Les fichiers sont TOUJOURS bloqués ! Assurez-vous que votre antivirus est complètement désactivé."
+            ar = "لا تزال الملفات محظورة! تأكد من تعطيل برنامج مكافحة الفيروسات لديك بشكل كامل."
+            ru = "Файлы ВСЕ ЕЩЕ блокируются! Убедитесь, что ваш антивирус полностью отключен."
         }
         "av_reenable" = @{
             en = "You can now re-enable your antivirus protection."
-            pt = "Voce ja pode reativar a protecao do seu antivirus."
-            es = "Ya puede reactivar la proteccion de su antivirus."
+            zh = "您现在可以重新启用防病毒保护。"
+            hi = "अब आप अपनी एंटीवायरस सुरक्षा को पुनः सक्षम कर सकते हैं।"
+            es = "Ahora puede volver a habilitar su protección antivirus."
+            fr = "Vous pouvez maintenant réactiver votre protection antivirus."
+            ar = "يمكنك الآن إعادة تمكين الحماية من الفيروسات لديك."
+            ru = "Теперь вы можете повторно включить антивирусную защиту."
         }
         "removing" = @{
             en = "Removing bypass files..."
-            pt = "Removendo arquivos do bypass..."
-            es = "Eliminando archivos del bypass..."
+            zh = "删除旁路文件..."
+            hi = "बायपास फ़ाइलें हटाई जा रही हैं..."
+            es = "Eliminando archivos de omisión..."
+            fr = "Suppression des fichiers de contournement..."
+            ar = "جارٍ إزالة الملفات الالتفافية..."
+            ru = "Удаление обходных файлов..."
         }
         "removed_ok" = @{
             en = "Bypass removed successfully! Game restored to Trial."
-            pt = "Bypass removido com sucesso! Jogo restaurado para Trial."
-            es = "Bypass eliminado exitosamente! Juego restaurado a Trial."
+            zh = "绕过删除成功！游戏恢复试玩。"
+            hi = "बाईपास सफलतापूर्वक हटा दिया गया! खेल को परीक्षण के लिए बहाल किया गया।"
+            es = "¡El bypass se eliminó exitosamente! Juego restaurado a prueba."
+            fr = "Contournement supprimé avec succès ! Jeu restauré en version Trial."
+            ar = "تمت إزالة التجاوز بنجاح! تمت استعادة اللعبة للمحاكمة."
+            ru = "Байпас успешно удален! Игра восстановлена ​​в пробной версии."
         }
         "resetting_license" = @{
             en = "Resetting Windows Store / Gaming Services license cache..."
-            pt = "Resetando cache de licenca da Windows Store / Gaming Services..."
-            es = "Reseteando cache de licencia de Windows Store / Gaming Services..."
+            zh = "正在重置 Windows 应用商店/游戏服务许可证缓存..."
+            hi = "विंडोज़ स्टोर/गेमिंग सेवा लाइसेंस कैश को रीसेट किया जा रहा है..."
+            es = "Restableciendo la caché de licencias de la Tienda Windows/Servicios de juegos..."
+            fr = "Réinitialisation du cache de licence du Windows Store / Gaming Services..."
+            ar = "إعادة تعيين ذاكرة التخزين المؤقت لترخيص متجر Windows / خدمات الألعاب..."
+            ru = "Сброс кеша лицензий Магазина Windows/игровых служб..."
         }
         "license_reset_partial" = @{
             en = "Could not fully reset license cache. You may need to restart your PC."
-            pt = "Nao foi possivel resetar o cache de licenca completamente. Reinicie o PC se necessario."
-            es = "No se pudo resetear el cache de licencia completamente. Reinicie el PC si es necesario."
+            zh = "无法完全重置许可证缓存。您可能需要重新启动电脑。"
+            hi = "लाइसेंस कैश को पूरी तरह से रीसेट नहीं किया जा सका. आपको अपने पीसी को पुनः आरंभ करने की आवश्यकता हो सकती है।"
+            es = "No se pudo restablecer completamente el caché de licencia. Es posible que deba reiniciar su PC."
+            fr = "Impossible de réinitialiser complètement le cache de licence. Vous devrez peut-être redémarrer votre PC."
+            ar = "لا يمكن إعادة تعيين ذاكرة التخزين المؤقت للترخيص بشكل كامل. قد تحتاج إلى إعادة تشغيل جهاز الكمبيوتر الخاص بك."
+            ru = "Не удалось полностью сбросить кэш лицензий. Возможно, вам придется перезагрузить компьютер."
         }
         "restore_reopen_note" = @{
             en = "IMPORTANT: Open Minecraft again to verify it returned to Trial mode. If still showing as Paid, restart your PC."
-            pt = "IMPORTANTE: Abra o Minecraft novamente para verificar se voltou ao modo Trial. Se ainda aparecer como Pago, reinicie seu PC."
-            es = "IMPORTANTE: Abra Minecraft nuevamente para verificar si volvio al modo Trial. Si sigue mostrando como Pago, reinicie su PC."
+            zh = "重要提示：再次打开 Minecraft 以验证其已返回试用模式。如果仍然显示为已付费，请重新启动您的电脑。"
+            hi = "महत्वपूर्ण: यह सत्यापित करने के लिए कि यह ट्रायल मोड में वापस आ गया है, Minecraft को फिर से खोलें। यदि अभी भी पेड के रूप में दिख रहा है, तो अपने पीसी को पुनरारंभ करें।"
+            es = "IMPORTANTE: abra Minecraft nuevamente para verificar que haya regresado al modo de prueba. Si aún aparece como Pagado, reinicie su PC."
+            fr = "IMPORTANT : ouvrez à nouveau Minecraft pour vérifier qu'il est revenu en mode d'essai. S'il apparaît toujours comme Payé, redémarrez votre PC."
+            ar = "هام: افتح Minecraft مرة أخرى للتحقق من عودتها إلى الوضع التجريبي. إذا كان لا يزال يظهر على أنه مدفوع، فأعد تشغيل جهاز الكمبيوتر الخاص بك."
+            ru = "ВАЖНО: откройте Minecraft еще раз, чтобы убедиться, что он вернулся в пробный режим. Если по-прежнему отображается как «Платное», перезагрузите компьютер."
         }
         "resetting_app" = @{
             en = "Resetting Minecraft app data (clearing license cache)..."
-            pt = "Resetando dados do app Minecraft (limpando cache de licenca)..."
-            es = "Reseteando datos de la app Minecraft (limpiando cache de licencia)..."
+            zh = "正在重置 Minecraft 应用程序数据（清除许可证缓存）..."
+            hi = "Minecraft ऐप डेटा रीसेट करना (लाइसेंस कैश साफ़ करना)..."
+            es = "Restableciendo los datos de la aplicación Minecraft (borrando el caché de la licencia)..."
+            fr = "Réinitialisation des données de l'application Minecraft (vidage du cache de licence)..."
+            ar = "إعادة تعيين بيانات تطبيق Minecraft (مسح ذاكرة التخزين المؤقت للترخيص)..."
+            ru = "Сброс данных приложения Minecraft (очистка кэша лицензий)..."
         }
         "app_reset_ok" = @{
             en = "Minecraft app data reset successfully! License cache cleared."
-            pt = "Dados do app Minecraft resetados! Cache de licenca limpo."
-            es = "Datos de la app Minecraft reseteados! Cache de licencia limpiado."
+            zh = "Minecraft 应用程序数据重置成功！许可证缓存已清除。"
+            hi = "Minecraft ऐप डेटा रीसेट सफलतापूर्वक! लाइसेंस कैश साफ़ किया गया."
+            es = "¡Los datos de la aplicación Minecraft se restablecieron exitosamente! Se borró la caché de licencia."
+            fr = "Les données de l'application Minecraft ont été réinitialisées avec succès ! Cache de licence vidé."
+            ar = "تمت إعادة ضبط بيانات تطبيق Minecraft بنجاح! تم مسح ذاكرة التخزين المؤقت للترخيص."
+            ru = "Данные приложения Minecraft успешно сброшены! Кэш лицензии очищен."
         }
         "app_reset_fallback" = @{
             en = "Reset-AppxPackage not available. Trying manual cleanup..."
-            pt = "Reset-AppxPackage nao disponivel. Tentando limpeza manual..."
-            es = "Reset-AppxPackage no disponible. Intentando limpieza manual..."
+            zh = "Reset-AppxPackage 不可用。尝试手动清理..."
+            hi = "रीसेट-AppxPackage उपलब्ध नहीं है. मैन्युअल सफ़ाई का प्रयास कर रहा हूँ..."
+            es = "Restablecer-AppxPackage no disponible. Probando la limpieza manual..."
+            fr = "Reset-AppxPackage non disponible. Essayer le nettoyage manuel..."
+            ar = "إعادة تعيين AppxPackage غير متوفر. جارٍ محاولة التنظيف اليدوي..."
+            ru = "Reset-AppxPackage недоступен. Пробую очистить вручную..."
         }
         "app_data_cleared" = @{
             en = "Minecraft app data manually cleared."
-            pt = "Dados do app Minecraft limpos manualmente."
-            es = "Datos de la app Minecraft limpiados manualmente."
+            zh = "手动清除 Minecraft 应用数据。"
+            hi = "Minecraft ऐप डेटा मैन्युअल रूप से साफ़ किया गया।"
+            es = "Los datos de la aplicación Minecraft se borraron manualmente."
+            fr = "Les données de l'application Minecraft ont été effacées manuellement."
+            ar = "تم مسح بيانات تطبيق Minecraft يدويًا."
+            ru = "Данные приложения Minecraft удалены вручную."
         }
         "reregistering_mc" = @{
             en = "Re-registering Minecraft package (force license re-validation)..."
-            pt = "Re-registrando pacote do Minecraft (forcando re-validacao de licenca)..."
-            es = "Re-registrando paquete de Minecraft (forzando re-validacion de licencia)..."
+            zh = "正在重新注册 Minecraft 包（强制许可证重新验证）..."
+            hi = "Minecraft पैकेज को पुनः पंजीकृत करना (बलपूर्वक लाइसेंस पुनः सत्यापन)..."
+            es = "Volver a registrar el paquete de Minecraft (forzar la revalidación de la licencia)..."
+            fr = "Réenregistrement du package Minecraft (forcer la revalidation de la licence)..."
+            ar = "إعادة تسجيل حزمة Minecraft (فرض إعادة التحقق من صحة الترخيص)..."
+            ru = "Перерегистрация пакета Minecraft (принудительная повторная проверка лицензии)..."
         }
         "reregister_ok" = @{
             en = "Minecraft package re-registered successfully."
-            pt = "Pacote do Minecraft re-registrado com sucesso."
-            es = "Paquete de Minecraft re-registrado exitosamente."
+            zh = "Minecraft 包重新注册成功。"
+            hi = "Minecraft पैकेज सफलतापूर्वक पुनः पंजीकृत।"
+            es = "El paquete de Minecraft se volvió a registrar correctamente."
+            fr = "Package Minecraft réenregistré avec succès."
+            ar = "تمت إعادة تسجيل حزمة Minecraft بنجاح."
+            ru = "Пакет Minecraft успешно перерегистрирован."
         }
         "clearing_app_cache" = @{
             en = "Clearing Minecraft app cache and settings..."
-            pt = "Limpando cache e configuracoes do Minecraft..."
-            es = "Limpiando cache y configuraciones de Minecraft..."
+            zh = "清除 Minecraft 应用程序缓存和设置..."
+            hi = "Minecraft ऐप कैश और सेटिंग्स साफ़ किया जा रहा है..."
+            es = "Borrando el caché y la configuración de la aplicación Minecraft..."
+            fr = "Effacement du cache et des paramètres de l'application Minecraft..."
+            ar = "جارٍ مسح ذاكرة التخزين المؤقت والإعدادات لتطبيق Minecraft..."
+            ru = "Очистка кэша и настроек приложения Minecraft..."
         }
         "cache_cleared" = @{
             en = "App cache and settings cleared."
-            pt = "Cache e configuracoes do app limpos."
-            es = "Cache y configuraciones de la app limpiados."
+            zh = "应用程序缓存和设置已清除。"
+            hi = "ऐप कैश और सेटिंग्स साफ़ कर दी गईं।"
+            es = "Se borraron la caché y la configuración de la aplicación."
+            fr = "Cache de l'application et paramètres effacés."
+            ar = "تم مسح ذاكرة التخزين المؤقت للتطبيق والإعدادات."
+            ru = "Кэш приложения и настройки очищены."
         }
         "opening_mc" = @{
             en = "Opening Minecraft..."
-            pt = "Abrindo Minecraft..."
+            zh = "打开我的世界..."
+            hi = "Minecraft खुल रहा है..."
             es = "Abriendo Minecraft..."
+            fr = "Ouverture de Minecraft..."
+            ar = "فتح ماينكرافت..."
+            ru = "Открываю Майнкрафт..."
         }
         "mc_opened" = @{
             en = "Minecraft should open shortly"
-            pt = "Minecraft deve abrir em breve"
-            es = "Minecraft deberia abrirse pronto"
+            zh = "我的世界 (Minecraft) 应该很快就会开放"
+            hi = "Minecraft शीघ्र ही खुल जाना चाहिए"
+            es = "Minecraft debería abrirse en breve"
+            fr = "Minecraft devrait ouvrir sous peu"
+            ar = "يجب أن يتم فتح لعبة Minecraft قريبًا"
+            ru = "Майнкрафт должен открыться в ближайшее время"
         }
         "opening_xbox" = @{
             en = "Opening Xbox App / Minecraft page..."
-            pt = "Abrindo Xbox App / pagina do Minecraft..."
-            es = "Abriendo Xbox App / pagina de Minecraft..."
+            zh = "正在打开 Xbox 应用程序/Minecraft 页面..."
+            hi = "Xbox ऐप/माइनक्राफ्ट पेज खुल रहा है..."
+            es = "Abriendo la página de la aplicación Xbox/Minecraft..."
+            fr = "Ouverture de la page Application Xbox/Minecraft..."
+            ar = "جارٍ فتح صفحة تطبيق Xbox / Minecraft..."
+            ru = "Открытие приложения Xbox/страницы Minecraft..."
         }
         "status_title" = @{
             en = "SYSTEM STATUS"
-            pt = "STATUS DO SISTEMA"
+            zh = "系统状态"
+            hi = "सिस्टम स्थिति"
             es = "ESTADO DEL SISTEMA"
+            fr = "ÉTAT DU SYSTÈME"
+            ar = "حالة النظام"
+            ru = "СТАТУС СИСТЕМЫ"
         }
         "status_mc" = @{
             en = "Minecraft Installed"
-            pt = "Minecraft Instalado"
-            es = "Minecraft Instalado"
+            zh = "我的世界已安装"
+            hi = "माइनक्राफ्ट स्थापित"
+            es = "Minecraft instalado"
+            fr = "Minecraft installé"
+            ar = "ماين كرافت مثبتة"
+            ru = "Майнкрафт установлен"
         }
         "status_type" = @{
             en = "Installation Type"
-            pt = "Tipo de Instalacao"
-            es = "Tipo de Instalacion"
+            zh = "安装类型"
+            hi = "स्थापना प्रकार"
+            es = "Tipo de instalación"
+            fr = "Type d'installation"
+            ar = "نوع التثبيت"
+            ru = "Тип установки"
         }
         "status_xbox" = @{
             en = "Xbox App (GDK) - Compatible"
-            pt = "Xbox App (GDK) - Compativel"
-            es = "Xbox App (GDK) - Compatible"
+            zh = "Xbox 应用程序 (GDK) - 兼容"
+            hi = "एक्सबॉक्स ऐप (जीडीके) - संगत"
+            es = "Aplicación Xbox (GDK): compatible"
+            fr = "Application Xbox (GDK) - Compatible"
+            ar = "تطبيق Xbox (GDK) - متوافق"
+            ru = "Приложение Xbox (GDK) — совместимо"
         }
         "status_store" = @{
             en = "Microsoft Store (UWP) - NOT COMPATIBLE!"
-            pt = "Microsoft Store (UWP) - NAO COMPATIVEL!"
-            es = "Microsoft Store (UWP) - NO COMPATIBLE!"
+            zh = "Microsoft Store (UWP) - 不兼容！"
+            hi = "माइक्रोसॉफ्ट स्टोर (यूडब्ल्यूपी) - संगत नहीं!"
+            es = "Microsoft Store (UWP) - ¡NO COMPATIBLE!"
+            fr = "Microsoft Store (UWP) - NON COMPATIBLE !"
+            ar = "متجر Microsoft (UWP) - غير متوافق!"
+            ru = "Microsoft Store (UWP) – НЕ СОВМЕСТИМО!"
         }
         "status_bypass" = @{
             en = "Bypass Status"
-            pt = "Status do Bypass"
-            es = "Estado del Bypass"
+            zh = "旁路状态"
+            hi = "बायपास स्थिति"
+            es = "Estado de anulación"
+            fr = "Statut de contournement"
+            ar = "حالة التجاوز"
+            ru = "Состояние обхода"
         }
         "status_installed" = @{
             en = "INSTALLED"
-            pt = "INSTALADO"
+            zh = "已安装"
+            hi = "इंस्टॉल किया"
             es = "INSTALADO"
+            fr = "INSTALLÉ"
+            ar = "مثبتة"
+            ru = "УСТАНОВЛЕНО"
         }
         "status_not_installed" = @{
             en = "NOT INSTALLED"
-            pt = "NAO INSTALADO"
+            zh = "未安装"
+            hi = "स्थापित नहीं हे"
             es = "NO INSTALADO"
+            fr = "NON INSTALLÉ"
+            ar = "غير مثبتة"
+            ru = "НЕ УСТАНОВЛЕНО"
         }
         "status_partial" = @{
             en = "PARTIAL (files missing - antivirus deleted them?)"
-            pt = "PARCIAL (arquivos faltando - antivirus deletou?)"
-            es = "PARCIAL (archivos faltantes - antivirus los elimino?)"
+            zh = "部分（文件丢失 - 防病毒软件删除了它们？）"
+            hi = "आंशिक (फ़ाइलें अनुपलब्ध - एंटीवायरस ने उन्हें हटा दिया?)"
+            es = "PARCIAL (faltan archivos: ¿el antivirus los eliminó?)"
+            fr = "PARTIEL (fichiers manquants - l'antivirus les a supprimés ?)"
+            ar = "جزئي (الملفات مفقودة - هل قام برنامج مكافحة الفيروسات بحذفها؟)"
+            ru = "ЧАСТИЧНЫЙ (файлы отсутствуют – их удалил антивирус?)"
         }
         "status_av" = @{
             en = "Antivirus"
-            pt = "Antivirus"
-            es = "Antivirus"
+            zh = "杀毒软件"
+            hi = "एंटीवायरस"
+            es = "antivirus"
+            fr = "Antivirus"
+            ar = "مكافحة الفيروسات"
+            ru = "Антивирус"
         }
         "status_defender_on" = @{
             en = "Active"
-            pt = "Ativo"
+            zh = "积极的"
+            hi = "सक्रिय"
             es = "Activo"
+            fr = "Actif"
+            ar = "نشيط"
+            ru = "Активный"
         }
         "status_defender_off" = @{
             en = "Not detected"
-            pt = "Nao detectado"
+            zh = "未检测到"
+            hi = "का पता नहीं चला"
             es = "No detectado"
+            fr = "Non détecté"
+            ar = "لم يتم الكشف عنها"
+            ru = "Не обнаружено"
         }
         "persistence_ok" = @{
             en = "Reboot protection enabled (files auto-restore after restart)"
-            pt = "Protecao contra reboot ativada (arquivos restauram apos reiniciar)"
-            es = "Proteccion contra reboot activada (archivos se restauran al reiniciar)"
+            zh = "启用重启保护（重启后文件自动恢复）"
+            hi = "रीबूट सुरक्षा सक्षम (पुनरारंभ के बाद फ़ाइलें स्वतः पुनर्स्थापित हो जाती हैं)"
+            es = "Protección de reinicio habilitada (los archivos se restauran automáticamente después del reinicio)"
+            fr = "Protection contre le redémarrage activée (restauration automatique des fichiers après le redémarrage)"
+            ar = "تم تمكين الحماية من إعادة التشغيل (استعادة الملفات تلقائيًا بعد إعادة التشغيل)"
+            ru = "Включена защита от перезагрузки (файлы автоматически восстанавливаются после перезагрузки)"
         }
         "persistence_fail" = @{
             en = "Could not enable reboot protection (Scheduled Task failed)"
-            pt = "Nao foi possivel ativar protecao contra reboot (Tarefa Agendada falhou)"
-            es = "No se pudo activar proteccion contra reboot (Tarea Programada fallo)"
+            zh = "无法启用重新启动保护（计划任务失败）"
+            hi = "रीबूट सुरक्षा सक्षम नहीं कर सका (अनुसूचित कार्य विफल)"
+            es = "No se pudo habilitar la protección de reinicio (falló la tarea programada)"
+            fr = "Impossible d'activer la protection contre le redémarrage (échec de la tâche planifiée)"
+            ar = "تعذر تمكين الحماية من إعادة التشغيل (فشلت المهمة المجدولة)"
+            ru = "Не удалось включить защиту от перезагрузки (сбой запланированного задания)"
         }
         "persistence_removed" = @{
             en = "Reboot protection removed"
-            pt = "Protecao contra reboot removida"
-            es = "Proteccion contra reboot eliminada"
+            zh = "重启保护已移除"
+            hi = "रीबूट सुरक्षा हटा दी गई"
+            es = "Se eliminó la protección de reinicio"
+            fr = "Protection contre le redémarrage supprimée"
+            ar = "تمت إزالة حماية إعادة التشغيل"
+            ru = "Защита от перезагрузки снята"
         }
         "status_persistence" = @{
             en = "Reboot Protection"
-            pt = "Protecao Reboot"
-            es = "Proteccion Reboot"
+            zh = "重启保护"
+            hi = "रिबूट सुरक्षा"
+            es = "Protección de reinicio"
+            fr = "Protection contre le redémarrage"
+            ar = "إعادة تشغيل الحماية"
+            ru = "Защита от перезагрузки"
         }
         "status_gaming" = @{
             en = "Gaming Services"
-            pt = "Servicos de Jogos"
-            es = "Servicios de Juegos"
+            zh = "博彩服务"
+            hi = "गेमिंग सेवाएँ"
+            es = "Servicios de juegos"
+            fr = "Services de jeux"
+            ar = "خدمات الألعاب"
+            ru = "Игровые услуги"
         }
         "status_running" = @{
             en = "Running"
-            pt = "Rodando"
-            es = "Ejecutandose"
+            zh = "跑步"
+            hi = "दौड़ना"
+            es = "Correr"
+            fr = "En cours d'exécution"
+            ar = "جري"
+            ru = "Бег"
         }
         "status_stopped" = @{
             en = "Stopped"
-            pt = "Parado"
-            es = "Detenido"
+            zh = "已停止"
+            hi = "रुक गया"
+            es = "Interrumpido"
+            fr = "Arrêté"
+            ar = "توقف"
+            ru = "Остановлено"
         }
         "diag_title" = @{
             en = "SYSTEM DIAGNOSTICS"
-            pt = "DIAGNOSTICO DO SISTEMA"
-            es = "DIAGNOSTICO DEL SISTEMA"
+            zh = "系统诊断"
+            hi = "सिस्टम डायग्नोस्टिक्स"
+            es = "DIAGNÓSTICO DEL SISTEMA"
+            fr = "DIAGNOSTIC DU SYSTÈME"
+            ar = "تشخيص النظام"
+            ru = "СИСТЕМНАЯ ДИАГНОСТИКА"
         }
         "diag_xbox_app" = @{
             en = "Xbox App"
-            pt = "Xbox App"
-            es = "Xbox App"
+            zh = "Xbox 应用程序"
+            hi = "एक्सबॉक्स ऐप"
+            es = "Aplicación Xbox"
+            fr = "Application Xbox"
+            ar = "تطبيق اكس بوكس"
+            ru = "Приложение Xbox"
         }
         "diag_mc_install" = @{
             en = "Minecraft Installation"
-            pt = "Instalacao do Minecraft"
-            es = "Instalacion de Minecraft"
+            zh = "我的世界安装"
+            hi = "माइनक्राफ्ट इंस्टालेशन"
+            es = "Instalación de Minecraft"
+            fr = "Installation de Minecraft"
+            ar = "تركيب ماين كرافت"
+            ru = "Установка Майнкрафта"
         }
         "diag_type" = @{
             en = "Installation Type"
-            pt = "Tipo de Instalacao"
-            es = "Tipo de Instalacion"
+            zh = "安装类型"
+            hi = "स्थापना प्रकार"
+            es = "Tipo de instalación"
+            fr = "Type d'installation"
+            ar = "نوع التثبيت"
+            ru = "Тип установки"
         }
         "diag_permissions" = @{
             en = "Folder Permissions"
-            pt = "Permissoes de Pasta"
-            es = "Permisos de Carpeta"
+            zh = "文件夹权限"
+            hi = "फ़ोल्डर अनुमतियाँ"
+            es = "Permisos de carpeta"
+            fr = "Autorisations de dossier"
+            ar = "أذونات المجلد"
+            ru = "Разрешения для папок"
         }
         "diag_gaming" = @{
             en = "Gaming Services"
-            pt = "Servicos de Jogos"
-            es = "Servicios de Juegos"
+            zh = "博彩服务"
+            hi = "गेमिंग सेवाएँ"
+            es = "Servicios de juegos"
+            fr = "Services de jeux"
+            ar = "خدمات الألعاب"
+            ru = "Игровые услуги"
         }
         "diag_integrity" = @{
             en = "Game Integrity"
-            pt = "Integridade do Jogo"
-            es = "Integridad del Juego"
+            zh = "游戏完整性"
+            hi = "खेल वफ़ादारी"
+            es = "Integridad del juego"
+            fr = "Intégrité du jeu"
+            ar = "سلامة اللعبة"
+            ru = "Честность игры"
         }
         "diag_bypass" = @{
             en = "Bypass Files"
-            pt = "Arquivos do Bypass"
-            es = "Archivos del Bypass"
+            zh = "绕过文件"
+            hi = "बायपास फ़ाइलें"
+            es = "Omitir archivos"
+            fr = "Contourner les fichiers"
+            ar = "تجاوز الملفات"
+            ru = "Обход файлов"
         }
         "diag_all_ok" = @{
             en = "All checks passed! System is ready."
-            pt = "Todas as verificacoes passaram! Sistema pronto."
-            es = "Todas las verificaciones pasaron! Sistema listo."
+            zh = "所有检查均通过！系统准备就绪。"
+            hi = "सभी चेक पास हो गए! सिस्टम तैयार है."
+            es = "¡Todos los controles pasaron! El sistema está listo."
+            fr = "Tous les contrôles ont été réussis ! Le système est prêt."
+            ar = "مرت جميع الشيكات! النظام جاهز."
+            ru = "Все проверки пройдены! Система готова."
         }
-        "yes" = @{ en = "Yes"; pt = "Sim"; es = "Si" }
-        "no" = @{ en = "No"; pt = "Nao"; es = "No" }
-        "ok" = @{ en = "OK"; pt = "OK"; es = "OK" }
-        "found" = @{ en = "Found"; pt = "Encontrado"; es = "Encontrado" }
-        "not_found" = @{ en = "Not Found"; pt = "Nao encontrado"; es = "No encontrado" }
-        "writable" = @{ en = "Writable"; pt = "Gravavel"; es = "Escribible" }
-        "no_write" = @{ en = "No write access"; pt = "Sem acesso de escrita"; es = "Sin acceso de escritura" }
+        "yes" = @{
+            en = "Yes"
+            zh = "是的"
+            hi = "हाँ"
+            es = "Sí"
+            fr = "Oui"
+            ar = "نعم"
+            ru = "Да"
+        }
+        "no" = @{
+            en = "No"
+            zh = "不"
+            hi = "नहीं"
+            es = "No"
+            fr = "Non"
+            ar = "لا"
+            ru = "Нет"
+        }
+        "ok" = @{
+            en = "OK"
+            zh = "好的"
+            hi = "ठीक है"
+            es = "DE ACUERDO"
+            fr = "D'ACCORD"
+            ar = "نعم"
+            ru = "ХОРОШО"
+        }
+        "found" = @{
+            en = "Found"
+            zh = "成立"
+            hi = "मिला"
+            es = "Encontró"
+            fr = "Trouvé"
+            ar = "وجد"
+            ru = "Найденный"
+        }
+        "not_found" = @{
+            en = "Not Found"
+            zh = "未找到"
+            hi = "नहीं मिला"
+            es = "Extraviado"
+            fr = "Introuvable"
+            ar = "لم يتم العثور عليه"
+            ru = "Не найдено"
+        }
+        "writable" = @{
+            en = "Writable"
+            zh = "可写"
+            hi = "लिखने योग्य"
+            es = "grabable"
+            fr = "Inscriptible"
+            ar = "قابل للكتابة"
+            ru = "записываемый"
+        }
+        "no_write" = @{
+            en = "No write access"
+            zh = "无写入权限"
+            hi = "कोई लेखन पहुंच नहीं"
+            es = "Sin acceso de escritura"
+            fr = "Pas d'accès en écriture"
+            ar = "لا يوجد وصول للكتابة"
+            ru = "Нет доступа для записи"
+        }
         "open_now" = @{
             en = "You can now open Minecraft from the Start Menu!"
-            pt = "Agora voce pode abrir o Minecraft pelo Menu Iniciar!"
-            es = "Ahora puede abrir Minecraft desde el Menu Inicio!"
+            zh = "您现在可以从\`"开始\`"菜单打开 Minecraft！"
+            hi = "अब आप स्टार्ट मेनू से Minecraft खोल सकते हैं!"
+            es = "¡Ahora puedes abrir Minecraft desde el menú Inicio!"
+            fr = "Vous pouvez maintenant ouvrir Minecraft depuis le menu Démarrer !"
+            ar = "يمكنك الآن فتح Minecraft من قائمة ابدأ!"
+            ru = "Теперь вы можете открыть Minecraft из меню «Пуск»!"
         }
         "mc_running" = @{
             en = "Minecraft is running. Closing it first..."
-            pt = "Minecraft esta rodando. Fechando primeiro..."
-            es = "Minecraft esta ejecutandose. Cerrando primero..."
+            zh = "我的世界正在运行。先关闭它..."
+            hi = "Minecraft चल रहा है. पहले इसे बंद कर रहा हूँ..."
+            es = "Minecraft está funcionando. Cerrándolo primero..."
+            fr = "Minecraft est en cours d'exécution. Je le ferme d'abord..."
+            ar = "ماين كرافت قيد التشغيل. إغلاقه أولاً.."
+            ru = "Майнкрафт запущен. Сначала закрой..."
         }
         "press_enter" = @{
             en = "Press Enter to continue..."
-            pt = "Pressione Enter para continuar..."
-            es = "Presione Enter para continuar..."
+            zh = "按 Enter 键继续..."
+            hi = "जारी रखने के लिए Enter दबाएँ..."
+            es = "Presione Entrar para continuar..."
+            fr = "Appuyez sur Entrée pour continuer..."
+            ar = "اضغط على Enter للمتابعة..."
+            ru = "Нажмите Enter, чтобы продолжить..."
         }
         "exiting" = @{
             en = "Exiting... Goodbye!"
-            pt = "Saindo... Ate mais!"
-            es = "Saliendo... Hasta luego!"
+            zh = "退出...再见！"
+            hi = "बाहर जा रहे हैं... अलविदा!"
+            es = "Saliendo... ¡Adiós!"
+            fr = "Je sors... Au revoir !"
+            ar = "خروج...وداعاً!"
+            ru = "Выхожу... До свидания!"
         }
         "start_gaming" = @{
             en = "Starting Gaming Services..."
-            pt = "Iniciando Gaming Services..."
-            es = "Iniciando Gaming Services..."
+            zh = "启动游戏服务..."
+            hi = "गेमिंग सेवाएँ प्रारंभ करना..."
+            es = "Iniciando servicios de juegos..."
+            fr = "Démarrage des services de jeux..."
+            ar = "جارٍ بدء خدمات الألعاب..."
+            ru = "Starting Gaming Services..."
         }
         "install_xbox_hint" = @{
             en = "Install Minecraft Trial from Xbox App (NOT Microsoft Store!)"
-            pt = "Instale o Minecraft Trial pelo Xbox App (NAO Microsoft Store!)"
-            es = "Instale Minecraft Trial desde Xbox App (NO Microsoft Store!)"
+            zh = "从 Xbox 应用程序（不是 Microsoft Store！）安装 Minecraft 试用版"
+            hi = "Xbox ऐप से Minecraft ट्रायल इंस्टॉल करें (Microsoft स्टोर से नहीं!)"
+            es = "Instale Minecraft Trial desde la aplicación Xbox (¡NO Microsoft Store!)"
+            fr = "Installez la version d'essai de Minecraft à partir de l'application Xbox (PAS le Microsoft Store !)"
+            ar = "قم بتثبيت الإصدار التجريبي من Minecraft من تطبيق Xbox (وليس متجر Microsoft!)"
+            ru = "Установите пробную версию Minecraft из приложения Xbox (НЕ из Microsoft Store!)"
         }
         "repair_hint" = @{
             en = "Repair or reinstall Minecraft from Xbox App"
-            pt = "Repare ou reinstale o Minecraft pelo Xbox App"
-            es = "Repare o reinstale Minecraft desde Xbox App"
+            zh = "从 Xbox 应用程序修复或重新安装 Minecraft"
+            hi = "Xbox ऐप से Minecraft को सुधारें या पुनः इंस्टॉल करें"
+            es = "Reparar o reinstalar Minecraft desde la aplicación Xbox"
+            fr = "Réparer ou réinstaller Minecraft à partir de l'application Xbox"
+            ar = "قم بإصلاح أو إعادة تثبيت Minecraft من تطبيق Xbox"
+            ru = "Восстановите или переустановите Minecraft из приложения Xbox."
         }
         "run_admin_hint" = @{
             en = "Run this script as Administrator"
-            pt = "Execute este script como Administrador"
-            es = "Ejecute este script como Administrador"
+            zh = "以管理员身份运行此脚本"
+            hi = "इस स्क्रिप्ट को व्यवस्थापक के रूप में चलाएँ"
+            es = "Ejecute este script como administrador"
+            fr = "Exécutez ce script en tant qu'administrateur"
+            ar = "قم بتشغيل هذا البرنامج النصي كمسؤول"
+            ru = "Запустите этот скрипт от имени администратора"
         }
         "restart_gaming_hint" = @{
             en = "Restart Gaming Services or reinstall Xbox App"
-            pt = "Reinicie os Servicos de Jogos ou reinstale o Xbox App"
-            es = "Reinicie los Servicios de Juegos o reinstale Xbox App"
+            zh = "重新启动游戏服务或重新安装 Xbox 应用程序"
+            hi = "गेमिंग सेवाएँ पुनः प्रारंभ करें या Xbox ऐप पुनः इंस्टॉल करें"
+            es = "Reinicie los servicios de juegos o reinstale la aplicación Xbox"
+            fr = "Redémarrez les services de jeu ou réinstallez l'application Xbox"
+            ar = "أعد تشغيل خدمات الألعاب أو أعد تثبيت تطبيق Xbox"
+            ru = "Перезапустите игровые службы или переустановите приложение Xbox."
         }
         "bd_suspending" = @{
             en = "Antivirus detected - trying to pause protection automatically..."
-            pt = "Antivirus detectado - tentando pausar protecao automaticamente..."
-            es = "Antivirus detectado - intentando pausar proteccion automaticamente..."
+            zh = "检测到防病毒软件 - 尝试自动暂停保护..."
+            hi = "एंटीवायरस का पता चला - सुरक्षा को स्वचालित रूप से रोकने का प्रयास किया जा रहा है..."
+            es = "Antivirus detectado: intentando pausar la protección automáticamente..."
+            fr = "Antivirus détecté - tentative de suspension automatique de la protection..."
+            ar = "تم اكتشاف برنامج مكافحة فيروسات - محاولة إيقاف الحماية مؤقتًا تلقائيًا..."
+            ru = "Обнаружен антивирус – попытка автоматически приостановить защиту..."
         }
         "bd_suspended" = @{
             en = "Antivirus paused! Installing files now..."
-            pt = "Antivirus pausado! Instalando arquivos agora..."
-            es = "Antivirus pausado! Instalando archivos ahora..."
+            zh = "杀毒软件暂停了！正在安装文件..."
+            hi = "एंटीवायरस रुका हुआ! अभी फ़ाइलें इंस्टॉल हो रही हैं..."
+            es = "¡Antivirus en pausa! Instalando archivos ahora..."
+            fr = "Antivirus en pause ! Installation des fichiers maintenant..."
+            ar = "مكافحة الفيروسات متوقفة مؤقتا! جارٍ تثبيت الملفات الآن..."
+            ru = "Антивирус приостановлен! Установка файлов сейчас..."
         }
         "bd_resumed" = @{
             en = "Antivirus protection restored."
-            pt = "Protecao do antivirus restaurada."
-            es = "Proteccion del antivirus restaurada."
+            zh = "防病毒保护已恢复。"
+            hi = "एंटीवायरस सुरक्षा बहाल हो गई."
+            es = "Se restableció la protección antivirus."
+            fr = "Protection antivirus restaurée."
+            ar = "تمت استعادة الحماية من الفيروسات."
+            ru = "Антивирусная защита восстановлена."
         }
         "bd_suspend_failed" = @{
             en = "Could not pause automatically. Please follow the instructions:"
-            pt = "Nao foi possivel pausar automaticamente. Siga as instrucoes:"
-            es = "No se pudo pausar automaticamente. Siga las instrucciones:"
+            zh = "无法自动暂停。请按照说明操作："
+            hi = "स्वचालित रूप से रुक नहीं सका. कृपया निर्देशों का पालन करें:"
+            es = "No se pudo pausar automáticamente. Siga las instrucciones:"
+            fr = "Impossible de faire une pause automatiquement. Veuillez suivre les instructions :"
+            ar = "تعذر الإيقاف المؤقت تلقائيًا. يرجى اتباع التعليمات:"
+            ru = "Не удалось сделать автоматическую паузу. Пожалуйста, следуйте инструкциям:"
         }
         "bd_onaccess_title" = @{
             en = "BITDEFENDER - RECOMMENDED: ADD EXCLUSION FOR EXTRA SAFETY"
-            pt = "BITDEFENDER - RECOMENDADO: ADICIONE A EXCLUSAO PARA MAIOR SEGURANCA"
-            es = "BITDEFENDER - RECOMENDADO: AGREGUE EXCLUSION PARA MAYOR SEGURIDAD"
+            zh = "BitDefender - 建议：添加排除以提高安全性"
+            hi = "बिटडिफ़ेंडर - अनुशंसित: अतिरिक्त सुरक्षा के लिए बहिष्करण जोड़ें"
+            es = "BITDEFENDER - RECOMENDADO: AÑADIR EXCLUSIÓN PARA MAYOR SEGURIDAD"
+            fr = "BITDEFENDER - RECOMMANDÉ : AJOUTER UNE EXCLUSION POUR PLUS DE SÉCURITÉ"
+            ar = "BITDEFENDER - موصى به: أضف الاستثناء لمزيد من الأمان"
+            ru = "BITDEFENDER – РЕКОМЕНДУЕТСЯ: ДОБАВИТЬ ИСКЛЮЧЕНИЕ ДЛЯ ДОПОЛНИТЕЛЬНОЙ БЕЗОПАСНОСТИ"
         }
         "bd_onaccess_reason" = @{
             en = "Bitdefender Free MAY block the mod files in the future."
-            pt = "O Bitdefender Free PODE bloquear os arquivos do mod no futuro."
-            es = "Bitdefender Free PUEDE bloquear los archivos del mod en el futuro."
+            zh = "Bitdefender Free 将来可能会阻止 mod 文件。"
+            hi = "बिटडेफ़ेंडर फ्री भविष्य में मॉड फ़ाइलों को ब्लॉक कर सकता है।"
+            es = "Bitdefender Free PUEDE bloquear los archivos mod en el futuro."
+            fr = "Bitdefender Free PEUT bloquer les fichiers mod à l'avenir."
+            ar = "قد يقوم Bitdefender Free بحظر ملفات التعديل في المستقبل."
+            ru = "Bitdefender Free МОЖЕТ заблокировать файлы модов в будущем."
         }
         "bd_onaccess_cannot_autofix" = @{
             en = "Adding the exclusion prevents Bitdefender from interfering later."
-            pt = "Adicionar a exclusao previne que o Bitdefender interfira futuramente."
-            es = "Agregar la exclusion previene que Bitdefender interfiera en el futuro."
+            zh = "添加排除项可防止 Bitdefender 稍后干扰。"
+            hi = "बहिष्करण जोड़ने से बिटडेफ़ेंडर को बाद में हस्तक्षेप करने से रोका जा सकता है।"
+            es = "Agregar la exclusión evita que Bitdefender interfiera más adelante."
+            fr = "L'ajout de l'exclusion empêche Bitdefender d'intervenir ultérieurement."
+            ar = "تؤدي إضافة الاستثناء إلى منع Bitdefender من التدخل لاحقًا."
+            ru = "Добавление исключения предотвращает дальнейшее вмешательство Bitdefender."
         }
         "bd_onaccess_clipboard" = @{
             en = ">> Path COPIED to clipboard - just press Ctrl+V in Bitdefender!"
-            pt = ">> Caminho COPIADO para a area de transferencia - so pressione Ctrl+V no Bitdefender!"
-            es = ">> Ruta COPIADA al portapapeles - solo presione Ctrl+V en Bitdefender!"
+            zh = ">> 路径已复制到剪贴板 - 只需在 Bitdefender 中按 Ctrl+V！"
+            hi = ">> पथ क्लिपबोर्ड पर कॉपी किया गया - बस बिटडेफ़ेंडर में Ctrl+V दबाएँ!"
+            es = ">> Ruta COPIADA al portapapeles: ¡simplemente presione Ctrl+V en Bitdefender!"
+            fr = ">> Chemin COPIÉ vers le presse-papiers - appuyez simplement sur Ctrl+V dans Bitdefender !"
+            ar = ">> تم نسخ المسار إلى الحافظة - فقط اضغط على Ctrl+V في Bitdefender!"
+            ru = ">> Путь скопирован в буфер обмена — просто нажмите Ctrl+V в Bitdefender!"
         }
         "bd_onaccess_wait" = @{
             en = "After adding the exclusion in Bitdefender, press ENTER here to continue..."
-            pt = "Apos adicionar a exclusao no Bitdefender, pressione ENTER aqui para continuar..."
-            es = "Despues de agregar la exclusion en Bitdefender, presione ENTER aqui para continuar..."
+            zh = "在 Bitdefender 中添加排除项后，请按此处的 ENTER 继续..."
+            hi = "बिटडेफ़ेंडर में बहिष्करण जोड़ने के बाद, जारी रखने के लिए यहां ENTER दबाएँ..."
+            es = "Después de agregar la exclusión en Bitdefender, presione ENTER aquí para continuar..."
+            fr = "Après avoir ajouté l'exclusion dans Bitdefender, appuyez sur ENTRÉE ici pour continuer..."
+            ar = "بعد إضافة الاستثناء في برنامج Bitdefender، اضغط على ENTER هنا للمتابعة..."
+            ru = "После добавления исключения в Bitdefender нажмите клавишу ВВОД, чтобы продолжить..."
         }
         "bd_onaccess_verified" = @{
             en = "Exclusion confirmed in Bitdefender! Minecraft will work correctly now."
-            pt = "Exclusao confirmada no Bitdefender! O Minecraft vai funcionar corretamente agora."
-            es = "Exclusion confirmada en Bitdefender! Minecraft funcionara correctamente ahora."
+            zh = "Bitdefender 已确认排除！ Minecraft 现在可以正常工作了。"
+            hi = "बिटडेफ़ेंडर में बहिष्करण की पुष्टि की गई! Minecraft अब सही ढंग से काम करेगा."
+            es = "¡Exclusión confirmada en Bitdefender! Minecraft funcionará correctamente ahora."
+            fr = "Exclusion confirmée dans Bitdefender ! Minecraft fonctionnera correctement désormais."
+            ar = "تم تأكيد الاستبعاد في Bitdefender! سوف تعمل لعبة Minecraft بشكل صحيح الآن."
+            ru = "Исключение подтверждено в Bitdefender! Майнкрафт теперь будет работать корректно."
         }
         "bd_onaccess_not_detected" = @{
             en = "Exclusion NOT detected yet. Please follow the steps again."
-            pt = "Exclusao NAO detectada ainda. Por favor siga os passos novamente."
-            es = "Exclusion NO detectada aun. Por favor siga los pasos nuevamente."
+            zh = "尚未检测到排除。请再次按照步骤操作。"
+            hi = "बहिष्करण का अभी तक पता नहीं चला है. कृपया चरणों का दोबारा पालन करें."
+            es = "Exclusión NO detectada aún. Por favor sigue los pasos nuevamente."
+            fr = "Exclusion PAS encore détectée. Veuillez suivre à nouveau les étapes."
+            ar = "لم يتم الكشف عن الاستبعاد بعد. يرجى اتباع الخطوات مرة أخرى."
+            ru = "Исключение еще НЕ обнаружено. Пожалуйста, повторите шаги еще раз."
         }
         "bd_onaccess_skipped" = @{
             en = "Exclusion not configured. If Minecraft has issues later, see TROUBLESHOOTING.md."
-            pt = "Exclusao nao configurada. Se o Minecraft tiver problemas, veja TROUBLESHOOTING.md."
-            es = "Exclusion no configurada. Si Minecraft tiene problemas, vea TROUBLESHOOTING.md."
+            zh = "未配置排除。如果 Minecraft 稍后出现问题，请参阅 TROUBLESHOOTING.md。"
+            hi = "बहिष्करण कॉन्फ़िगर नहीं किया गया. यदि Minecraft में बाद में समस्याएँ आती हैं, तो TROUBLESHOOTING.md देखें।"
+            es = "Exclusión no configurada. Si Minecraft tiene problemas más adelante, consulte TROUBLESHOOTING.md."
+            fr = "Exclusion non configurée. Si Minecraft rencontre des problèmes plus tard, consultez DÉPANNAGE.md."
+            ar = "لم يتم تكوين الاستبعاد. إذا واجهت Minecraft مشكلات لاحقًا، فراجع TROUBLESHOOTING.md."
+            ru = "Исключение не настроено. Если позже у Minecraft возникнут проблемы, см. TROUBLESHOOTING.md."
         }
         "bd_onaccess_attempt" = @{
             en = "Attempt"
-            pt = "Tentativa"
-            es = "Intento"
+            zh = "试图"
+            hi = "कोशिश करना"
+            es = "Intentar"
+            fr = "Tentative"
+            ar = "محاولة"
+            ru = "Пытаться"
         }
     }
     

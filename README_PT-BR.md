@@ -99,7 +99,7 @@ A ferramenta:
 
 ## Funcionalidades
 
-- 🌍 **Multi-idioma**: Detecta automaticamente EN, PT-BR, ES
+- 🌍 **Multi7 (top mundial)**: Detecta automaticamente English, 中文 (Chinês), हिन्दी (Hindi), Español (Espanhol), Français (Francês), العربية (Árabe), Русский (Russo) baseado na cultura do sistema operacional (`Get-Culture`); nunca geolocalização por IP
 - 🛡️ **Orientação de AV**: Guia você nas exclusões do antivírus para reduzir falsos positivos durante a instalação
 - 🔄 **Tentativa automática**: Se o antivírus remover os arquivos, tenta novamente
 - 📊 **Diagnóstico**: Verificação completa de saúde do sistema

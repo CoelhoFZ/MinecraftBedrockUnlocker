@@ -59,15 +59,36 @@ Open Minecraft from the Start Menu or use option **[3]** in the script.
 
 ---
 
-## 🌍 Language Support
+## 🌍 Language Support (Multi7)
 
-The script automatically detects your Windows language:
+The script automatically detects your Windows OS culture via `Get-Culture` and shows UI strings in the matching language. It never uses IP geolocation.
 
-| Language | Auto-Detect |
-|----------|-------------|
-| 🇺🇸 English | ✅ |
-| 🇧🇷 Português (Brasil) | ✅ |
-| 🇪🇸 Español | ✅ |
+The unlocker ships with **full UI translation** in the **top 7 most-spoken languages worldwide** (Ethnologue 2023, native + L2):
+
+| # | Language | Code | Native name |
+|---|----------|------|-------------|
+| 1 | English | `en` | English |
+| 2 | Chinese (Mandarin) | `zh` | 中文 |
+| 3 | Hindi | `hi` | हिन्दी |
+| 4 | Spanish | `es` | Español |
+| 5 | French | `fr` | Français |
+| 6 | Arabic | `ar` | العربية |
+| 7 | Russian | `ru` | Русский |
+
+Examples of auto-detected Windows culture codes:
+- `en-US`, `en-GB` → English
+- `zh-CN`, `zh-TW` → 中文 (Chinese)
+- `hi-IN` → हिन्दी (Hindi)
+- `es-ES`, `es-MX`, `pt-BR` (not in top 7, falls back to English) → Español (Spanish) for `es-*`; everything else → English
+- `fr-FR`, `fr-CA` → Français
+- `ar-SA`, `ar-EG` → العربية
+- `ru-RU` → Русский
+
+You can override the language with the `-Lang` parameter on the `bootstrap-v3.2.0.ps1` script:
+```powershell
+.\bootstrap-v3.2.0.ps1 -Lang zh   # force Chinese
+.\bootstrap-v3.2.0.ps1 -Lang auto # default (use OS culture)
+```
 
 ---
 

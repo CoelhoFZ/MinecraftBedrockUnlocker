@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Minecraft Bedrock Unlocker - PowerShell bootstrap.
 
@@ -20,11 +20,19 @@ param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-# Detect system language for error messages
+# Detect system language for error messages (top 7 worldwide, OS culture-based)
 $Script:BootstrapLang = 'en'
 try {
     $culture = (Get-Culture).Name
-    if ($culture -like 'pt-*') { $Script:BootstrapLang = 'pt' }
+    switch -Wildcard ($culture) {
+        'zh-*' { $Script:BootstrapLang = 'zh' }
+        'hi-*' { $Script:BootstrapLang = 'hi' }
+        'es-*' { $Script:BootstrapLang = 'es' }
+        'fr-*' { $Script:BootstrapLang = 'fr' }
+        'ar-*' { $Script:BootstrapLang = 'ar' }
+        'ru-*' { $Script:BootstrapLang = 'ru' }
+        default { $Script:BootstrapLang = 'en' }
+    }
 } catch { }
 
 trap {
