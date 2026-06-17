@@ -46,6 +46,31 @@ try {
 } catch { }
 
 $Script:DiagStrings = @{
+    en = @{ pass='PASS'; fail='FAIL'; warn='WARN'; info='INFO'; detail='Detail'; fix='Fix'; summary='Summary: {0} pass, {1} fail, {2} warn, {3} info'; failedHead='Failed checks need attention before the unlocker will work.'; diagTitle='Minecraft Bedrock Unlocker - diagnostic v3.2.0' }
+    zh = @{ pass='通过'; fail='失败'; warn='警告'; info='信息'; detail='详情'; fix='修复'; summary='摘要:{0} 通过,{1} 失败,{2} 警告,{3} 信息'; failedHead='解锁器工作前需要处理失败的检查。'; diagTitle='Minecraft 基岩版解锁器 - 诊断 v3.2.0' }
+    hi = @{ pass='पास'; fail='फेल'; warn='चेतावनी'; info='जानकारी'; detail='विवरण'; fix='समाधान'; summary='सारांश: {0} पास, {1} फेल, {2} चेतावनी, {3} जानकारी'; failedHead='अनलॉकर काम करने से पहले विफल जाँचों का ध्यान रखें।'; diagTitle='Minecraft Bedrock अनलॉकर - निदान v3.2.0' }
+    es = @{ pass='OK'; fail='FALLO'; warn='AVISO'; info='INFO'; detail='Detalle'; fix='Solución'; summary='Resumen: {0} ok, {1} fallo, {2} aviso, {3} info'; failedHead='Las comprobaciones fallidas requieren atención antes de que el unlocker funcione.'; diagTitle='Minecraft Bedrock Unlocker - diagnóstico v3.2.0' }
+    fr = @{ pass='OK'; fail='ÉCHEC'; warn='AVERT'; info='INFO'; detail='Détail'; fix='Correctif'; summary='Résumé: {0} ok, {1} échec, {2} avert, {3} info'; failedHead='Les vérifications échouées nécessitent une attention avant que l''unlocker ne fonctionne.'; diagTitle='Minecraft Bedrock Unlocker - diagnostic v3.2.0' }
+    ar = @{ pass='نجاح'; fail='فشل'; warn='تحذير'; info='معلومات'; detail='تفاصيل'; fix='إصلاح'; summary='الملخص: {0} نجاح، {1} فشل، {2} تحذير، {3} معلومات'; failedHead='الفحوصات الفاشلة تحتاج إلى انتباه قبل أن يعمل أداة الفتح.'; diagTitle='Minecraft Bedrock Unlocker - تشخيص v3.2.0' }
+    ru = @{ pass='OK'; fail='ОШИБКА'; warn='ПРЕДУПР'; info='ИНФО'; detail='Подробно'; fix='Исправить'; summary='Итого: {0} ok, {1} ошибка, {2} предупр, {3} инфо'; failedHead='Неудачные проверки требуют внимания, прежде чем анлокер заработает.'; diagTitle='Minecraft Bedrock Unlocker - диагностика v3.2.0' }
+}
+
+# Multi7 i18n: detect OS culture (en, zh, hi, es, fr, ar, ru) - never IP geolocation
+$Script:DiagLang = if ($Lang -ne 'auto') { $Lang } else { 'en' }
+try {
+    $c = (Get-Culture).Name
+    switch -Wildcard ($c) {
+        'zh-*' { $Script:DiagLang = 'zh' }
+        'hi-*' { $Script:DiagLang = 'hi' }
+        'es-*' { $Script:DiagLang = 'es' }
+        'fr-*' { $Script:DiagLang = 'fr' }
+        'ar-*' { $Script:DiagLang = 'ar' }
+        'ru-*' { $Script:DiagLang = 'ru' }
+        default { $Script:DiagLang = if ($Lang -ne 'auto') { $Lang } else { 'en' } }
+    }
+} catch { }
+
+$Script:DiagStrings = @{
     en = @{ pass='PASS'; fail='FAIL'; warn='WARN'; info='INFO'; detail='Detail'; fix='Fix'; summary='Summary: {0} pass, {1} fail, {2} warn, {3} info'; failedHead='Failed checks need attention before the unlocker will work.'; rerunOption='Run again with -Json for machine-readable output.' }
     zh = @{ pass='通过'; fail='失败'; warn='警告'; info='信息'; detail='详情'; fix='修复'; summary='摘要：{0} 通过，{1} 失败，{2} 警告，{3} 信息'; failedHead='解锁器工作前需要注意失败的检查。'; rerunOption='使用 -Json 重新运行以获取机器可读输出。' }
     hi = @{ pass='पास'; fail='फेल'; warn='चेतावनी'; info='जानकारी'; detail='विवरण'; fix='समाधान'; summary='सारांश: {0} पास, {1} फेल, {2} चेतावनी, {3} जानकारी'; failedHead='अनलॉकर काम करने से पहले विफल जाँचों पर ध्यान दें।'; rerunOption='मशीन-पठनीय आउटपुट के लिए -Json के साथ फिर से चलाएँ।' }

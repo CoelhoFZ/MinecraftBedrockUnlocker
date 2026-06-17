@@ -35,24 +35,76 @@ try {
     }
 } catch { }
 
+$Script:BootMsg = @{
+    en = @{
+        errTitle    = 'BOOTSTRAP ERROR:'
+        errGeneric  = 'The installer bootstrap failed.'
+        avHint      = 'If your antivirus caused this: disable it temporarily and run again.'
+        pressEnter  = 'Press ENTER to exit'
+        pressEnterPt = 'Pressione ENTER para sair'
+    }
+    zh = @{
+        errTitle    = '引导程序错误:'
+        errGeneric  = '安装程序引导失败。'
+        avHint      = '如果是杀毒软件导致的:请暂时禁用它,然后重新运行。'
+        pressEnter  = '按回车退出'
+        pressEnterPt = '按回车退出'
+    }
+    hi = @{
+        errTitle    = 'बूटस्ट्रैप त्रुटि:'
+        errGeneric  = 'इंस्टॉलर बूटस्ट्रैप विफल।'
+        avHint      = 'यदि यह आपके एंटीवायरस के कारण है: इसे अस्थायी रूप से अक्षम करें और फिर से चलाएँ।'
+        pressEnter  = 'बाहर निकलने के लिए एंटर दबाएँ'
+        pressEnterPt = 'बाहर निकलने के लिए एंटर दबाएँ'
+    }
+    es = @{
+        errTitle    = 'ERROR DE ARRANQUE:'
+        errGeneric  = 'El arranque del instalador falló.'
+        avHint      = 'Si fue su antivirus: desactívelo temporalmente y vuelva a ejecutar.'
+        pressEnter  = 'Pulse ENTER para salir'
+        pressEnterPt = 'Pulse ENTER para salir'
+    }
+    fr = @{
+        errTitle    = 'ERREUR DE DÉMARRAGE :'
+        errGeneric  = "Le démarrage de l'installateur a échoué."
+        avHint      = "Si c'est votre antivirus : désactivez-le temporairement et réexécutez."
+        pressEnter  = 'Appuyez sur ENTRÉE pour quitter'
+        pressEnterPt = 'Appuyez sur ENTRÉE pour quitter'
+    }
+    ar = @{
+        errTitle    = 'خطأ في المُحمِّل:'
+        errGeneric  = 'فشل مُحمِّل المُثبِّت.'
+        avHint      = 'إذا كان السبب برنامج مكافحة الفيروسات: قم بتعطيله مؤقتاً وأعد التشغيل.'
+        pressEnter  = 'اضغط مفتاح الإدخال للخروج'
+        pressEnterPt = 'اضغط مفتاح الإدخال للخروج'
+    }
+    ru = @{
+        errTitle    = 'ОШИБКА ЗАГРУЗЧИКА:'
+        errGeneric  = 'Сбой загрузчика установщика.'
+        avHint      = 'Если это вызвано антивирусом: временно отключите его и запустите снова.'
+        pressEnter  = 'Нажмите ВВОД для выхода'
+        pressEnterPt = 'Нажмите ВВОД для выхода'
+    }
+}
+
 trap {
     Write-Host ''
     Write-Host '============================================================' -ForegroundColor Red
-    Write-Host 'BOOTSTRAP ERROR:' $_.Exception.Message -ForegroundColor Red
+    Write-Host $Script:BootMsg[$Script:BootstrapLang].errTitle $_.Exception.Message -ForegroundColor Red
     Write-Host '============================================================' -ForegroundColor Red
     Write-Host ''
     if ($Script:BootstrapLang -eq 'pt') {
         Write-Host 'O bootstrap do instalador falhou.' -ForegroundColor Yellow
         Write-Host 'Se foi o antivirus: desative-o temporariamente e execute novamente.' -ForegroundColor Yellow
     } else {
-        Write-Host 'The installer bootstrap failed.' -ForegroundColor Yellow
+        Write-Host $Script:BootMsg[$Script:BootstrapLang].errGeneric -ForegroundColor Yellow
         Write-Host 'If your antivirus caused this: disable it temporarily and run again.' -ForegroundColor Yellow
     }
     Write-Host ''
     if ($Script:BootstrapLang -eq 'pt') {
         Read-Host 'Pressione ENTER para sair'
     } else {
-        Read-Host 'Press ENTER to exit'
+        Read-Host $Script:BootMsg[$Script:BootstrapLang].pressEnter
     }
     break
 }

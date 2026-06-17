@@ -63,7 +63,7 @@ A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only
 ## What it does
 
 The tool:
-1. Auto-detects your language from the OS culture (top 7 worldwide: English, 中文, हिन्दी, Español, Français, العربية, Русский)
+1. Auto-detects your language from the OS culture (top 7 worldwide, hand-translated): English, 中文, हिन्दी, Español, Français, العربية, Русский
 2. Requests Administrator privileges if needed
 3. Finds your Minecraft installation
 4. Guides antivirus exclusion setup when needed
