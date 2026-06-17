@@ -84,6 +84,52 @@ function Get-NoCacheHeaders {
     }
 }
 
+
+function Test-GitHubAssetAvailable {
+    # Lightweight HEAD probe: returns $true if the release asset exists.
+    # Used to give a much clearer error than "ALL DOWNLOADS FAILED" when
+    # the CoelhoFZ release ships without the expected asset (e.g. v3.1.11
+    # has only MinecraftBedrockUnlocker.exe; winmm.dll etc. return 404).
+    param([Parameter(Mandatory=$true)][string]$Url)
+    try {
+        $req = [System.Net.HttpWebRequest]::Create((New-CacheBustedUrl $Url))
+        $req.Method = 'HEAD'
+        $req.UserAgent = "MinecraftBedrockUnlocker/$($Script:Version)"
+        $req.Timeout = 10000
+        $req.AllowAutoRedirect = $true
+        $req.Headers.Add('Cache-Control', 'no-cache, no-store, max-age=0')
+        $resp = $req.GetResponse()
+        $code = [int]$resp.StatusCode
+        $resp.Close()
+        return ($code -ge 200 -and $code -lt 400)
+    } catch {
+        $code = $null
+        try { $code = [int]$_.Exception.Response.StatusCode } catch { }
+        return ($code -ne 404 -and $code -ne 410)
+    }
+}
+
+function Test-SelfProtectionError {
+    # self-protection failed Error: 4 is usually one of:
+    #   - Gaming Services broken
+    #   - OnlineFix64.dll signature mismatch after MC update
+    #   - Minecraft for Windows reinstalled (Content folder reset)
+    # We do not patch OnlineFix binaries; we print a remediation hint only.
+    param([string]$ContentDir)
+    if (-not $ContentDir -or -not (Test-Path -LiteralPath $ContentDir)) { return }
+    $dllList = Join-Path $ContentDir 'dlllist.txt'
+    if (-not (Test-Path -LiteralPath $dllList)) { return }
+    $entry = Get-Content -LiteralPath $dllList -TotalCount 1 -ErrorAction SilentlyContinue
+    if ($entry) {
+        $dllPath = Join-Path $ContentDir $entry.Trim()
+        if (-not (Test-Path -LiteralPath $dllPath)) {
+            Write-Warn "self-protection failed Error: 4 likely cause: bypass DLL '$($entry.Trim())' missing."
+            Write-Warn "  Remediation: re-run the unlocker Option 1 to reinstall the bypass."
+            Write-Warn "  If error persists: repair Xbox Game Services via Settings > Apps > Optional features."
+        }
+    }
+}
+
 function Invoke-DownloadBytes {
     param(
         [Parameter(Mandatory=$true)][string[]]$Urls,
@@ -162,6 +208,19 @@ function Invoke-DownloadBytes {
     }
 
     $Script:LastDownloadError = ($errors -join ' | ')
+
+    # v3.1.12: detect GitHub release asset 404s and print a clear remediation hint.
+    $has404 = ($errors | Where-Object { $_ -match '404|Not Found|HTTP 404' })
+    if ($has404) {
+        Write-Warn ''
+        Write-Warn '[v3.1.12] One or more release assets returned HTTP 404 from GitHub.'
+        Write-Warn '[v3.1.12] This usually means the CoelhoFZ release ships only the EXE,'
+        Write-Warn '[v3.1.12] but the PowerShell installer is trying to fetch OnlineFix binaries.'
+        Write-Warn '[v3.1.12] Recommended fix: download the self-contained EXE instead:'
+        Write-Warn "[v3.1.12]   $Script:BaseUrl/MinecraftBedrockUnlocker.exe"
+        Write-Warn '[v3.1.12] The EXE bundles all required DLLs internally.'
+        Write-Warn ''
+    }
     return $null
 }
 
