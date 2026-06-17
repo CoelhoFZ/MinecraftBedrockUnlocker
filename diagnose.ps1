@@ -1,6 +1,6 @@
-<#
+﻿<#
 .SYNOPSIS
-  Minecraft Bedrock Unlocker v3.1.12 - diagnostic script.
+  Minecraft Bedrock Unlocker v3.2.0 - diagnostic script.
 .DESCRIPTION
   Runs a series of non-destructive checks to help debug common issues with the
   unlocker. Useful when:
@@ -20,6 +20,7 @@
 [CmdletBinding()]
 param(
     [switch]$Json,
+    [ValidateSet('auto','en','zh','hi','es','fr','ar','ru')][string]$Lang = 'auto',
     [switch]$Fix
 )
 
@@ -29,7 +30,32 @@ $ErrorActionPreference = 'Continue'
 # -f format strings, which is overkill for a read-only check script.
 Set-StrictMode -Off
 
-$Script:Version = '3.1.12'
+# Multi7 i18n: detect OS culture (en, zh, hi, es, fr, ar, ru) - never IP geolocation
+$Script:DiagLang = if ($Lang -ne 'auto') { $Lang } else { 'en' }
+try {
+    $c = (Get-Culture).Name
+    switch -Wildcard ($c) {
+        'zh-*' { $Script:DiagLang = 'zh' }
+        'hi-*' { $Script:DiagLang = 'hi' }
+        'es-*' { $Script:DiagLang = 'es' }
+        'fr-*' { $Script:DiagLang = 'fr' }
+        'ar-*' { $Script:DiagLang = 'ar' }
+        'ru-*' { $Script:DiagLang = 'ru' }
+        default { $Script:DiagLang = if ($Lang -ne 'auto') { $Lang } else { 'en' } }
+    }
+} catch { }
+
+$Script:DiagStrings = @{
+    en = @{ pass='PASS'; fail='FAIL'; warn='WARN'; info='INFO'; detail='Detail'; fix='Fix'; summary='Summary: {0} pass, {1} fail, {2} warn, {3} info'; failedHead='Failed checks need attention before the unlocker will work.'; rerunOption='Run again with -Json for machine-readable output.' }
+    zh = @{ pass='通过'; fail='失败'; warn='警告'; info='信息'; detail='详情'; fix='修复'; summary='摘要：{0} 通过，{1} 失败，{2} 警告，{3} 信息'; failedHead='解锁器工作前需要注意失败的检查。'; rerunOption='使用 -Json 重新运行以获取机器可读输出。' }
+    hi = @{ pass='पास'; fail='फेल'; warn='चेतावनी'; info='जानकारी'; detail='विवरण'; fix='समाधान'; summary='सारांश: {0} पास, {1} फेल, {2} चेतावनी, {3} जानकारी'; failedHead='अनलॉकर काम करने से पहले विफल जाँचों पर ध्यान दें।'; rerunOption='मशीन-पठनीय आउटपुट के लिए -Json के साथ फिर से चलाएँ।' }
+    es = @{ pass='OK'; fail='FALLO'; warn='AVISO'; info='INFO'; detail='Detalle'; fix='Solucion'; summary='Resumen: {0} ok, {1} fallo, {2} aviso, {3} info'; failedHead='Las verificaciones fallidas requieren atencion antes de que el unlocker funcione.'; rerunOption='Ejecuta de nuevo con -Json para salida legible por maquina.' }
+    fr = @{ pass='OK'; fail='ECHEC'; warn='AVERT'; info='INFO'; detail='Detail'; fix='Correctif'; summary='Resume: {0} ok, {1} echec, {2} avert, {3} info'; failedHead='Les verifications echouees necessitent une attention avant que l unlocker ne fonctionne.'; rerunOption='Reexecutez avec -Json pour une sortie lisible par machine.' }
+    ar = @{ pass='نجاح'; fail='فشل'; warn='تحذير'; info='معلومات'; detail='تفاصيل'; fix='إصلاح'; summary='الملخص: {0} نجاح، {1} فشل، {2} تحذير، {3} معلومات'; failedHead='الفحوصات الفاشلة تحتاج إلى انتباه قبل أن يعمل أداة الفتح.'; rerunOption='أعد التشغيل باستخدام -Json للحصول على إخراج قابل للقراءة آليًا.' }
+    ru = @{ pass='OK'; fail='ОШИБКА'; warn='ПРЕД'; info='ИНФО'; detail='Подробно'; fix='Исправить'; summary='Итого: {0} ок, {1} ошибка, {2} пред, {3} инфо'; failedHead='Неудачные проверки требуют внимания, прежде чем анлокер заработает.'; rerunOption='Запустите снова с -Json для машиночитаемого вывода.' }
+}
+
+$Script:Version = '3.2.0'
 $Script:RepoOwner = 'CoelhoFZ'
 $Script:RepoName  = 'MinecraftBedrockUnlocker'
 
@@ -55,11 +81,18 @@ function Add-Result {
         'warn' { 'Yellow' }
         default { 'Gray' }
     }
-    $tag = "[{0}]" -f $Status.ToUpper()
+    $tr = $Script:DiagStrings[$Script:DiagLang]
+    $label = switch ($Status) {
+        'pass' { $tr.pass }
+        'fail' { $tr.fail }
+        'warn' { $tr.warn }
+        default { $tr.info }
+    }
+    $tag = "[{0}]" -f $label
     if (-not $Json) {
         Write-Host (" {0,-6} {1}" -f $tag, $Name) -ForegroundColor $color
-        if ($Detail)       { Write-Host ("        Detail: {0}" -f $Detail) -ForegroundColor DarkGray }
-        if ($Remediation)  { Write-Host ("        Fix:    {0}" -f $Remediation) -ForegroundColor Cyan }
+        if ($Detail)       { Write-Host ("        {0}: {1}" -f $tr.detail, $Detail) -ForegroundColor DarkGray }
+        if ($Remediation)  { Write-Host ("        {0}:    {1}" -f $tr.fix, $Remediation) -ForegroundColor Cyan }
     }
 }
 
@@ -264,11 +297,12 @@ if ($Json) {
     $warn = @($results | Where-Object { $_.status -eq 'warn' }).Count
     $info = @($results | Where-Object { $_.status -eq 'info' }).Count
     Write-Host ''
+    $tr = $Script:DiagStrings[$Script:DiagLang]
     $summaryColor = if ($fail -eq 0) { 'Green' } else { 'Yellow' }
-    Write-Host ('Summary: {0} pass, {1} fail, {2} warn, {3} info' -f $pass, $fail, $warn, $info) -ForegroundColor $summaryColor
+    Write-Host (($tr.summary) -f $pass, $fail, $warn, $info) -ForegroundColor $summaryColor
     if ($fail -gt 0) {
         Write-Host ''
-        Write-Host 'Failed checks need attention before the unlocker will work.' -ForegroundColor Red
+        Write-Host $tr.failedHead -ForegroundColor Red
         exit 1
     }
     exit 0
