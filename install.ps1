@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Minecraft Bedrock Unlocker - PowerShell bootstrap.
 
@@ -90,32 +90,49 @@ $Script:BootMsg = @{
 trap {
     Write-Host ''
     Write-Host '============================================================' -ForegroundColor Red
-    Write-Host $Script:BootMsg[$Script:BootstrapLang].errTitle $_.Exception.Message -ForegroundColor Red
+    # Defensive: $Script:BootMsg / $Script:BootstrapLang may be null if trap fires before initialization
+    $errTitle = if ($null -ne $Script:BootMsg -and $null -ne $Script:BootstrapLang -and $Script:BootMsg.ContainsKey($Script:BootstrapLang)) { $Script:BootMsg[$Script:BootstrapLang].errTitle } else { '[MBU v3.2.1] BOOTSTRAP ERROR:' }
+    Write-Host $errTitle $_.Exception.Message -ForegroundColor Red
     Write-Host '============================================================' -ForegroundColor Red
     Write-Host ''
-    if ($Script:BootstrapLang -eq 'pt') {
-        Write-Host 'O bootstrap do instalador falhou.' -ForegroundColor Yellow
-        Write-Host 'Se foi o antivirus: desative-o temporariamente e execute novamente.' -ForegroundColor Yellow
-    } else {
-        Write-Host $Script:BootMsg[$Script:BootstrapLang].errGeneric -ForegroundColor Yellow
-        Write-Host 'If your antivirus caused this: disable it temporarily and run again.' -ForegroundColor Yellow
+    try {
+        if ($Script:BootstrapLang -eq 'pt') {
+            Write-Host 'O bootstrap do instalador falhou.' -ForegroundColor Yellow
+            Write-Host 'Se foi o antivirus: desative-o temporariamente e execute novamente.' -ForegroundColor Yellow
+        } elseif ($null -ne $Script:BootMsg -and $null -ne $Script:BootstrapLang -and $Script:BootMsg.ContainsKey($Script:BootstrapLang)) {
+            Write-Host $Script:BootMsg[$Script:BootstrapLang].errGeneric -ForegroundColor Yellow
+            Write-Host 'If your antivirus caused this: disable it temporarily and run again.' -ForegroundColor Yellow
+        } else {
+            Write-Host 'The installer bootstrap failed.' -ForegroundColor Yellow
+            Write-Host 'If your antivirus caused this: disable it temporarily and run again.' -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host 'The installer bootstrap failed.' -ForegroundColor Yellow
     }
     Write-Host ''
-    if ($Script:BootstrapLang -eq 'pt') {
-        Read-Host 'Pressione ENTER para sair'
-    } else {
-        Read-Host $Script:BootMsg[$Script:BootstrapLang].pressEnter
+    try {
+        if ($Script:BootstrapLang -eq 'pt') {
+            Read-Host 'Pressione ENTER para sair' | Out-Null
+        } elseif ($null -ne $Script:BootMsg -and $null -ne $Script:BootstrapLang -and $Script:BootMsg.ContainsKey($Script:BootstrapLang)) {
+            Read-Host $Script:BootMsg[$Script:BootstrapLang].pressEnter | Out-Null
+        } else {
+            Read-Host 'Press ENTER to exit' | Out-Null
+        }
+    } catch {
+        Read-Host 'Press ENTER to exit' | Out-Null
     }
     break
 }
 
-$Script:Version = '3.1.10'
+$Script:Version = '3.2.1'
 $Script:RepoOwner = 'CoelhoFZ'
 $Script:RepoName = 'MinecraftBedrockUnlocker'
 $Script:BaseUrl = "https://github.com/$($Script:RepoOwner)/$($Script:RepoName)/releases/latest/download"
 $Script:PayloadUrl = "$($Script:BaseUrl)/unlocker.ps1"
-$Script:RawPayloadUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/v$($Script:Version)/unlocker.ps1"
-$Script:PayloadSha256 = '9a6164a90189b1a43cb5f9bdc105ce8b301fef4eafde567b6033d6807e821561'
+# Fallback to main branch (avoids dependency on a v3.2.1 tag that may not exist yet)
+$Script:RawPayloadUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/main/unlocker.ps1"
+# unlocker.ps1 hash post-BOM-strip (v3.2.1)
+$Script:PayloadSha256 = 'fd57c74688a564f6f31cad5ce175a5c8a8da54266f95da40fcdc7a10eb5214d3'
 
 function Write-Status {
     param(
