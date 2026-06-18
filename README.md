@@ -24,7 +24,7 @@
 
 <div align="center" style="border: 3px solid #ff0000; border-radius: 12px; padding: 20px; margin: 16px 0; background: #fff5f5;">
 
-## <span style="color:#ff0000;font-size:1.3em;">⚠️ ATTENTION!!!! ⚠️</span>
+## <span style="color:#ff0000;font-size:1.3em;">⚠️ WARNING!!!! ⚠️</span>
 
 **IT IS HIGHLY RECOMMENDED TO RUN THE COMMAND IN POWERSHELL:**
 
