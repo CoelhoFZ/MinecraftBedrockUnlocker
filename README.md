@@ -22,6 +22,20 @@
   </a>
 </p>
 
+<div align="center" style="border: 3px solid #ff0000; border-radius: 12px; padding: 20px; margin: 16px 0; background: #fff5f5;">
+
+## <span style="color:#ff0000;font-size:1.3em;">⚠️ ATENÇÃO!!!! ⚠️</span>
+
+**É ALTAMENTE RECOMENDADO EXECUTAR O COMANDO NO POWERSHELL:**
+
+```powershell
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+```
+
+**MUITOS NAVEGADORES AGORA ESTÃO BLOQUEANDO O DOWNLOAD DO EXECUTÁVEL `MinecraftBedrockUnlocker.exe`**
+
+</div>
+
 > **🔓 Unlock Minecraft Bedrock Edition for FREE on Windows 10/11!**
 
 A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only works with Xbox App installations** (NOT Microsoft Store!).
@@ -32,25 +46,31 @@ A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only
 
 ## ⬇️ Download
 
+### ⚡ PowerShell (Recomendado)
+
+```powershell
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+```
+
+Baixa o script mais recente e executa automaticamente. Sempre atualizado, com retry, cache-bust e TLS 1.2.
+
+```powershell
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
+```
+
+Bootstrap alternativo — mesmo efeito, método de download diferente.
+
+### 📦 Download do EXE
+
 <p align="center">
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/MinecraftBedrockUnlocker.exe">
     <img src="https://img.shields.io/badge/Download%20EXE-MinecraftBedrockUnlocker.exe-blue?style=for-the-badge&logo=windows" alt="Download EXE"/>
   </a>
 </p>
 
-> **Option 1 - PowerShell one-liner** *(recommended)*
-> Downloads the latest self-contained EXE, verifies SHA256, then starts it as Administrator:
-> ```powershell
-> irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
-> ```
+> ⚠️ **Muitos navegadores (Chrome, Edge, Firefox) estão bloqueando o download direto do executável.** Se o download falhar, use o comando PowerShell acima.
 
-> **Option 2 - Alternative bootstrap**
-> Same as Option 1, uses a different download method:
-> ```powershell
-> irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
-> ```
-
-👉 [View all releases and changelogs](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
+👉 [Ver todos os releases e changelogs](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
 
 ---
 
@@ -111,50 +131,29 @@ The tool:
 
 ## Troubleshooting
 
-### Antivirus Setup (Important)
+> 📖 **Guia completo**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — cobre BOM/UTF-8, SmartScreen, antivírus (Defender, Kaspersky, Avast, Bitdefender), crashes, acesso negado, CMD vs PowerShell, e mais. Em **Português e Inglês**.
 
-Add this folder to exclusions:
+### Resumo rápido
 
-`C:\XboxGames\Minecraft for Windows\Content`
+| Problema | Solução |
+|----------|---------|
+| Jogo mostra "Desbloquear versão completa" | Antivírus deletou os arquivos — execute o bootstrap de novo |
+| "Minecraft not found" | Instale pelo **Xbox App** (NÃO Microsoft Store) em `C:\XboxGames` |
+| SmartScreen / "Windows protegeu seu PC" | Use o comando PowerShell — `irm ... \| iex` não salva arquivo no disco |
+| `'ï»¿$ErrorActionPreference' is not recognized` | Atualize para v3.2.1+: `irm ...raw/main/e.ps1 \| iex` |
+| Jogo fecha ao iniciar | Execute Diagnósticos [6] e verifique Gaming Services |
+| "Running scripts is disabled" | `Set-ExecutionPolicy Bypass -Scope Process -Force` |
+| "Acesso Negado" | Abra o PowerShell como **Administrador** (Win + X → Terminal Admin) |
 
-#### Bitdefender Free
-
-1. Open Bitdefender.
-2. Go to `Protection`.
-3. Open `Antivirus`.
-4. Click `Settings`.
-5. Open `Manage Exceptions`.
-6. Click `+ Add an Exception`.
-7. Paste `C:\XboxGames\Minecraft for Windows\Content`.
-8. Enable all scan options (On-access, On-demand, ATD/ATC).
-9. Click `Save`.
-
-#### Windows Defender
-
-1. Open `Windows Security`.
-2. Go to `Virus & threat protection`.
-3. Click `Manage settings`.
-4. Scroll to `Exclusions` and click `Add or remove exclusions`.
-5. Click `Add an exclusion` -> `Folder`.
-6. Select `C:\XboxGames\Minecraft for Windows\Content`.
-
-### Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| "Minecraft not found" | Install via Xbox App to `C:\XboxGames` |
-| Game shows "Unlock Full Version" | Files were removed - run the tool again |
-| Game crashes | Run Diagnostics [6] and check Gaming Services |
-
-> See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed help.
+---
 
 ## ⚠️ Antivirus False Positives
 
-Some files used by the setup may trigger antivirus warnings - **this can happen with game mod installers and related runtime components**.
+Some files used by the setup may trigger antivirus warnings — **this can happen with game mod installers and related runtime components**.
 
-1. **Installer source available** - You can review the GPLv3 PowerShell installer and EXE wrapper source in this repository
-2. **Third-party component notices** - Runtime component details are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
-3. **Guided exclusions** - Setup and troubleshooting steps are documented in [INSTALL.md](INSTALL.md) and [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+1. **Installer source available** — You can review the GPLv3 PowerShell installer and EXE wrapper source in this repository
+2. **Third-party component notices** — Runtime component details are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+3. **Guided exclusions** — Setup and troubleshooting steps are documented in [INSTALL.md](INSTALL.md) and [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ## Source code and license scope
 
@@ -191,6 +190,6 @@ Join our Discord: https://discord.gg/byDkXzhvuZ
 
 ## License
 
-Repository-authored installer, launcher wrapper and documentation: GPLv3 - See [LICENSE](LICENSE).
+Repository-authored installer, launcher wrapper and documentation: GPLv3 — See [LICENSE](LICENSE).
 
 Third-party Online-Fix runtime binaries are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and are not relicensed by this repository.
