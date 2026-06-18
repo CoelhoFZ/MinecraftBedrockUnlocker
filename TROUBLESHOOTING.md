@@ -21,7 +21,7 @@
    ```
 3. Choose option **[5] Check Status** to see which files are missing
 4. If files are missing, choose **[1] Install Mod** to reinstall
-5. If files keep disappearing, your antivirus is deleting them immediately → see [Antivirus section](#%EF%B8%8F-problem-files-deleted-by-antivirus)
+5. If files keep disappearing, your antivirus is deleting them immediately → see [Antivirus section](#problem-files-deleted-by-antivirus)
 
 ---
 
@@ -236,7 +236,7 @@ Use **option [6] System Diagnostics** to check:
    ```
 3. Use opção **[5] Verificar Status** para ver quais arquivos estão faltando
 4. Se faltam, use **[1] Instalar Mod** para reinstalar
-5. Se os arquivos continuam sumindo, seu antivírus está deletando → veja [seção Antivírus](#%EF%B8%8F-problema-arquivos-deletados-pelo-antivírus)
+5. Se os arquivos continuam sumindo, seu antivírus está deletando → veja [seção Antivírus](#problema-arquivos-deletados-pelo-antivírus)
 
 ---
 
