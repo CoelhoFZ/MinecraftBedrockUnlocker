@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
   Minecraft Bedrock Unlocker v3.2.0 - diagnostic script.
 .DESCRIPTION

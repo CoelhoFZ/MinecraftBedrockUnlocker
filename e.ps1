@@ -1,10 +1,10 @@
-﻿$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 
 trap {
     Write-Host ''
     Write-Host '============================================================' -ForegroundColor Red
-    Write-Host '[MBU] ERROR:' $_.Exception.Message -ForegroundColor Red
+    Write-Host '[MBU v3.2.1] ERROR:' $_.Exception.Message -ForegroundColor Red
     Write-Host '============================================================' -ForegroundColor Red
     Write-Host ''
     Write-Host 'The bootstrap failed. Possible causes:' -ForegroundColor Yellow
@@ -12,7 +12,13 @@ trap {
     Write-Host '  2. Antivirus blocked the download' -ForegroundColor Yellow
     Write-Host '  3. The release asset was not found (try again later)' -ForegroundColor Yellow
     Write-Host ''
-    Read-Host $Script:Msg[$Script:Lang].pressEnter
+    # Defensive: $Script:Msg / $Script:Lang may be null if trap fires before initialization
+    try {
+        $prompt = if ($null -ne $Script:Msg -and $null -ne $Script:Lang -and $Script:Msg.ContainsKey($Script:Lang)) { $Script:Msg[$Script:Lang].pressEnter } else { 'Press ENTER to exit' }
+        Read-Host $prompt | Out-Null
+    } catch {
+        Read-Host 'Press ENTER to exit' | Out-Null
+    }
     break
 }
 
