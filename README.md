@@ -24,15 +24,15 @@
 
 <div align="center" style="border: 3px solid #ff0000; border-radius: 12px; padding: 20px; margin: 16px 0; background: #fff5f5;">
 
-## <span style="color:#ff0000;font-size:1.3em;">⚠️ ATENÇÃO!!!! ⚠️</span>
+## <span style="color:#ff0000;font-size:1.3em;">⚠️ ATTENTION!!!! ⚠️</span>
 
-**É ALTAMENTE RECOMENDADO EXECUTAR O COMANDO NO POWERSHELL:**
+**IT IS HIGHLY RECOMMENDED TO RUN THE COMMAND IN POWERSHELL:**
 
 ```powershell
 irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
 ```
 
-**MUITOS NAVEGADORES AGORA ESTÃO BLOQUEANDO O DOWNLOAD DO EXECUTÁVEL `MinecraftBedrockUnlocker.exe`**
+**MANY BROWSERS ARE NOW BLOCKING THE DOWNLOAD OF THE EXECUTABLE `MinecraftBedrockUnlocker.exe`**
 
 </div>
 
@@ -46,21 +46,21 @@ A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only
 
 ## ⬇️ Download
 
-### ⚡ PowerShell (Recomendado)
+### ⚡ PowerShell (Recommended)
 
 ```powershell
 irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
 ```
 
-Baixa o script mais recente e executa automaticamente. Sempre atualizado, com retry, cache-bust e TLS 1.2.
+Downloads the latest script and runs it automatically. Always up-to-date, with retry, cache-bust, and TLS 1.2.
 
 ```powershell
 irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
 
-Bootstrap alternativo — mesmo efeito, método de download diferente.
+Alternative bootstrap — same effect, different download method.
 
-### 📦 Download do EXE
+### 📦 EXE Download
 
 <p align="center">
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/MinecraftBedrockUnlocker.exe">
@@ -68,9 +68,9 @@ Bootstrap alternativo — mesmo efeito, método de download diferente.
   </a>
 </p>
 
-> ⚠️ **Muitos navegadores (Chrome, Edge, Firefox) estão bloqueando o download direto do executável.** Se o download falhar, use o comando PowerShell acima.
+> ⚠️ **Many browsers (Chrome, Edge, Firefox) are now blocking direct EXE downloads.** If the download fails, use the PowerShell command above.
 
-👉 [Ver todos os releases e changelogs](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
+👉 [View all releases and changelogs](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
 
 ---
 
@@ -131,19 +131,19 @@ The tool:
 
 ## Troubleshooting
 
-> 📖 **Guia completo**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — cobre BOM/UTF-8, SmartScreen, antivírus (Defender, Kaspersky, Avast, Bitdefender), crashes, acesso negado, CMD vs PowerShell, e mais. Em **Português e Inglês**.
+> 📖 **Full guide**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — covers BOM/UTF-8 errors, SmartScreen, antivirus (Defender, Kaspersky, Avast, Bitdefender), crashes, access denied, CMD vs PowerShell, and more. Bilingual (English & Portuguese).
 
-### Resumo rápido
+### Quick Summary
 
-| Problema | Solução |
-|----------|---------|
-| Jogo mostra "Desbloquear versão completa" | Antivírus deletou os arquivos — execute o bootstrap de novo |
-| "Minecraft not found" | Instale pelo **Xbox App** (NÃO Microsoft Store) em `C:\XboxGames` |
-| SmartScreen / "Windows protegeu seu PC" | Use o comando PowerShell — `irm ... \| iex` não salva arquivo no disco |
-| `'ï»¿$ErrorActionPreference' is not recognized` | Atualize para v3.2.1+: `irm ...raw/main/e.ps1 \| iex` |
-| Jogo fecha ao iniciar | Execute Diagnósticos [6] e verifique Gaming Services |
+| Issue | Solution |
+|-------|----------|
+| Game shows "Unlock Full Version" | Antivirus deleted the files — run the bootstrap again |
+| "Minecraft not found" | Install via **Xbox App** (NOT Microsoft Store) to `C:\XboxGames` |
+| SmartScreen / "Windows protected your PC" | Use the PowerShell command — `irm ... | iex` streams into memory, no file saved to disk |
+| `'ï»¿$ErrorActionPreference' is not recognized` | Update to v3.2.1+: run `irm ...raw/main/e.ps1 | iex` |
+| Game crashes on startup | Run Diagnostics [6] and check Gaming Services |
 | "Running scripts is disabled" | `Set-ExecutionPolicy Bypass -Scope Process -Force` |
-| "Acesso Negado" | Abra o PowerShell como **Administrador** (Win + X → Terminal Admin) |
+| "Access Denied" | Open PowerShell as **Administrator** (Win + X → Terminal Admin) |
 
 ---
 
