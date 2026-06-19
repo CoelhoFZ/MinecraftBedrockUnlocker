@@ -31,27 +31,31 @@ Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Editio
 
 ---
 
-## ⬇️ Download
+## ⬇️ Como Instalar
 
-### 🖱️ Clique Duplo (Mais Fácil)
+> ⚠️ **NÃO baixe o arquivo `.exe`.** Navegadores (Chrome, Edge, Firefox) bloqueiam com aviso de "arquivo perigoso" e o SmartScreen do Windows também bloqueia. Use os métodos abaixo — funcionam sempre.
 
-Baixe o **[install.bat](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.bat)** e dê um clique duplo.
+### ⚡ Método 1 — Comando PowerShell (Recomendado)
+
+Abra o **PowerShell** (procure no Menu Iniciar) e cole:
+
+```powershell
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+```
+
+Baixa e executa o instalador mais recente do GitHub. Sempre atualizado, com retry, cache-bust e TLS 1.2. **Roda em memória — o SmartScreen NÃO bloqueia.**
+
+> 💡 **Por que não o EXE?** O SmartScreen bloqueia arquivos `.exe` não-assinados. O comando PowerShell evita isso completamente — sem avisos, sem bloqueios.
+
+### 🖱️ Método 2 — Clique Duplo (install.bat)
+
+Baixe o **[install.bat](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.bat)** e dê um clique duplo. Ele abre o PowerShell automaticamente e executa o instalador.
 
 <p align="center">
   <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.bat">
     <img src="https://img.shields.io/badge/Baixar-install.bat-blue?style=for-the-badge&logo=windowsterminal" alt="Baixar install.bat"/>
   </a>
 </p>
-
-### ⚡ PowerShell (Comando Único)
-
-```powershell
-irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
-```
-
-Baixa e executa o instalador mais recente do GitHub. Sempre atualizado, com retry, cache-bust e TLS 1.2. **Sem EXE — o script roda em memória, então o SmartScreen NÃO bloqueia.**
-
-> 💡 **Por que sem EXE?** O SmartScreen do Windows bloqueia arquivos `.exe` não-assinados baixados da internet com "reputação binária mal-intencionada". O script PowerShell evita isso completamente.
 
 👉 [Ver todos os releases e changelogs](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
 
