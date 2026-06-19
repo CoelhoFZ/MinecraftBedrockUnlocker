@@ -12,8 +12,8 @@
     <img src="https://img.shields.io/badge/ÚLTIMA-VERSÃO-brightgreen?style=for-the-badge" alt="Última Versão"/>
   </a>
 </p>
-  <a href="https://buymeacoffee.com/coelhofz" aria-label="Buy Me a Coffee" title="Buy Me a Coffee">
-    <img src="https://img.shields.io/badge/BUY%20ME%20A%20COFFEE-APOIAR-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=000000" alt="Buy Me a Coffee"/>
+  <a href="https://buymeacoffee.com/coelhofz" target="_blank">
+    <img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" />
   </a>
   <a href="https://discord.gg/byDkXzhvuZ" aria-label="Discord" title="Discord">
     <img src="https://img.shields.io/badge/DISCORD-ENTRAR-7289da?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"/>
@@ -25,7 +25,7 @@
 
 > **🔓 Desbloqueie o Minecraft Bedrock Edition DE GRAÇA no Windows 10/11!**
 
-Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Edition (GDK)**. **Só funciona com instalações do Xbox App** (NÃO Microsoft Store!).
+Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Edition (GDK)**. **Só funciona com instalações do Xbox App** (NÃO Microsoft Store!). **Sem EXE — roda 100% em PowerShell.** Sem bloqueios SmartScreen, sem avisos de download do navegador.
 
 > ⚠️ **Aviso**: Este projeto é apenas para fins educacionais. Por favor, apoie os desenvolvedores comprando o jogo.
 
@@ -33,23 +33,25 @@ Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Editio
 
 ## ⬇️ Download
 
+### 🖱️ Clique Duplo (Mais Fácil)
+
+Baixe o **[install.bat](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.bat)** e dê um clique duplo.
+
 <p align="center">
-  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/MinecraftBedrockUnlocker.exe">
-    <img src="https://img.shields.io/badge/Baixar%20EXE-MinecraftBedrockUnlocker.exe-blue?style=for-the-badge&logo=windows" alt="Baixar EXE"/>
+  <a href="https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.bat">
+    <img src="https://img.shields.io/badge/Baixar-install.bat-blue?style=for-the-badge&logo=windowsterminal" alt="Baixar install.bat"/>
   </a>
 </p>
 
-> **Opção 1 - PowerShell one-liner** *(recomendado)*
-> Baixa o EXE self-contained mais recente, verifica SHA256 e inicia como Administrador:
-> ```powershell
-> irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
-> ```
+### ⚡ PowerShell (Comando Único)
 
-> **Opção 2 - Bootstrap alternativo**
-> Igual à Opção 1, usa um método de download diferente:
-> ```powershell
-> irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
-> ```
+```powershell
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+```
+
+Baixa e executa o instalador mais recente do GitHub. Sempre atualizado, com retry, cache-bust e TLS 1.2. **Sem EXE — o script roda em memória, então o SmartScreen NÃO bloqueia.**
+
+> 💡 **Por que sem EXE?** O SmartScreen do Windows bloqueia arquivos `.exe` não-assinados baixados da internet com "reputação binária mal-intencionada". O script PowerShell evita isso completamente.
 
 👉 [Ver todos os releases e changelogs](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases)
 
@@ -150,13 +152,13 @@ Adicione esta pasta nas exclusões:
 
 Alguns arquivos usados na instalação podem disparar alertas de antivírus - **isso pode acontecer com instaladores de mods e componentes de runtime relacionados**.
 
-1. **Código do instalador disponível** - Você pode revisar o instalador PowerShell GPLv3 e o source do wrapper EXE neste repositório
+1. **Código do instalador disponível** - Você pode revisar o instalador PowerShell GPLv3 neste repositório
 2. **Avisos sobre componentes third-party** - Os detalhes dos componentes de runtime estão documentados em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
 3. **Exclusões guiadas** - O passo a passo de instalação e troubleshooting está em [INSTALL.md](INSTALL.md) e [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ## Escopo do código-fonte e licença
 
-O instalador, o wrapper launcher e a documentação criados neste repositório continuam licenciados sob **GPLv3**. Veja [SOURCE.md](SOURCE.md) para o mapa de source e instruções de build.
+O instalador e a documentação criados neste repositório continuam licenciados sob **GPLv3**. Veja [SOURCE.md](SOURCE.md) para o mapa de source e instruções de build.
 
 Os componentes third-party de runtime são documentados separadamente em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) e não são relicenciados por este repositório.
 
@@ -185,10 +187,10 @@ Entre no nosso Discord: https://discord.gg/byDkXzhvuZ
 
 ## Créditos
 
-- CoelhoFZ pelo desenvolvimento do instalador e wrapper GPLv3
+- CoelhoFZ pelo desenvolvimento do instalador GPLv3
 
 ## Licença
 
-Instalador, wrapper launcher e documentação criados neste repositório: GPLv3 - Veja [LICENSE](LICENSE).
+Instalador e documentação criados neste repositório: GPLv3 - Veja [LICENSE](LICENSE).
 
 Binários third-party de runtime da Online-Fix estão documentados em [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) e não são relicenciados por este repositório.
