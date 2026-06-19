@@ -49,7 +49,7 @@ trap {
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.1.11"
+$Script:Version = "3.3.0"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
@@ -57,7 +57,7 @@ $Script:BaseUrl = "https://github.com/$RepoOwner/$RepoName/releases/latest/downl
 $Script:ResourceDir = $ResourceDir
 $Script:IsSelfContained = ($ResourceDir -and (Test-Path (Join-Path $ResourceDir "OnlineFix64.dll")))
 $Script:DiscordUrl = "https://discord.gg/byDkXzhvuZ"
-$Script:RawScriptUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/v$($Script:Version)/unlocker.ps1"
+$Script:RawScriptUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/main/unlocker.ps1"
 
 function New-CacheBustedUrl {
     param([Parameter(Mandatory=$true)][string]$Url)
@@ -1531,23 +1531,33 @@ function Request-Elevation {
             exit
         }
 
+        # Running via irm|iex: no script file on disk. Download to a temp file
+        # and relaunch from that file with -Verb RunAs so UAC elevation works
+        # reliably. Using -File avoids the quoting/escaping fragility of
+        # passing a multi-line script body through -Command + Start-Process
+        # ArgumentList (which gets re-tokenised by cmd.exe internals).
         $releaseUrl = New-CacheBustedUrl "$Script:BaseUrl/unlocker.ps1"
         $rawUrl = New-CacheBustedUrl $Script:RawScriptUrl
-        $cmd = @"
-`$ErrorActionPreference='Stop'
-`$ProgressPreference='SilentlyContinue'
-[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
-try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls13 } catch { }
-`$headers=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker/$($Script:Version)'}
-`$urls=@('$releaseUrl','$rawUrl')
-`$content=`$null
-foreach(`$u in `$urls){try{`$content=Invoke-RestMethod -UseBasicParsing -Headers `$headers -Uri `$u -MaximumRedirection 5 -ErrorAction Stop;if(-not [string]::IsNullOrWhiteSpace(`$content) -and `$content -match 'Minecraft Bedrock Unlocker' -and `$content -match 'Start-MainLoop'){break}}catch{}}
-if([string]::IsNullOrWhiteSpace(`$content)){throw 'unlocker.ps1 download returned empty content'}
-`$trimmedContent=`$content.TrimStart()
-if(`$trimmedContent.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or `$trimmedContent.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'unlocker.ps1 download returned an HTML error page'}
-iex `$content
-"@
-        Start-Process powershell.exe -ArgumentList @('-NoProfile', '-NoExit', '-ExecutionPolicy', 'Bypass', '-Command', $cmd) -Verb RunAs
+        $headers = Get-NoCacheHeaders
+        $dlContent = $null
+        foreach ($dlUrl in @($rawUrl, $releaseUrl)) {
+            try {
+                $dlContent = Invoke-RestMethod -UseBasicParsing -Headers $headers -Uri $dlUrl -MaximumRedirection 5 -ErrorAction Stop
+                if (-not [string]::IsNullOrWhiteSpace($dlContent) -and
+                    $dlContent -match 'Minecraft Bedrock Unlocker' -and
+                    $dlContent -match 'Start-MainLoop') { break }
+                $dlContent = $null
+            } catch { $dlContent = $null }
+        }
+        if ([string]::IsNullOrWhiteSpace($dlContent)) { throw 'unlocker.ps1 download returned empty content' }
+        $trimmedDl = $dlContent.TrimStart()
+        if ($trimmedDl.StartsWith('<!DOCTYPE', [StringComparison]::OrdinalIgnoreCase) -or
+            $trimmedDl.StartsWith('<html', [StringComparison]::OrdinalIgnoreCase)) {
+            throw 'unlocker.ps1 download returned an HTML error page'
+        }
+        $tempScript = Join-Path ([System.IO.Path]::GetTempPath()) "mbu_elevated_$([guid]::NewGuid().ToString('N')).ps1"
+        [System.IO.File]::WriteAllText($tempScript, $dlContent, [System.Text.Encoding]::UTF8)
+        Start-Process powershell.exe -ArgumentList @('-NoProfile', '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', "`"$tempScript`"") -Verb RunAs
         Write-OK "Elevated window opened. This window will close..."
         Start-Sleep -Seconds 2
         exit
@@ -4865,7 +4875,7 @@ function Show-Status {
     # Antivirus
     Write-C "  $(T 'status_av'):      " -NoNewline
     $avList = Detect-Antivirus
-    $activeAV = $avList | Where-Object { $_.Active }
+    $activeAV = @($avList | Where-Object { $_.Active })
     if ($activeAV.Count -gt 0) {
         if ($Script:Lang -eq "pt") {
             Write-C "Detectado" Yellow
