@@ -202,6 +202,7 @@ foreach ($url in $urls) {
             }
 
             Write-Host ($Script:Msg[$Script:Lang].starting)
+            $Script:MBUContent = $content
             iex $content
             exit 0
         }

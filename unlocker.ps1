@@ -18,6 +18,7 @@
 param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
 
 $ErrorActionPreference = 'Stop'
+Set-StrictMode -Off  # override any inherited StrictMode (e.g. from e.ps1 via iex)
 $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
 
 trap {
@@ -1518,46 +1519,56 @@ function Request-Elevation {
     Write-Warn (T 'admin_required')
     Write-Info (T 'admin_elevating')
 
+    $ps = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+    if (-not (Test-Path $ps)) { $ps = 'powershell.exe' }
+
     try {
+        # ── Branch A: script was launched as a .ps1 file ──────────────────
         $localScriptPath = $null
-        if ($PSCommandPath -and (Test-Path $PSCommandPath)) { $localScriptPath = $PSCommandPath }
-        elseif ($MyInvocation.MyCommand.Path -and (Test-Path $MyInvocation.MyCommand.Path)) { $localScriptPath = $MyInvocation.MyCommand.Path }
+        if ($PSCommandPath -and (Test-Path $PSCommandPath)) {
+            $localScriptPath = $PSCommandPath
+        } elseif ($MyInvocation.MyCommand.Path -and (Test-Path $MyInvocation.MyCommand.Path)) {
+            $localScriptPath = $MyInvocation.MyCommand.Path
+        }
 
         if ($localScriptPath) {
             $extraArgs = if ($Script:IsSelfContained) { @('-ResourceDir', $Script:ResourceDir) } else { @() }
-            Start-Process powershell.exe -ArgumentList (@('-NoProfile', '-NoExit', '-ExecutionPolicy', '-Bypass', '-File', "`"$localScriptPath`"") + $extraArgs) -Verb RunAs
+            Start-Process $ps -ArgumentList (@('-NoProfile', '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', "`"$localScriptPath`"") + $extraArgs) -Verb RunAs
             Write-OK "Elevated window opened. This window will close..."
             Start-Sleep -Seconds 2
             exit
         }
 
-        # Running via irm|iex: no script file on disk. Download to a temp file
-        # and relaunch from that file with -Verb RunAs so UAC elevation works
-        # reliably. Using -File avoids the quoting/escaping fragility of
-        # passing a multi-line script body through -Command + Start-Process
-        # ArgumentList (which gets re-tokenised by cmd.exe internals).
-        $releaseUrl = New-CacheBustedUrl "$Script:BaseUrl/unlocker.ps1"
-        $rawUrl = New-CacheBustedUrl $Script:RawScriptUrl
-        $headers = Get-NoCacheHeaders
-        $dlContent = $null
-        foreach ($dlUrl in @($rawUrl, $releaseUrl)) {
-            try {
-                $dlContent = Invoke-RestMethod -UseBasicParsing -Headers $headers -Uri $dlUrl -MaximumRedirection 5 -ErrorAction Stop
-                if (-not [string]::IsNullOrWhiteSpace($dlContent) -and
-                    $dlContent -match 'Minecraft Bedrock Unlocker' -and
-                    $dlContent -match 'Start-MainLoop') { break }
-                $dlContent = $null
-            } catch { $dlContent = $null }
+        # ── Branch B: running via irm|iex (no file on disk) ───────────────
+        # Use already-downloaded content stored by e.ps1 ($Script:MBUContent).
+        # If not available, fall back to a fresh download.
+        $scriptContent = $null
+        if (-not [string]::IsNullOrWhiteSpace($Script:MBUContent) -and
+            $Script:MBUContent -match 'Start-MainLoop') {
+            $scriptContent = $Script:MBUContent
+        } else {
+            $headers = Get-NoCacheHeaders
+            foreach ($dlUrl in @((New-CacheBustedUrl $Script:RawScriptUrl),
+                                  (New-CacheBustedUrl "$Script:BaseUrl/unlocker.ps1"))) {
+                try {
+                    $r = Invoke-RestMethod -UseBasicParsing -Headers $headers -Uri $dlUrl `
+                                          -MaximumRedirection 5 -ErrorAction Stop
+                    $r = [string]$r
+                    if (-not [string]::IsNullOrWhiteSpace($r) -and $r -match 'Start-MainLoop') {
+                        $scriptContent = $r; break
+                    }
+                } catch { }
+            }
         }
-        if ([string]::IsNullOrWhiteSpace($dlContent)) { throw 'unlocker.ps1 download returned empty content' }
-        $trimmedDl = $dlContent.TrimStart()
-        if ($trimmedDl.StartsWith('<!DOCTYPE', [StringComparison]::OrdinalIgnoreCase) -or
-            $trimmedDl.StartsWith('<html', [StringComparison]::OrdinalIgnoreCase)) {
-            throw 'unlocker.ps1 download returned an HTML error page'
+
+        if ([string]::IsNullOrWhiteSpace($scriptContent)) {
+            throw 'Could not obtain script content for elevation (no cached copy and download failed).'
         }
-        $tempScript = Join-Path ([System.IO.Path]::GetTempPath()) "mbu_elevated_$([guid]::NewGuid().ToString('N')).ps1"
-        [System.IO.File]::WriteAllText($tempScript, $dlContent, [System.Text.Encoding]::UTF8)
-        Start-Process powershell.exe -ArgumentList @('-NoProfile', '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', "`"$tempScript`"") -Verb RunAs
+
+        $tempScript = Join-Path ([System.IO.Path]::GetTempPath()) `
+                                 "mbu_elevated_$([guid]::NewGuid().ToString('N')).ps1"
+        [System.IO.File]::WriteAllText($tempScript, [string]$scriptContent, [System.Text.Encoding]::UTF8WithoutBOM)
+        Start-Process $ps -ArgumentList @('-NoProfile', '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', "`"$tempScript`"") -Verb RunAs
         Write-OK "Elevated window opened. This window will close..."
         Start-Sleep -Seconds 2
         exit
