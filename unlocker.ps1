@@ -1567,7 +1567,7 @@ function Request-Elevation {
 
         $tempScript = Join-Path ([System.IO.Path]::GetTempPath()) `
                                  "mbu_elevated_$([guid]::NewGuid().ToString('N')).ps1"
-        [System.IO.File]::WriteAllText($tempScript, [string]$scriptContent, [System.Text.Encoding]::UTF8WithoutBOM)
+        [System.IO.File]::WriteAllText($tempScript, [string]$scriptContent, (New-Object System.Text.UTF8Encoding $false))
         Start-Process $ps -ArgumentList @('-NoProfile', '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', "`"$tempScript`"") -Verb RunAs
         Write-OK "Elevated window opened. This window will close..."
         Start-Sleep -Seconds 2
