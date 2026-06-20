@@ -82,6 +82,7 @@ function Detect-Lang {
             'fr-*' { return 'fr' }
             'ar-*' { return 'ar' }
             'ru-*' { return 'ru' }
+            'pt-*' { return 'pt' }
             default { return 'en' }
         }
     } catch { }
