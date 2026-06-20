@@ -31,6 +31,7 @@ try {
         'fr-*' { $Script:BootstrapLang = 'fr' }
         'ar-*' { $Script:BootstrapLang = 'ar' }
         'ru-*' { $Script:BootstrapLang = 'ru' }
+        'pt-*' { $Script:BootstrapLang = 'pt' }
         default { $Script:BootstrapLang = 'en' }
     }
 } catch { }
@@ -131,8 +132,8 @@ $Script:BaseUrl = "https://github.com/$($Script:RepoOwner)/$($Script:RepoName)/r
 $Script:PayloadUrl = "$($Script:BaseUrl)/unlocker.ps1"
 # Fallback to main branch (avoids dependency on a v3.2.1 tag that may not exist yet)
 $Script:RawPayloadUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/main/unlocker.ps1"
-# unlocker.ps1 hash post-BOM-strip (v3.2.1)
-$Script:PayloadSha256 = 'fd57c74688a564f6f31cad5ce175a5c8a8da54266f95da40fcdc7a10eb5214d3'
+# unlocker.ps1 hash post-BOM-strip (v3.3.0)
+$Script:PayloadSha256 = '80771efadeac262bda790459201b355182150bdf9dad388fc3975d2a8bafa790'
 
 function Write-Status {
     param(
