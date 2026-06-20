@@ -311,6 +311,7 @@ function Detect-Language {
             "fr-*"  { $Script:Lang = "fr" }
             "ar-*"  { $Script:Lang = "ar" }
             "ru-*"  { $Script:Lang = "ru" }
+            "pt-*"  { $Script:Lang = "pt" }
             default  { $Script:Lang = "en" }
         }
     } catch {
