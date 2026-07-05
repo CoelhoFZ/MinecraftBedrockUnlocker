@@ -1,12 +1,12 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 
-# ── Bootstrap v3.3.0: downloads and executes unlocker.ps1 (NO EXE) ──
+# ── Bootstrap v3.3.1: downloads and executes unlocker.ps1 (NO EXE) ──
 
 trap {
     Write-Host ''
     Write-Host '============================================================' -ForegroundColor Red
-    Write-Host '[MBU v3.3.0] ERROR:' $_.Exception.Message -ForegroundColor Red
+    Write-Host '[MBU v3.3.1] ERROR:' $_.Exception.Message -ForegroundColor Red
     Write-Host '============================================================' -ForegroundColor Red
     Write-Host ''
     Write-Host 'The bootstrap failed. Possible causes:' -ForegroundColor Yellow
@@ -37,7 +37,7 @@ $Headers = @{
     'Cache-Control' = 'no-cache, no-store, max-age=0'
     'Pragma'        = 'no-cache'
     'Expires'       = '0'
-    'User-Agent'    = 'MinecraftBedrockUnlockerBootstrap/3.3.0'
+    'User-Agent'    = 'MinecraftBedrockUnlockerBootstrap/3.3.1'
 }
 
 $Script:RepoOwner = 'CoelhoFZ'
