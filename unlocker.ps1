@@ -15,7 +15,10 @@
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
-param([string]$ResourceDir)  # Set by EXE launcher when running self-contained
+param(
+    [string]$ResourceDir,    # Set by EXE launcher when running self-contained
+    [string]$MinecraftPath    # Optional: explicit Minecraft Content folder (e.g. F:\XboxGames\Minecraft for Windows\Content)
+)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Off  # override any inherited StrictMode (e.g. from e.ps1 via iex)
@@ -50,7 +53,7 @@ trap {
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.3.0"
+$Script:Version = "3.3.1"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
@@ -1581,6 +1584,16 @@ function Request-Elevation {
     }
 }
 function Find-MinecraftPath {
+    # Priority 0: explicit -MinecraftPath param (issue #23)
+    if ($MinecraftPath) {
+        $p = $MinecraftPath.Trim('"').Trim("'")
+        if (Test-Path -LiteralPath $p) { return $p }
+        # if user passed the parent (Minecraft for Windows) instead of Content, descend
+        $child = Join-Path $p 'Content'
+        if (Test-Path -LiteralPath $child) { return $child }
+        Write-Warn "MinecraftPath argument '$p' not found; falling back to auto-detection."
+    }
+
     # Priority 1: known XboxGames path on all drives (GDK install - compatible)
     $drives = @("C") + @((Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -match '^[D-Z]:\\$' }).Name)
     foreach ($driveLetter in $drives) {
@@ -1604,20 +1617,48 @@ function Find-MinecraftPath {
         } catch { }
     }
 
-    # Priority 3: WindowsApps (UWP - not recommended but detect it)
+    # Priority 3: UWP / Microsoft Store install - resolve via Get-AppxPackage.
+    # InstallLocation works regardless of drive (issue #23: install on F: instead of C:).
+    try {
+        $pkg = Get-AppxPackage -Name 'MICROSOFT.MINECRAFTUWP' -ErrorAction SilentlyContinue
+        if ($pkg -and $pkg.InstallLocation) {
+            $contentPath = Join-Path $pkg.InstallLocation 'Content'
+            if (Test-Path -LiteralPath $contentPath) { return $contentPath }
+            # fallback: InstallLocation itself sometimes IS the Content folder
+            if (Test-Path -LiteralPath (Join-Path $pkg.InstallLocation 'Minecraft.Windows.exe')) { return $pkg.InstallLocation }
+        }
+    } catch { }
+
+    # Priority 4: legacy WindowsApps scan under any ProgramFiles drive (kept for parity)
     $programFiles = $env:ProgramFiles
     if (-not $programFiles) { $programFiles = "C:\Program Files" }
     $windowsApps = Join-Path $programFiles "WindowsApps"
-    
     if (Test-Path $windowsApps) {
         try {
-            $mcFolders = Get-ChildItem $windowsApps -Directory -ErrorAction SilentlyContinue | 
+            $mcFolders = Get-ChildItem $windowsApps -Directory -ErrorAction SilentlyContinue |
                          Where-Object { $_.Name -like "Microsoft.Minecraft*8wekyb3d8bbwe*" }
             foreach ($folder in $mcFolders) {
                 $contentPath = Join-Path $folder.FullName "Content"
                 if (Test-Path $contentPath) { return $contentPath }
             }
         } catch { }
+    }
+
+    # Priority 5: interactive fallback - ask the user to paste the Content folder
+    if (-not $Script:Headless) {
+        Write-Host ''
+        Write-Host '  Minecraft was not found automatically.' -ForegroundColor Yellow
+        Write-Host '  Please paste the full path to your Minecraft "Content" folder.' -ForegroundColor Yellow
+        Write-Host '  Example: F:\XboxGames\Minecraft for Windows\Content' -ForegroundColor Gray
+        for ($i = 0; $i -lt 3; $i++) {
+            $typed = Read-Host '  Content path (or press Enter to give up)'
+            if ([string]::IsNullOrWhiteSpace($typed)) { break }
+            $typed = $typed.Trim('"').Trim("'")
+            if (Test-Path -LiteralPath $typed) { return $typed }
+            $child = Join-Path $typed 'Content'
+            if (Test-Path -LiteralPath $child) { return $child }
+            Write-Warn "Path '$typed' does not exist. Try again."
+        }
     }
 
     return $null
