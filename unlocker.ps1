@@ -58,6 +58,8 @@ $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
 $Script:BaseUrl = "https://github.com/$RepoOwner/$RepoName/releases/latest/download"
+
+$Script:RawBaseUrl = "https://raw.githubusercontent.com/$RepoOwner/$RepoName/main"
 $Script:ResourceDir = $ResourceDir
 $Script:IsSelfContained = ($ResourceDir -and (Test-Path (Join-Path $ResourceDir "OnlineFix64.dll")))
 $Script:DiscordUrl = "https://discord.gg/byDkXzhvuZ"
@@ -2925,7 +2927,7 @@ function Download-OnlineFixFile {
         [string]$ExpectedHash
     )
     
-    $url = "$Script:BaseUrl/$FileName"
+    $url = "$Script:RawBaseUrl/$FileName"
     $diskName = Get-DiskName -SourceName $FileName
     $destFile = Join-Path $DestPath $diskName
     
