@@ -136,7 +136,7 @@ $Script:PayloadUrl = "$($Script:BaseUrl)/unlocker.ps1"
 # Fallback to main branch (avoids dependency on a v3.2.1 tag that may not exist yet)
 $Script:RawPayloadUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/main/unlocker.ps1"
 # unlocker.ps1 hash post-BOM-strip (v3.3.1)
-$Script:PayloadSha256 = '32f812c22dd8501a201f7ddd7e5b113a74806f5b73492c409411a9d20ca7dfa3'
+$Script:PayloadSha256 = '3d309f28e9b41e420f6c015772b56ab0caf2774831cf7037fd645986bdbb3632'
 
 function Write-Status {
     param(
