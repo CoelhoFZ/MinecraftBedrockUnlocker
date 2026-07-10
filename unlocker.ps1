@@ -130,7 +130,8 @@ function Test-SelfProtectionError {
         $dllPath = Join-Path $ContentDir $entry.Trim()
         if (-not (Test-Path -LiteralPath $dllPath)) {
             Write-Warn "self-protection failed Error: 4 likely cause: bypass DLL '$($entry.Trim())' missing."
-            Write-Warn "  Remediation: re-run the unlocker Option 1 to reinstall the bypass."
+            Write-Warn "  Auto-fix: re-installing bypass now..."
+            Install-Bypass
             Write-Warn "  If error persists: repair Xbox Game Services via Settings > Apps > Optional features."
         }
     }
@@ -294,7 +295,7 @@ function Initialize-SafeDllNames {
     # Update OnlineFixFiles entries with disk names
     foreach ($f in $Script:OnlineFixFiles) {
         if ($f.Name -eq "OnlineFix64.dll") {
-            $f.DiskName = $Script:SafeDllName
+            $f.DiskName = $null   # v3.3.1: keep original name to avoid winmm.dll loading error 126
         }
     }
 }
