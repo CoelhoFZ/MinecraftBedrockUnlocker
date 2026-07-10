@@ -131,7 +131,7 @@ function Test-SelfProtectionError {
         if (-not (Test-Path -LiteralPath $dllPath)) {
             Write-Warn "self-protection failed Error: 4 likely cause: bypass DLL '$($entry.Trim())' missing."
             Write-Warn "  Auto-fix: re-installing bypass now..."
-            Install-Bypass
+            try { Install-Bypass } catch { Write-Warn "  Auto-fix failed. Manual fix: re-run Option 1." ; Write-Warn "  If persists: repair Xbox Game Services in Windows Settings." }
             Write-Warn "  If error persists: repair Xbox Game Services via Settings > Apps > Optional features."
         }
     }
@@ -295,7 +295,8 @@ function Initialize-SafeDllNames {
     # Update OnlineFixFiles entries with disk names
     foreach ($f in $Script:OnlineFixFiles) {
         if ($f.Name -eq "OnlineFix64.dll") {
-            $f.DiskName = $null   # v3.3.1: keep original name to avoid winmm.dll loading error 126
+            $f.DiskName = $null   # v3.3.1: keep original name
+            $Script:SafeDllName = "OnlineFix64.dll"   # also keep dlllist.txt referencing the original name to avoid winmm.dll loading error 126
         }
     }
 }
@@ -3810,7 +3811,6 @@ function Start-GamingServices {
     }
 }
 
-# ============================================================================
 # Menu Actions
 # ============================================================================
 
@@ -3947,6 +3947,7 @@ function Install-Bypass {
     # Try to disable Defender real-time if it's actually active and functional
     $defenderDisabledByUs = $false
     $hasActiveDefender = $detectedAV | Where-Object { $_.Type -eq "defender" -and $_.Active }
+    if ($hasActiveDefender -and (Test-DefenderActive)) {
     if ($hasActiveDefender -and (Test-DefenderActive)) {
         try {
             Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction Stop
@@ -5144,8 +5145,8 @@ function Start-MainLoop {
         
         Show-Banner
         
-        switch ($choice.Trim()) {
             "1" { try { Install-Bypass } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
+            "1" { try { try { Install-Bypass } catch { Write-Warn "  Auto-fix failed. Manual fix: re-run Option 1." ; Write-Warn "  If persists: repair Xbox Game Services in Windows Settings." } } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
             "2" { try { Restore-Original } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
             "3" { try { Open-Minecraft } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
             "4" { try { Open-XboxApp } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
