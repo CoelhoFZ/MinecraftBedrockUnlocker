@@ -23,7 +23,7 @@ powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
   "try {" ^
   "  Invoke-WebRequest -UseBasicParsing -Uri $cacheBust -OutFile $path -Headers @{'Cache-Control'='no-cache, no-store, max-age=0'; 'Pragma'='no-cache'; 'User-Agent'='MinecraftBedrockUnlocker'};" ^
   "  $tokens = $null; $errors = $null;" ^
-  "  [System.ManagementAutomation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null;" ^
+  "  [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null;" ^
   "  if ($errors.Count -gt 0) {" ^
   "    Write-Host 'The downloaded bootstrap contains syntax errors.' -ForegroundColor Red;" ^
   "    Write-Host 'O bootstrap baixado contem erros de sintaxe.' -ForegroundColor Red;" ^
