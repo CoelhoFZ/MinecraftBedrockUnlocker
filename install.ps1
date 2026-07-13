@@ -128,15 +128,17 @@ trap {
     break
 }
 
-$Script:Version = '3.2.1'
+$Script:Version = '3.3.0'
 $Script:RepoOwner = 'CoelhoFZ'
 $Script:RepoName = 'MinecraftBedrockUnlocker'
 $Script:BaseUrl = "https://github.com/$($Script:RepoOwner)/$($Script:RepoName)/releases/latest/download"
 $Script:PayloadUrl = "$($Script:BaseUrl)/unlocker.ps1"
-# Fallback to main branch (avoids dependency on a v3.2.1 tag that may not exist yet)
+# Fallback to main branch (avoids dependency on a version tag that may not exist yet)
 $Script:RawPayloadUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/main/unlocker.ps1"
-# unlocker.ps1 hash post-BOM-strip (v3.3.1)
-$Script:PayloadSha256 = '326d60cb244ac9d0618e75b6f2683960acd7e35e4cc113f5de1410eaeac328d4'
+# Hash verification intentionally disabled: latest-branch payload drifts across releases,
+# and a pinned commit would diverge from the branch this bootstrap is itself pulled from.
+# Test-PayloadFile still guards size, HTML-error-page, and the "Minecraft Bedrock Unlocker" marker.
+$Script:PayloadSha256 = $null
 
 function Write-Status {
     param(
