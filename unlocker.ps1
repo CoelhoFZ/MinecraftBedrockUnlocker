@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Minecraft Bedrock Unlocker - PowerShell Script
     
