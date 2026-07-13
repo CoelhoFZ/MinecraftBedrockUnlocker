@@ -1,0 +1,57 @@
+name: Rebuild single-file release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/rebuild-single-file-release.yml
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Replace tags and releases with v3.3.2
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: v3.3.2
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cp install.bat "$RUNNER_TEMP/install.bat"
+
+          mapfile -t releases < <(gh release list --limit 1000 --json tagName --jq '.[].tagName')
+          for release_tag in "${releases[@]}"; do
+            [ -n "$release_tag" ] || continue
+            gh release delete "$release_tag" --yes || true
+          done
+
+          mapfile -t tags < <(git ls-remote --tags origin | awk '{print $2}' | sed 's#refs/tags/##' | sed 's/\^{}$//' | sort -u)
+          for old_tag in "${tags[@]}"; do
+            [ -n "$old_tag" ] || continue
+            git push origin ":refs/tags/$old_tag"
+          done
+
+          git switch --orphan __single_file_release__
+          git rm -rf . >/dev/null 2>&1 || true
+          cp "$RUNNER_TEMP/install.bat" install.bat
+          git add install.bat
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "release: ${VERSION} single-file installer"
+          git tag "$VERSION"
+          git push origin "refs/tags/$VERSION"
+
+          gh release create "$VERSION" install.bat \
+            --title "$VERSION" \
+            --notes "Single-file installer release. This tag contains only install.bat." \
+            --latest
+
+          git push origin --delete agent/rebuild-single-file-release || true
