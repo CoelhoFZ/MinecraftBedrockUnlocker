@@ -7,6 +7,7 @@ echo ============================================================
 echo  Minecraft Bedrock Unlocker by CoelhoFZ
 echo  Downloading and validating the installer...
 echo  Baixando e validando o instalador...
+echo  Bootstrap: v3.3.4-utf8-fix2
 echo ============================================================
 echo.
 
