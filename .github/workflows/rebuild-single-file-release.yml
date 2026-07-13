@@ -1,7 +1,7 @@
 name: Rebuild single-file release
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - main
     types:
@@ -14,10 +14,10 @@ permissions:
 
 jobs:
   rebuild-release:
-    if: github.head_ref == 'agent/rebuild-single-file-release'
+    if: github.event.pull_request.head.ref == 'agent/rebuild-single-file-release'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out pull request
+      - name: Check out main
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
