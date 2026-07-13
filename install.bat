@@ -11,7 +11,7 @@ echo.
 
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ErrorActionPreference = 'Stop';" ^
-  "$url = 'https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/unlocker.ps1';" ^
+  "$url = 'https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1';" ^
   "$headers = @{ 'Cache-Control' = 'no-cache, no-store, max-age=0'; 'Pragma' = 'no-cache'; 'User-Agent' = 'MinecraftBedrockUnlocker' };" ^
   "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;" ^
   "$content = $null;" ^
@@ -22,7 +22,7 @@ powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
   "    } catch { Start-Sleep -Seconds 1 }" ^
   "  }" ^
   "};" ^
-  "if (-not $content -or $content.TrimStart().StartsWith('<')) { throw 'Falha ao baixar o unlocker.ps1' };" ^
+  "if (-not $content -or $content.TrimStart().StartsWith('<')) { throw 'Falha ao baixar o install.ps1' };" ^
   "Invoke-Expression $content"
 
 set "EXIT_CODE=%ERRORLEVEL%"
