@@ -3948,7 +3948,6 @@ function Install-Bypass {
     $defenderDisabledByUs = $false
     $hasActiveDefender = $detectedAV | Where-Object { $_.Type -eq "defender" -and $_.Active }
     if ($hasActiveDefender -and (Test-DefenderActive)) {
-    if ($hasActiveDefender -and (Test-DefenderActive)) {
         try {
             Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction Stop
             $defenderDisabledByUs = $true
@@ -5145,8 +5144,8 @@ function Start-MainLoop {
         
         Show-Banner
         
+        switch ($choice.Trim()) {
             "1" { try { Install-Bypass } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
-            "1" { try { try { Install-Bypass } catch { Write-Warn "  Auto-fix failed. Manual fix: re-run Option 1." ; Write-Warn "  If persists: repair Xbox Game Services in Windows Settings." } } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
             "2" { try { Restore-Original } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
             "3" { try { Open-Minecraft } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
             "4" { try { Open-XboxApp } catch { Write-C ""; Write-Err "$($_.Exception.Message)"; Write-C ""; Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })" } }
