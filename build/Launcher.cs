@@ -25,17 +25,17 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
-        string tempDir = Path.Combine(Path.GetTempPath(), "MinecraftBedrockUnlocker", Guid.NewGuid().ToString("N"));
+        string tempParent = Path.Combine(Path.GetTempPath(), "MinecraftBedrockUnlocker");
+        string tempDir = Path.Combine(tempParent, Guid.NewGuid().ToString("N"));
         string scriptPath = Path.Combine(tempDir, "install.ps1");
+        bool defenderExclusionAdded = false;
 
         try
         {
             Directory.CreateDirectory(tempDir);
 
-            // Add AV exclusion BEFORE extracting files (prevents Defender from deleting DLLs during extraction)
-            string tempParent = Path.Combine(Path.GetTempPath(), "MinecraftBedrockUnlocker");
-            AddDefenderExclusion(tempParent);
-            Thread.Sleep(500); // Allow Defender to register the exclusion before extraction
+            defenderExclusionAdded = AddDefenderExclusion(tempParent);
+            Thread.Sleep(500);
 
             ExtractEmbeddedScript(ResourceInstallPs1, scriptPath);
             ExtractEmbeddedResource(ResourceUnlockerPs1, Path.Combine(tempDir, "unlocker.ps1"));
@@ -89,20 +89,34 @@ internal static class Program
         {
             TryDelete(scriptPath);
             TryDeleteDirectory(tempDir);
+            if (defenderExclusionAdded)
+            {
+                RemoveDefenderExclusion(tempParent);
+            }
         }
     }
 
-    private static void AddDefenderExclusion(string folderPath)
+    private static bool AddDefenderExclusion(string folderPath)
+    {
+        return RunDefenderPreferenceCommand("Add-MpPreference", folderPath);
+    }
+
+    private static void RemoveDefenderExclusion(string folderPath)
+    {
+        RunDefenderPreferenceCommand("Remove-MpPreference", folderPath);
+    }
+
+    private static bool RunDefenderPreferenceCommand(string command, string folderPath)
     {
         try
         {
             string shellPath = ResolvePowerShellPath();
-            if (string.IsNullOrEmpty(shellPath)) return;
+            if (string.IsNullOrEmpty(shellPath)) return false;
 
             var psi = new ProcessStartInfo
             {
                 FileName = shellPath,
-                Arguments = "-NoProfile -Command Add-MpPreference -ExclusionPath '" + folderPath.Replace("'", "''") + "' -ErrorAction SilentlyContinue",
+                Arguments = "-NoProfile -Command " + command + " -ExclusionPath '" + folderPath.Replace("'", "''") + "' -ErrorAction SilentlyContinue",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -111,15 +125,18 @@ internal static class Program
 
             using (Process p = Process.Start(psi))
             {
-                if (p != null)
+                if (p == null) return false;
+                if (!p.WaitForExit(10000))
                 {
-                    p.WaitForExit(10000); // 10s timeout
+                    try { p.Kill(); } catch { }
+                    return false;
                 }
+                return p.ExitCode == 0;
             }
         }
         catch
         {
-            // Best-effort: if exclusion fails, unlocker.ps1 will retry later
+            return false;
         }
     }
 
@@ -136,7 +153,7 @@ internal static class Program
             using (var reader = new StreamReader(stream, Encoding.UTF8, true))
             {
                 string content = reader.ReadToEnd();
-                File.WriteAllText(destinationPath, content, new UTF8Encoding(false));
+                File.WriteAllText(destinationPath, content, new UTF8Encoding(true));
             }
         }
     }
@@ -244,6 +261,7 @@ internal static class Program
         {
         }
     }
+
     private static void TryDeleteDirectory(string path)
     {
         try
@@ -257,5 +275,4 @@ internal static class Program
         {
         }
     }
-
 }
