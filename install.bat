@@ -35,7 +35,7 @@ powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
   "    throw ('SHA-256 incorreto. Esperado ' + $expectedSha256 + ', recebido ' + $actualSha256);" ^
   "  };" ^
   "  $stage = 'utf8';" ^
-  "  $utf8 = New-Object System.Text.UTF8Encoding($false, $true);" ^
+  "  $utf8 = New-Object System.Text.UTF8Encoding -ArgumentList $false, $true;" ^
   "  $content = $utf8.GetString($bytes);" ^
   "  if ($content.Length -gt 0 -and [int]$content[0] -eq 0xFEFF) { $content = $content.Substring(1) };" ^
   "  $stage = 'validacao';" ^
