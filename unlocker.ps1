@@ -53,7 +53,7 @@ trap {
 # ============================================================================
 # Configuration
 # ============================================================================
-$Script:Version = "3.3.1"
+$Script:Version = "3.3.3"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
@@ -1541,9 +1541,9 @@ function Request-Elevation {
 
         if ($localScriptPath) {
             $extraArgs = if ($Script:IsSelfContained) { @('-ResourceDir', $Script:ResourceDir) } else { @() }
-            Start-Process $ps -ArgumentList (@('-NoProfile', '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', "`"$localScriptPath`"") + $extraArgs) -Verb RunAs
+            Start-Process $ps -ArgumentList (@('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$localScriptPath`"") + $extraArgs) -Verb RunAs
             Write-OK "Elevated window opened. This window will close..."
-            Start-Sleep -Seconds 2
+            Start-Sleep -Seconds 1
             exit
         }
 
@@ -1576,9 +1576,9 @@ function Request-Elevation {
         $tempScript = Join-Path ([System.IO.Path]::GetTempPath()) `
                                  "mbu_elevated_$([guid]::NewGuid().ToString('N')).ps1"
         [System.IO.File]::WriteAllText($tempScript, [string]$scriptContent, (New-Object System.Text.UTF8Encoding $true))
-        Start-Process $ps -ArgumentList @('-NoProfile', '-NoExit', '-ExecutionPolicy', 'Bypass', '-File', "`"$tempScript`"") -Verb RunAs
+        Start-Process $ps -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$tempScript`"") -Verb RunAs
         Write-OK "Elevated window opened. This window will close..."
-        Start-Sleep -Seconds 2
+        Start-Sleep -Seconds 1
         exit
     }
     catch {
