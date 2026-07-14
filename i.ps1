@@ -59,6 +59,7 @@ try {
         'fr-*' { $Script:Lang = 'fr' }
         'ar-*' { $Script:Lang = 'ar' }
         'ru-*' { $Script:Lang = 'ru' }
+        'pt-*' { $Script:Lang = 'pt' }
         default { $Script:Lang = 'en' }
     }
 } catch { }
@@ -169,6 +170,21 @@ $Script:Msg = @{
         generic2     = 'Если проблема не исчезнет, серверы GitHub могут быть недоступны.'
         pressEnter   = 'Нажмите ВВОД для выхода'
     }
+    pt = @{
+        downloading  = 'Baixando instalador do GitHub...'
+        starting     = 'Iniciando Minecraft Bedrock Unlocker...'
+        allFailed    = '[MBU] Falha ao baixar o instalador.'
+        lastError    = '[MBU] Último erro: {0}'
+        smartScreen  = 'O WINDOWS SMARTSCREEN / CONTROLE DE APLICATIVOS ESTÁ BLOQUEANDO O SCRIPT!'
+        smartScreen2 = 'Sua política de segurança do Windows bloqueou a execução.'
+        smartScreen3 = 'Isso geralmente acontece quando scripts do PowerShell são restritos.'
+        smartFix1    = 'CORREÇÃO RÁPIDA - Execute este comando e tente novamente:'
+        smartFix2    = '  Set-ExecutionPolicy Bypass -Scope Process -Force'
+        smartFix3    = 'OU: Clique com o botão direito no PowerShell -> Executar como administrador, depois cole o comando de instalação.'
+        generic      = 'Verifique sua conexão com a internet e tente novamente.'
+        generic2     = 'Se o problema persistir, os servidores do GitHub podem estar indisponíveis.'
+        pressEnter   = 'Pressione ENTER para sair'
+    }
 }
 
 # ── Download and execute unlocker.ps1 ──
@@ -201,6 +217,7 @@ foreach ($url in $urls) {
                 throw 'downloaded content is not the expected installer'
             }
 
+            $content = $content.TrimStart([char]0xFEFF, [char]0x200B, [char]0x200C, [char]0x200D, "`n", "`r", "`t", ' ')
             Write-Host ($Script:Msg[$Script:Lang].starting)
             iex $content
             exit 0
