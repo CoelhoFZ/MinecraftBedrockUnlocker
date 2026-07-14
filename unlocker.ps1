@@ -4,14 +4,14 @@
     
 .DESCRIPTION
     Complete PowerShell-based Minecraft Bedrock Unlocker.
-    Downloads OnlineFix DLLs directly from GitHub and installs them.
+    Downloads OnlineFix runtime files from the release OnlineFix.zip and installs them.
     No EXE needed - runs entirely in PowerShell.
     
     Usage: $u='https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.ps1'; $h=@{'Cache-Control'='no-cache, no-store, max-age=0';'Pragma'='no-cache';'Expires'='0';'User-Agent'='MinecraftBedrockUnlocker'}; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $s=$null; 1..3|%{if([string]::IsNullOrWhiteSpace($s)){try{$r=irm -UseBasicParsing -Headers $h -Uri "${u}?cb=$([guid]::NewGuid())" -MaximumRedirection 5; $s=($r | Out-String)}catch{Start-Sleep -Seconds 1}}}; $t=if($s){$s.TrimStart()}else{''}; if([string]::IsNullOrWhiteSpace($s) -or $t.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or $t.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'install.ps1 download failed or returned invalid content'}; iex $s
     
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.10
+    Version: 3.3.3
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
@@ -23,7 +23,67 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Off  # override any inherited StrictMode (e.g. from e.ps1 via iex)
 $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
-$Script:Lang = if ($env:MBU_LANG -match '^(en|zh|hi|es|fr|ar|ru|pt)$') { $env:MBU_LANG.ToLowerInvariant() } else { 'en' }
+
+function Resolve-MbuLanguage {
+    $candidates = New-Object System.Collections.Generic.List[string]
+
+    try { if ($env:MBU_LANG) { $candidates.Add([string]$env:MBU_LANG) } } catch { }
+    try { $candidates.Add((Get-UICulture).Name) } catch { }
+    try { $candidates.Add((Get-Culture).Name) } catch { }
+    try {
+        $userLanguages = Get-WinUserLanguageList -ErrorAction SilentlyContinue
+        foreach ($language in $userLanguages) {
+            try { if ($language.LanguageTag) { $candidates.Add([string]$language.LanguageTag) } } catch { }
+            try { if ($language.EnglishName) { $candidates.Add([string]$language.EnglishName) } } catch { }
+            try { if ($language.NativeName) { $candidates.Add([string]$language.NativeName) } } catch { }
+        }
+    } catch { }
+    foreach ($regPath in @('HKCU:\Control Panel\International', 'HKCU:\Control Panel\Desktop', 'HKLM:\SYSTEM\CurrentControlSet\Control\Nls\Language')) {
+        try {
+            $props = Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue
+            foreach ($prop in @('LocaleName', 'sLanguage', 'Locale', 'PreferredUILanguages')) {
+                $value = $props.$prop
+                if ($value -is [array]) {
+                    foreach ($item in $value) { if ($item) { $candidates.Add([string]$item) } }
+                } elseif ($value) {
+                    $candidates.Add([string]$value)
+                }
+            }
+        } catch { }
+    }
+
+    foreach ($candidate in $candidates) {
+        if ([string]::IsNullOrWhiteSpace($candidate)) { continue }
+        $value = $candidate.Trim().ToLowerInvariant()
+        switch -Wildcard ($value) {
+            'pt*' { return 'pt' }
+            '*portugu*' { return 'pt' }
+            '*brasil*' { return 'pt' }
+            '*brazil*' { return 'pt' }
+            'zh*' { return 'zh' }
+            '*chinese*' { return 'zh' }
+            'hi*' { return 'hi' }
+            '*hindi*' { return 'hi' }
+            'es*' { return 'es' }
+            '*spanish*' { return 'es' }
+            '*espanol*' { return 'es' }
+            '*español*' { return 'es' }
+            'fr*' { return 'fr' }
+            '*french*' { return 'fr' }
+            '*francais*' { return 'fr' }
+            '*français*' { return 'fr' }
+            'ar*' { return 'ar' }
+            '*arabic*' { return 'ar' }
+            'ru*' { return 'ru' }
+            '*russian*' { return 'ru' }
+        }
+    }
+
+    return 'en'
+}
+
+$Script:Lang = Resolve-MbuLanguage
+$env:MBU_LANG = $Script:Lang
 
 trap {
     Write-Host ''
@@ -65,6 +125,8 @@ $Script:RepoBranch = "main"
 $Script:BaseUrl = "https://github.com/$($Script:RepoOwner)/$($Script:RepoName)/releases/latest/download"
 
 $Script:RawBaseUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/main"
+$Script:OnlineFixZipUrl = "$($Script:BaseUrl)/OnlineFix.zip"
+$Script:OnlineFixZipBytes = $null
 $Script:ResourceDir = $ResourceDir
 $Script:IsSelfContained = ($ResourceDir -and (Test-Path (Join-Path $ResourceDir "OnlineFix64.dll")))
 $Script:DiscordUrl = "https://discord.gg/byDkXzhvuZ"
@@ -98,9 +160,7 @@ function Get-NoCacheHeaders {
 
 function Test-GitHubAssetAvailable {
     # Lightweight HEAD probe: returns $true if the release asset exists.
-    # Used to give a much clearer error than "ALL DOWNLOADS FAILED" when
-    # the CoelhoFZ release ships without the expected asset (e.g. v3.1.11
-    # has only MinecraftBedrockUnlocker.exe; winmm.dll etc. return 404).
+    # Used to diagnose missing release assets before the fallback chain runs.
     param([Parameter(Mandatory=$true)][string]$Url)
     try {
         $req = [System.Net.HttpWebRequest]::Create((New-CacheBustedUrl $Url))
@@ -221,16 +281,14 @@ function Invoke-DownloadBytes {
 
     $Script:LastDownloadError = ($errors -join ' | ')
 
-    # v3.1.12: detect GitHub release asset 404s and print a clear remediation hint.
     $has404 = ($errors | Where-Object { $_ -match '404|Not Found|HTTP 404' })
     if ($has404) {
         Write-Warn ''
-        Write-Warn '[v3.1.12] One or more release assets returned HTTP 404 from GitHub.'
-        Write-Warn '[v3.1.12] This usually means the CoelhoFZ release ships only the EXE,'
-        Write-Warn '[v3.1.12] but the PowerShell installer is trying to fetch OnlineFix binaries.'
-        Write-Warn '[v3.1.12] Recommended fix: download the self-contained EXE instead:'
-        Write-Warn "[v3.1.12]   $Script:BaseUrl/MinecraftBedrockUnlocker.exe"
-        Write-Warn '[v3.1.12] The EXE bundles all required DLLs internally.'
+        if ($Script:Lang -eq 'pt') {
+            Write-Warn '[v3.3.3] Um endpoint retornou HTTP 404. O instalador tentara usar OnlineFix.zip da release.'
+        } else {
+            Write-Warn '[v3.3.3] One endpoint returned HTTP 404. The installer will use the release OnlineFix.zip.'
+        }
         Write-Warn ''
     }
     return $null
@@ -309,31 +367,10 @@ function Initialize-SafeDllNames {
 # ============================================================================
 # Language Detection
 # ============================================================================
-# Top 7 most-spoken languages worldwide (Ethnologue 2023, native + L2).
 # Detection uses Windows UI culture first, never IP geolocation.
 function Detect-Language {
-    try {
-        if ($env:MBU_LANG -match '^(en|zh|hi|es|fr|ar|ru|pt)$') {
-            $Script:Lang = $env:MBU_LANG.ToLowerInvariant()
-            return
-        }
-
-        $culture = $null
-        try { $culture = (Get-UICulture).Name } catch { }
-        if ([string]::IsNullOrWhiteSpace($culture)) { $culture = (Get-Culture).Name }
-        switch -Wildcard ($culture) {
-            "zh-*"  { $Script:Lang = "zh" }
-            "hi-*"  { $Script:Lang = "hi" }
-            "es-*"  { $Script:Lang = "es" }
-            "fr-*"  { $Script:Lang = "fr" }
-            "ar-*"  { $Script:Lang = "ar" }
-            "ru-*"  { $Script:Lang = "ru" }
-            "pt-*"  { $Script:Lang = "pt" }
-            default  { $Script:Lang = "en" }
-        }
-    } catch {
-        $Script:Lang = "en"
-    }
+    $Script:Lang = Resolve-MbuLanguage
+    $env:MBU_LANG = $Script:Lang
 }
 
 function T {
@@ -1395,6 +1432,129 @@ function T {
         }
     }
     
+    $ptOverrides = @{
+        'admin_required' = 'Privilegios de Administrador necessarios!'
+        'admin_elevating' = 'Solicitando elevacao...'
+        'admin_ok' = 'Executando com privilegios de Administrador'
+        'menu_title' = 'Opcoes disponiveis'
+        'menu_1' = 'Instalar mod (desbloquear jogo)'
+        'menu_2' = 'Restaurar original (voltar para Trial)'
+        'menu_3' = 'Abrir Minecraft'
+        'menu_4' = 'Instalar Minecraft (Xbox App)'
+        'menu_5' = 'Verificar status'
+        'menu_6' = 'Diagnostico do sistema'
+        'menu_0' = 'Sair'
+        'choose' = 'Escolha uma opcao'
+        'invalid' = 'Opcao invalida!'
+        'mc_not_found' = 'Minecraft NAO ENCONTRADO!'
+        'mc_found' = 'Minecraft encontrado'
+        'mc_path' = 'Caminho'
+        'installing' = 'Instalando bypass...'
+        'adding_exclusions' = 'Adicionando exclusoes no antivirus...'
+        'exclusion_added' = 'Exclusao adicionada no Windows Defender'
+        'exclusion_failed' = 'Nao foi possivel adicionar a exclusao (pode exigir configuracao manual)'
+        'downloading' = 'Baixando'
+        'download_ok' = 'Baixado com sucesso'
+        'download_fail' = 'Download FALHOU'
+        'hash_ok' = 'Integridade verificada'
+        'hash_fail' = 'FALHA NA VERIFICACAO DE INTEGRIDADE! O arquivo pode estar corrompido.'
+        'install_ok' = 'Bypass instalado com sucesso!'
+        'install_fail' = 'Instalacao falhou'
+        'verifying' = 'Verificando instalacao...'
+        'files_ok' = 'Todos os arquivos presentes e verificados!'
+        'files_missing' = 'OS ARQUIVOS FORAM APAGADOS PELO ANTIVIRUS!'
+        'retry_install' = 'Tentando instalar novamente...'
+        'av_disable' = 'DESATIVE TEMPORARIAMENTE O SEU ANTIVIRUS:'
+        'av_step1' = '1. Abra a Seguranca do Windows'
+        'av_step2' = '2. Va em Protecao contra virus e ameacas'
+        'av_step3' = '3. Clique em Gerenciar configuracoes'
+        'av_step4' = '4. Desative a Protecao em tempo real'
+        'av_step5' = '5. Execute este script novamente'
+        'av_folder' = 'OU adicione esta pasta nas exclusoes:'
+        'av_detected_blocking' = 'Seu antivirus APAGOU o arquivo apos o download!'
+        'av_need_disable' = 'Voce precisa DESATIVAR TEMPORARIAMENTE a protecao do antivirus.'
+        'av_press_enter' = 'Depois de desativar o antivirus, pressione ENTER para continuar...'
+        'av_retrying_after_disable' = 'Tentando baixar novamente (o antivirus deve estar desativado agora)...'
+        'av_still_blocking' = 'Os arquivos AINDA estao sendo bloqueados! Verifique se o antivirus esta totalmente desativado.'
+        'av_reenable' = 'Voce ja pode reativar a protecao do antivirus.'
+        'removing' = 'Removendo arquivos do bypass...'
+        'removed_ok' = 'Bypass removido com sucesso! O jogo voltou para Trial.'
+        'resetting_license' = 'Redefinindo cache de licenca da Windows Store / Gaming Services...'
+        'license_reset_partial' = 'Nao foi possivel redefinir totalmente o cache de licenca. Talvez seja necessario reiniciar o PC.'
+        'restore_reopen_note' = 'IMPORTANTE: Abra o Minecraft novamente para verificar se voltou ao modo Trial. Se ainda aparecer como Pago, reinicie o PC.'
+        'resetting_app' = 'Redefinindo dados do app Minecraft (limpando cache de licenca)...'
+        'app_reset_ok' = 'Dados do app Minecraft redefinidos com sucesso! Cache de licenca limpo.'
+        'app_reset_fallback' = 'Reset-AppxPackage indisponivel. Tentando limpeza manual...'
+        'app_data_cleared' = 'Dados do app Minecraft limpos manualmente.'
+        'reregistering_mc' = 'Registrando novamente o pacote do Minecraft (forcar revalidacao de licenca)...'
+        'reregister_ok' = 'Pacote do Minecraft registrado novamente com sucesso.'
+        'clearing_app_cache' = 'Limpando cache e configuracoes do app Minecraft...'
+        'cache_cleared' = 'Cache e configuracoes do app limpos.'
+        'opening_mc' = 'Abrindo Minecraft...'
+        'mc_opened' = 'Minecraft deve abrir em instantes'
+        'opening_xbox' = 'Abrindo Xbox App / pagina do Minecraft...'
+        'status_title' = 'STATUS DO SISTEMA'
+        'status_mc' = 'Minecraft instalado'
+        'status_type' = 'Tipo de instalacao'
+        'status_xbox' = 'Xbox App (GDK) - Compativel'
+        'status_store' = 'Microsoft Store (UWP) - NAO COMPATIVEL!'
+        'status_bypass' = 'Status do bypass'
+        'status_installed' = 'INSTALADO'
+        'status_not_installed' = 'NAO INSTALADO'
+        'status_partial' = 'PARCIAL (arquivos ausentes - antivirus apagou?)'
+        'status_av' = 'Antivirus'
+        'status_defender_on' = 'Ativo'
+        'status_defender_off' = 'Nao detectado'
+        'persistence_ok' = 'Protecao apos reinicio ativada (arquivos restauram automaticamente)'
+        'persistence_fail' = 'Nao foi possivel ativar protecao apos reinicio (falha na Tarefa Agendada)'
+        'persistence_removed' = 'Protecao apos reinicio removida'
+        'status_persistence' = 'Protecao apos reinicio'
+        'status_gaming' = 'Gaming Services'
+        'status_running' = 'Em execucao'
+        'status_stopped' = 'Parado'
+        'diag_title' = 'DIAGNOSTICO DO SISTEMA'
+        'diag_xbox_app' = 'Xbox App'
+        'diag_mc_install' = 'Instalacao do Minecraft'
+        'diag_type' = 'Tipo de instalacao'
+        'diag_permissions' = 'Permissoes da pasta'
+        'diag_gaming' = 'Gaming Services'
+        'diag_integrity' = 'Integridade do jogo'
+        'diag_bypass' = 'Arquivos do bypass'
+        'diag_all_ok' = 'Todas as verificacoes passaram! O sistema esta pronto.'
+        'yes' = 'Sim'
+        'no' = 'Nao'
+        'ok' = 'OK'
+        'found' = 'Encontrado'
+        'not_found' = 'Nao encontrado'
+        'writable' = 'Gravavel'
+        'no_write' = 'Sem permissao de escrita'
+        'open_now' = 'Agora voce pode abrir o Minecraft pelo Menu Iniciar!'
+        'mc_running' = 'Minecraft esta em execucao. Fechando primeiro...'
+        'press_enter' = 'Pressione Enter para continuar...'
+        'exiting' = 'Saindo...'
+        'start_gaming' = 'Iniciando Gaming Services...'
+        'install_xbox_hint' = 'Instale o Minecraft Trial pelo Xbox App (NAO pela Microsoft Store!)'
+        'repair_hint' = 'Repare ou reinstale o Minecraft pelo Xbox App'
+        'run_admin_hint' = 'Execute este script como Administrador'
+        'restart_gaming_hint' = 'Reinicie o Gaming Services ou reinstale o Xbox App'
+        'bd_suspending' = 'Antivirus detectado - tentando pausar a protecao automaticamente...'
+        'bd_suspended' = 'Antivirus pausado! Instalando arquivos agora...'
+        'bd_resumed' = 'Protecao do antivirus restaurada.'
+        'bd_suspend_failed' = 'Nao foi possivel pausar automaticamente. Siga as instrucoes:'
+        'bd_onaccess_title' = 'BITDEFENDER - RECOMENDADO: ADICIONE EXCLUSAO PARA MAIOR SEGURANCA'
+        'bd_onaccess_reason' = 'O Bitdefender Free PODE bloquear os arquivos do mod no futuro.'
+        'bd_onaccess_cannot_autofix' = 'Adicionar a exclusao impede que o Bitdefender interfira depois.'
+        'bd_onaccess_clipboard' = '>> Caminho COPIADO para a area de transferencia - pressione Ctrl+V no Bitdefender!'
+        'bd_onaccess_wait' = 'Depois de adicionar a exclusao no Bitdefender, pressione ENTER aqui para continuar...'
+        'bd_onaccess_verified' = 'Exclusao confirmada no Bitdefender! O Minecraft deve funcionar corretamente agora.'
+        'bd_onaccess_not_detected' = 'Exclusao ainda NAO detectada. Siga os passos novamente.'
+        'bd_onaccess_skipped' = 'Exclusao nao configurada. Se o Minecraft tiver problemas depois, veja TROUBLESHOOTING.md.'
+        'bd_onaccess_attempt' = 'Tentativa'
+    }
+    if ($Script:Lang -eq 'pt' -and $ptOverrides.ContainsKey($Key)) {
+        return $ptOverrides[$Key]
+    }
+
     $entry = $translations[$Key]
     if ($entry -and $entry[$Script:Lang]) {
         return $entry[$Script:Lang]
@@ -2932,6 +3092,65 @@ function Test-InstalledFileIntegrity {
     }
 }
 
+function Get-OnlineFixZipBytes {
+    if ($Script:OnlineFixZipBytes -and $Script:OnlineFixZipBytes.Length -gt 0) {
+        return $Script:OnlineFixZipBytes
+    }
+
+    Write-Info "$(T 'downloading') OnlineFix.zip..."
+    $bytes = Invoke-DownloadBytes -Urls @($Script:OnlineFixZipUrl) -MinBytes 1024
+    if (-not $bytes -or $bytes.Length -le 0) {
+        return $null
+    }
+
+    $Script:OnlineFixZipBytes = $bytes
+    return $Script:OnlineFixZipBytes
+}
+
+function Get-OnlineFixFileBytesFromZip {
+    param([Parameter(Mandatory=$true)][string]$FileName)
+
+    $zipBytes = Get-OnlineFixZipBytes
+    if (-not $zipBytes -or $zipBytes.Length -le 0) { return $null }
+
+    $memoryStream = $null
+    $archive = $null
+    $entryStream = $null
+    $outputStream = $null
+    try {
+        Add-Type -AssemblyName System.IO.Compression -ErrorAction SilentlyContinue
+        Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction SilentlyContinue
+
+        $memoryStream = New-Object System.IO.MemoryStream
+        $memoryStream.Write($zipBytes, 0, $zipBytes.Length)
+        $memoryStream.Position = 0
+        $archive = New-Object System.IO.Compression.ZipArchive($memoryStream, [System.IO.Compression.ZipArchiveMode]::Read, $false)
+        $entry = $archive.Entries | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Name) -and $_.Name -ieq $FileName } | Select-Object -First 1
+        if (-not $entry) {
+            $Script:LastDownloadError = "OnlineFix.zip does not contain $FileName"
+            return $null
+        }
+
+        $entryStream = $entry.Open()
+        $outputStream = New-Object System.IO.MemoryStream
+        $entryStream.CopyTo($outputStream)
+        $bytes = $outputStream.ToArray()
+        if (-not $bytes -or $bytes.Length -le 0) {
+            $Script:LastDownloadError = "OnlineFix.zip entry is empty: $FileName"
+            return $null
+        }
+        return $bytes
+    } catch {
+        $Script:LastDownloadError = "OnlineFix.zip extraction failed for $FileName => $($_.Exception.Message)"
+        return $null
+    } finally {
+        if ($outputStream) { $outputStream.Dispose() }
+        if ($entryStream) { $entryStream.Dispose() }
+        if ($archive) { $archive.Dispose() }
+        if ($memoryStream) { $memoryStream.Dispose() }
+    }
+}
+
 function Download-OnlineFixFile {
     param(
         [string]$FileName,
@@ -2985,18 +3204,21 @@ function Download-OnlineFixFile {
     } else {
     
     # ============================================================
-    # STEP 1: Download bytes into memory with retries and no-cache fallbacks
+    # STEP 1: Load bytes from the release OnlineFix.zip, then fall back to raw/main
     # ============================================================
-    $bytes = Invoke-DownloadBytes -Urls @($url) -MinBytes 1
+    $bytes = Get-OnlineFixFileBytesFromZip -FileName $FileName
+    if (-not $bytes -or $bytes.Length -eq 0) {
+        $bytes = Invoke-DownloadBytes -Urls @($url) -MinBytes 1
+    }
     
     if (-not $bytes -or $bytes.Length -eq 0) {
         Write-Err "$(T 'download_fail'): $diskName"
         if ($Script:Lang -eq "pt") {
-            Write-Warn "  URL: $url"
-            Write-Warn "  Verifique sua conexao ou se o arquivo existe no release do GitHub."
+            Write-Warn "  URL: $Script:OnlineFixZipUrl"
+            Write-Warn "  Verifique sua conexao ou se o OnlineFix.zip da release contem este arquivo."
         } else {
-            Write-Warn "  URL: $url"
-            Write-Warn "  Check your connection or if the file exists in the GitHub release."
+            Write-Warn "  URL: $Script:OnlineFixZipUrl"
+            Write-Warn "  Check your connection or whether the release OnlineFix.zip contains this file."
         }
         if ($Script:LastDownloadError) { Write-Warn "  $($Script:LastDownloadError)" }
         return "download_failed"
@@ -4011,11 +4233,10 @@ function Install-Bypass {
             Write-C "  2. GitHub esta bloqueado pela sua rede/ISP" White
             Write-C "  3. Os arquivos nao existem no release do GitHub" White
             Write-C ""
-            Write-C "  Tente o metodo alternativo:" Cyan
-            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$tmp=Join-Path `$env:TEMP (`"mbu-`$([guid]::NewGuid().ToString('N')).ps1`"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o `$tmp `"`${u}?cb=`$([guid]::NewGuid())`"; if(`$LASTEXITCODE -ne 0 -or -not (Test-Path `$tmp) -or (Get-Item `$tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; `$s=Get-Content -Raw `$tmp; Remove-Item `$tmp -Force -ErrorAction SilentlyContinue; `$t=if(`$s){`$s.TrimStart()}else{''}; if([string]::IsNullOrWhiteSpace(`$s) -or `$t.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or `$t.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'install.ps1 download returned invalid content'}; iex `$s" White
+            Write-C "  Verifique se este arquivo abre no navegador:" Cyan
+            Write-C "  $Script:OnlineFixZipUrl" White
             Write-C ""
-            Write-C "  Ou baixe o EXE (funciona offline):" Cyan
-            Write-C "  $Script:BaseUrl/MinecraftBedrockUnlocker.exe" White
+            Write-C "  Depois execute novamente o install.bat da release." Cyan
         } else {
             Write-Err "ALL DOWNLOADS FAILED!"
             Write-C ""
@@ -4025,11 +4246,10 @@ function Install-Bypass {
             Write-C "  2. GitHub is blocked by your network/ISP" White
             Write-C "  3. Files don't exist in the GitHub release" White
             Write-C ""
-            Write-C "  Try the alternative method:" Cyan
-            Write-C "  `$u='$Script:BaseUrl/install.ps1'; `$tmp=Join-Path `$env:TEMP (`"mbu-`$([guid]::NewGuid().ToString('N')).ps1`"); curl.exe -fL -sS --retry 5 --retry-delay 2 --connect-timeout 15 --max-time 180 -H 'Cache-Control: no-cache, no-store, max-age=0' -H 'Pragma: no-cache' -H 'User-Agent: MinecraftBedrockUnlocker' -o `$tmp `"`${u}?cb=`$([guid]::NewGuid())`"; if(`$LASTEXITCODE -ne 0 -or -not (Test-Path `$tmp) -or (Get-Item `$tmp).Length -lt 1000){throw 'install.ps1 download failed or returned empty content'}; `$s=Get-Content -Raw `$tmp; Remove-Item `$tmp -Force -ErrorAction SilentlyContinue; `$t=if(`$s){`$s.TrimStart()}else{''}; if([string]::IsNullOrWhiteSpace(`$s) -or `$t.StartsWith('<!DOCTYPE',[StringComparison]::OrdinalIgnoreCase) -or `$t.StartsWith('<html',[StringComparison]::OrdinalIgnoreCase)){throw 'install.ps1 download returned invalid content'}; iex `$s" White
+            Write-C "  Check whether this file opens in your browser:" Cyan
+            Write-C "  $Script:OnlineFixZipUrl" White
             Write-C ""
-            Write-C "  Or download the EXE (works offline):" Cyan
-            Write-C "  $Script:BaseUrl/MinecraftBedrockUnlocker.exe" White
+            Write-C "  Then run the release install.bat again." Cyan
         }
         Write-C "  ============================================================" Red
         Write-C ""

@@ -23,27 +23,66 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
-# Detect system language for error messages (top 7 worldwide, OS culture-based)
-$Script:BootstrapLang = 'en'
-try {
-    if ($env:MBU_LANG -match '^(en|zh|hi|es|fr|ar|ru|pt)$') {
-        $Script:BootstrapLang = $env:MBU_LANG.ToLowerInvariant()
-    } else {
-        $culture = $null
-        try { $culture = (Get-UICulture).Name } catch { }
-        if ([string]::IsNullOrWhiteSpace($culture)) { $culture = (Get-Culture).Name }
-        switch -Wildcard ($culture) {
-            'zh-*' { $Script:BootstrapLang = 'zh' }
-            'hi-*' { $Script:BootstrapLang = 'hi' }
-            'es-*' { $Script:BootstrapLang = 'es' }
-            'fr-*' { $Script:BootstrapLang = 'fr' }
-            'ar-*' { $Script:BootstrapLang = 'ar' }
-            'ru-*' { $Script:BootstrapLang = 'ru' }
-            'pt-*' { $Script:BootstrapLang = 'pt' }
-            default { $Script:BootstrapLang = 'en' }
+function Resolve-MbuLanguage {
+    $candidates = New-Object System.Collections.Generic.List[string]
+
+    try { if ($env:MBU_LANG) { $candidates.Add([string]$env:MBU_LANG) } } catch { }
+    try { $candidates.Add((Get-UICulture).Name) } catch { }
+    try { $candidates.Add((Get-Culture).Name) } catch { }
+    try {
+        $userLanguages = Get-WinUserLanguageList -ErrorAction SilentlyContinue
+        foreach ($language in $userLanguages) {
+            try { if ($language.LanguageTag) { $candidates.Add([string]$language.LanguageTag) } } catch { }
+            try { if ($language.EnglishName) { $candidates.Add([string]$language.EnglishName) } } catch { }
+            try { if ($language.NativeName) { $candidates.Add([string]$language.NativeName) } } catch { }
+        }
+    } catch { }
+    foreach ($regPath in @('HKCU:\Control Panel\International', 'HKCU:\Control Panel\Desktop', 'HKLM:\SYSTEM\CurrentControlSet\Control\Nls\Language')) {
+        try {
+            $props = Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue
+            foreach ($prop in @('LocaleName', 'sLanguage', 'Locale', 'PreferredUILanguages')) {
+                $value = $props.$prop
+                if ($value -is [array]) {
+                    foreach ($item in $value) { if ($item) { $candidates.Add([string]$item) } }
+                } elseif ($value) {
+                    $candidates.Add([string]$value)
+                }
+            }
+        } catch { }
+    }
+
+    foreach ($candidate in $candidates) {
+        if ([string]::IsNullOrWhiteSpace($candidate)) { continue }
+        $value = $candidate.Trim().ToLowerInvariant()
+        switch -Wildcard ($value) {
+            'pt*' { return 'pt' }
+            '*portugu*' { return 'pt' }
+            '*brasil*' { return 'pt' }
+            '*brazil*' { return 'pt' }
+            'zh*' { return 'zh' }
+            '*chinese*' { return 'zh' }
+            'hi*' { return 'hi' }
+            '*hindi*' { return 'hi' }
+            'es*' { return 'es' }
+            '*spanish*' { return 'es' }
+            '*espanol*' { return 'es' }
+            '*español*' { return 'es' }
+            'fr*' { return 'fr' }
+            '*french*' { return 'fr' }
+            '*francais*' { return 'fr' }
+            '*français*' { return 'fr' }
+            'ar*' { return 'ar' }
+            '*arabic*' { return 'ar' }
+            'ru*' { return 'ru' }
+            '*russian*' { return 'ru' }
         }
     }
-} catch { }
+
+    return 'en'
+}
+
+$Script:BootstrapLang = Resolve-MbuLanguage
+$env:MBU_LANG = $Script:BootstrapLang
 
 $Script:BootMsg = @{
     en = @{
@@ -212,8 +251,8 @@ function Get-NoCacheHeaders {
 
 function Get-PayloadCandidateUrls {
     return @(
-        $Script:PayloadUrl,
-        $Script:RawPayloadUrl
+        $Script:RawPayloadUrl,
+        $Script:PayloadUrl
     )
 }
 
@@ -391,10 +430,15 @@ function Start-Bootstrap {
         if ($MinecraftPath) { $extraArgs += '-MinecraftPath', $MinecraftPath }
         if ($ResourceDir) {
             & $powershellExe -NoProfile -ExecutionPolicy Bypass -File $payloadPath -ResourceDir $ResourceDir @extraArgs
+            $exitCode = if ($LASTEXITCODE -is [int]) { $LASTEXITCODE } else { 0 }
         } else {
-            & $powershellExe -NoProfile -ExecutionPolicy Bypass -File $payloadPath @extraArgs
+            $payloadContent = [System.IO.File]::ReadAllText($payloadPath, [System.Text.Encoding]::UTF8)
+            if ($payloadContent.Length -gt 0 -and [int][char]$payloadContent[0] -eq 65279) { $payloadContent = $payloadContent.Substring(1) }
+            $Script:MBUContent = $payloadContent
+            $scriptBlock = [ScriptBlock]::Create($payloadContent)
+            & $scriptBlock @extraArgs
+            $exitCode = 0
         }
-        $exitCode = if ($LASTEXITCODE -is [int]) { $LASTEXITCODE } else { 0 }
         if ($exitCode -ne 0) {
             if ($Script:BootstrapLang -eq 'pt') {
                 Write-Status "unlocker saiu com codigo $exitCode" ([ConsoleColor]::Red)

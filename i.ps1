@@ -1,12 +1,12 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 
-# ── Bootstrap v3.3.1: downloads and executes unlocker.ps1 (NO EXE) ──
+# Bootstrap v3.3.3: downloads and executes unlocker.ps1 in memory
 
 trap {
     Write-Host ''
     Write-Host '============================================================' -ForegroundColor Red
-    Write-Host '[MBU v3.3.1] ERROR:' $_.Exception.Message -ForegroundColor Red
+    Write-Host '[MBU v3.3.3] ERROR:' $_.Exception.Message -ForegroundColor Red
     Write-Host '============================================================' -ForegroundColor Red
     Write-Host ''
     Write-Host 'The bootstrap failed. Possible causes:' -ForegroundColor Yellow
@@ -37,7 +37,7 @@ $Headers = @{
     'Cache-Control' = 'no-cache, no-store, max-age=0'
     'Pragma'        = 'no-cache'
     'Expires'       = '0'
-    'User-Agent'    = 'MinecraftBedrockUnlockerBootstrap/3.3.1'
+    'User-Agent'    = 'MinecraftBedrockUnlockerBootstrap/3.3.3'
 }
 
 $Script:RepoOwner = 'CoelhoFZ'
@@ -48,21 +48,67 @@ $Script:RawUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Scri
 # Fallback URL (release asset)
 $Script:ReleaseUrl = "https://github.com/$($Script:RepoOwner)/$($Script:RepoName)/releases/latest/download/unlocker.ps1"
 
-# ── Language detection (top 7 worldwide) ──
-$Script:Lang = 'en'
-try {
-    $c = (Get-Culture).Name
-    switch -Wildcard ($c) {
-        'zh-*' { $Script:Lang = 'zh' }
-        'hi-*' { $Script:Lang = 'hi' }
-        'es-*' { $Script:Lang = 'es' }
-        'fr-*' { $Script:Lang = 'fr' }
-        'ar-*' { $Script:Lang = 'ar' }
-        'ru-*' { $Script:Lang = 'ru' }
-        'pt-*' { $Script:Lang = 'pt' }
-        default { $Script:Lang = 'en' }
+# Language detection uses Windows UI language, user language list and locale registry.
+function Resolve-MbuLanguage {
+    $candidates = New-Object System.Collections.Generic.List[string]
+
+    try { if ($env:MBU_LANG) { $candidates.Add([string]$env:MBU_LANG) } } catch { }
+    try { $candidates.Add((Get-UICulture).Name) } catch { }
+    try { $candidates.Add((Get-Culture).Name) } catch { }
+    try {
+        $userLanguages = Get-WinUserLanguageList -ErrorAction SilentlyContinue
+        foreach ($language in $userLanguages) {
+            try { if ($language.LanguageTag) { $candidates.Add([string]$language.LanguageTag) } } catch { }
+            try { if ($language.EnglishName) { $candidates.Add([string]$language.EnglishName) } } catch { }
+            try { if ($language.NativeName) { $candidates.Add([string]$language.NativeName) } } catch { }
+        }
+    } catch { }
+    foreach ($regPath in @('HKCU:\Control Panel\International', 'HKCU:\Control Panel\Desktop', 'HKLM:\SYSTEM\CurrentControlSet\Control\Nls\Language')) {
+        try {
+            $props = Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue
+            foreach ($prop in @('LocaleName', 'sLanguage', 'Locale', 'PreferredUILanguages')) {
+                $value = $props.$prop
+                if ($value -is [array]) {
+                    foreach ($item in $value) { if ($item) { $candidates.Add([string]$item) } }
+                } elseif ($value) {
+                    $candidates.Add([string]$value)
+                }
+            }
+        } catch { }
     }
-} catch { }
+
+    foreach ($candidate in $candidates) {
+        if ([string]::IsNullOrWhiteSpace($candidate)) { continue }
+        $value = $candidate.Trim().ToLowerInvariant()
+        switch -Wildcard ($value) {
+            'pt*' { return 'pt' }
+            '*portugu*' { return 'pt' }
+            '*brasil*' { return 'pt' }
+            '*brazil*' { return 'pt' }
+            'zh*' { return 'zh' }
+            '*chinese*' { return 'zh' }
+            'hi*' { return 'hi' }
+            '*hindi*' { return 'hi' }
+            'es*' { return 'es' }
+            '*spanish*' { return 'es' }
+            '*espanol*' { return 'es' }
+            '*español*' { return 'es' }
+            'fr*' { return 'fr' }
+            '*french*' { return 'fr' }
+            '*francais*' { return 'fr' }
+            '*français*' { return 'fr' }
+            'ar*' { return 'ar' }
+            '*arabic*' { return 'ar' }
+            'ru*' { return 'ru' }
+            '*russian*' { return 'ru' }
+        }
+    }
+
+    return 'en'
+}
+
+$Script:Lang = Resolve-MbuLanguage
+$env:MBU_LANG = $Script:Lang
 
 $Script:Msg = @{
     en = @{
@@ -219,6 +265,7 @@ foreach ($url in $urls) {
 
             $content = $content.TrimStart([char]0xFEFF, [char]0x200B, [char]0x200C, [char]0x200D, "`n", "`r", "`t", ' ')
             Write-Host ($Script:Msg[$Script:Lang].starting)
+            $Script:MBUContent = $content
             iex $content
             exit 0
         }

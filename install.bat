@@ -1,12 +1,29 @@
 @echo off
-setlocal EnableExtensions
+setlocal EnableExtensions EnableDelayedExpansion
 
 title Minecraft Bedrock Unlocker
 
 set "BOOTSTRAP_URL=https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/install.ps1"
+set "MBU_BOOTSTRAP_PATH=%~f0"
 
-for /f "usebackq delims=" %%L in (`powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "try { $c = [System.Globalization.CultureInfo]::CurrentUICulture.TwoLetterISOLanguageName; if ([string]::IsNullOrWhiteSpace($c)) { $c = (Get-Culture).TwoLetterISOLanguageName }; if ($c -eq 'pt') { 'pt' } else { 'en' } } catch { 'en' }" 2^>nul`) do set "MBU_LANG=%%L"
+for /f "usebackq delims=" %%L in (`powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "try { $candidates = @($env:MBU_LANG, [System.Globalization.CultureInfo]::CurrentUICulture.Name, (Get-Culture).Name); foreach ($c in $candidates) { if ($c -and $c.ToLowerInvariant().StartsWith('pt')) { 'pt'; exit 0 } }; 'en' } catch { 'en' }" 2^>nul`) do set "MBU_LANG=%%L"
 if not defined MBU_LANG set "MBU_LANG=en"
+
+if not "%MBU_VALIDATE_ONLY%"=="1" (
+    powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent()); if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { exit 0 }; try { $bat = $env:MBU_BOOTSTRAP_PATH; $arg = '/c ""' + $bat + '""'; Start-Process -FilePath $env:ComSpec -ArgumentList $arg -Verb RunAs -ErrorAction Stop | Out-Null; exit 100 } catch { Write-Host $_.Exception.Message -ForegroundColor Red; exit 5 }"
+    set "ELEVATE_CODE=!ERRORLEVEL!"
+    if "!ELEVATE_CODE!"=="100" exit /b 0
+    if not "!ELEVATE_CODE!"=="0" (
+        echo.
+        if /I "%MBU_LANG%"=="pt" (
+            echo A elevacao para Administrador falhou. Codigo: !ELEVATE_CODE!.
+        ) else (
+            echo Administrator elevation failed. Code: !ELEVATE_CODE!.
+        )
+        pause
+        exit /b !ELEVATE_CODE!
+    )
+)
 
 if /I "%MBU_LANG%"=="pt" (
     echo ============================================================
@@ -30,7 +47,6 @@ powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
   "try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls13 } catch { };" ^
   "$url = '%BOOTSTRAP_URL%';" ^
   "$cacheBust = $url + '?cb=' + [guid]::NewGuid().ToString('N');" ^
-  "$path = Join-Path $env:TEMP ('MinecraftBedrockUnlocker-bootstrap-' + [guid]::NewGuid().ToString('N') + '.ps1');" ^
   "try {" ^
   "  $client = New-Object System.Net.WebClient;" ^
   "  $client.Headers['Cache-Control'] = 'no-cache, no-store, max-age=0';" ^
@@ -47,27 +63,18 @@ powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command ^
   "    $errors | Select-Object -First 20 | ForEach-Object { Write-Host ('Line/Linha ' + $_.Extent.StartLineNumber + ': ' + $_.Message) -ForegroundColor Red };" ^
   "    exit 2;" ^
   "  };" ^
-  "  $utf8WithBom = New-Object System.Text.UTF8Encoding -ArgumentList $true;" ^
-  "  [System.IO.File]::WriteAllText($path, $content, $utf8WithBom);" ^
-  "  $fileTokens = $null; $fileErrors = $null;" ^
-  "  [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$fileTokens, [ref]$fileErrors) | Out-Null;" ^
-  "  if ($fileErrors.Count -gt 0) {" ^
-  "    Say 'O Windows PowerShell nao conseguiu ler o arquivo UTF-8 corretamente.' 'Windows PowerShell could not read the UTF-8 file correctly.' Red;" ^
-  "    $fileErrors | Select-Object -First 20 | ForEach-Object { Write-Host ('Line/Linha ' + $_.Extent.StartLineNumber + ': ' + $_.Message) -ForegroundColor Red };" ^
-  "    exit 3;" ^
-  "  };" ^
   "  Say 'Validacao de sintaxe e UTF-8 concluida.' 'PowerShell syntax and UTF-8 validation passed.' Green;" ^
   "  if ($env:MBU_VALIDATE_ONLY -eq '1') {" ^
   "    Say 'Modo somente validacao: execucao ignorada.' 'Validation-only mode: execution skipped.' Yellow;" ^
   "    exit 0;" ^
   "  };" ^
-  "  & $path %*" ^
+  "  $scriptBlock = [ScriptBlock]::Create($content);" ^
+  "  & $scriptBlock" ^
   "} catch {" ^
   "  Write-Host $_.Exception.Message -ForegroundColor Red;" ^
   "  exit 1;" ^
   "} finally {" ^
   "  if ($client) { $client.Dispose() };" ^
-  "  Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue;" ^
   "}"
 
 set "EXIT_CODE=%ERRORLEVEL%"
