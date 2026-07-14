@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Minecraft Bedrock Unlocker - PowerShell Script
     
@@ -23,12 +23,17 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Off  # override any inherited StrictMode (e.g. from e.ps1 via iex)
 $ProgressPreference = 'SilentlyContinue'  # Speed up downloads
+$Script:Lang = if ($env:MBU_LANG -match '^(en|zh|hi|es|fr|ar|ru|pt)$') { $env:MBU_LANG.ToLowerInvariant() } else { 'en' }
 
 trap {
     Write-Host ''
     Write-Host '  ============================================================' -ForegroundColor Red
     Write-Host ''
-    Write-Host "  CRITICAL ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    if ($Script:Lang -eq 'pt') {
+        Write-Host "  ERRO CRITICO: $($_.Exception.Message)" -ForegroundColor Red
+    } else {
+        Write-Host "  CRITICAL ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    }
     Write-Host ''
     if ($Script:Lang -eq 'pt') {
         Write-Host '  O script encontrou um erro inesperado.' -ForegroundColor Yellow
@@ -57,9 +62,9 @@ $Script:Version = "3.3.3"
 $Script:RepoOwner = "CoelhoFZ"
 $Script:RepoName = "MinecraftBedrockUnlocker"
 $Script:RepoBranch = "main"
-$Script:BaseUrl = "https://github.com/$RepoOwner/$RepoName/releases/latest/download"
+$Script:BaseUrl = "https://github.com/$($Script:RepoOwner)/$($Script:RepoName)/releases/latest/download"
 
-$Script:RawBaseUrl = "https://raw.githubusercontent.com/$RepoOwner/$RepoName/main"
+$Script:RawBaseUrl = "https://raw.githubusercontent.com/$($Script:RepoOwner)/$($Script:RepoName)/main"
 $Script:ResourceDir = $ResourceDir
 $Script:IsSelfContained = ($ResourceDir -and (Test-Path (Join-Path $ResourceDir "OnlineFix64.dll")))
 $Script:DiscordUrl = "https://discord.gg/byDkXzhvuZ"
@@ -304,13 +309,18 @@ function Initialize-SafeDllNames {
 # ============================================================================
 # Language Detection
 # ============================================================================
-$Script:Lang = "en"
-
 # Top 7 most-spoken languages worldwide (Ethnologue 2023, native + L2).
-# Detection uses Windows OS culture (Get-Culture), never IP geolocation.
+# Detection uses Windows UI culture first, never IP geolocation.
 function Detect-Language {
     try {
-        $culture = (Get-Culture).Name
+        if ($env:MBU_LANG -match '^(en|zh|hi|es|fr|ar|ru|pt)$') {
+            $Script:Lang = $env:MBU_LANG.ToLowerInvariant()
+            return
+        }
+
+        $culture = $null
+        try { $culture = (Get-UICulture).Name } catch { }
+        if ([string]::IsNullOrWhiteSpace($culture)) { $culture = (Get-Culture).Name }
         switch -Wildcard ($culture) {
             "zh-*"  { $Script:Lang = "zh" }
             "hi-*"  { $Script:Lang = "hi" }

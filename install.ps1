@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Minecraft Bedrock Unlocker - PowerShell bootstrap.
 
@@ -11,7 +11,7 @@
 
 .NOTES
     Author: CoelhoFZ
-    Version: 3.1.11
+    Version: 3.3.3
     Repository: https://github.com/CoelhoFZ/MinecraftBedrockUnlocker
 #>
 
@@ -26,16 +26,22 @@ $ProgressPreference = 'SilentlyContinue'
 # Detect system language for error messages (top 7 worldwide, OS culture-based)
 $Script:BootstrapLang = 'en'
 try {
-    $culture = (Get-Culture).Name
-    switch -Wildcard ($culture) {
-        'zh-*' { $Script:BootstrapLang = 'zh' }
-        'hi-*' { $Script:BootstrapLang = 'hi' }
-        'es-*' { $Script:BootstrapLang = 'es' }
-        'fr-*' { $Script:BootstrapLang = 'fr' }
-        'ar-*' { $Script:BootstrapLang = 'ar' }
-        'ru-*' { $Script:BootstrapLang = 'ru' }
-        'pt-*' { $Script:BootstrapLang = 'pt' }
-        default { $Script:BootstrapLang = 'en' }
+    if ($env:MBU_LANG -match '^(en|zh|hi|es|fr|ar|ru|pt)$') {
+        $Script:BootstrapLang = $env:MBU_LANG.ToLowerInvariant()
+    } else {
+        $culture = $null
+        try { $culture = (Get-UICulture).Name } catch { }
+        if ([string]::IsNullOrWhiteSpace($culture)) { $culture = (Get-Culture).Name }
+        switch -Wildcard ($culture) {
+            'zh-*' { $Script:BootstrapLang = 'zh' }
+            'hi-*' { $Script:BootstrapLang = 'hi' }
+            'es-*' { $Script:BootstrapLang = 'es' }
+            'fr-*' { $Script:BootstrapLang = 'fr' }
+            'ar-*' { $Script:BootstrapLang = 'ar' }
+            'ru-*' { $Script:BootstrapLang = 'ru' }
+            'pt-*' { $Script:BootstrapLang = 'pt' }
+            default { $Script:BootstrapLang = 'en' }
+        }
     }
 } catch { }
 
@@ -45,6 +51,13 @@ $Script:BootMsg = @{
         errGeneric  = 'The installer bootstrap failed.'
         avHint      = 'If your antivirus caused this: disable it temporarily and run again.'
         pressEnter  = 'Press ENTER to exit'
+        pressEnterPt = 'Pressione ENTER para sair'
+    }
+    pt = @{
+        errTitle    = 'ERRO DO BOOTSTRAP:'
+        errGeneric  = 'O bootstrap do instalador falhou.'
+        avHint      = 'Se foi o antivirus: desative-o temporariamente e execute novamente.'
+        pressEnter  = 'Pressione ENTER para sair'
         pressEnterPt = 'Pressione ENTER para sair'
     }
     zh = @{
@@ -95,7 +108,7 @@ trap {
     Write-Host ''
     Write-Host '============================================================' -ForegroundColor Red
     # Defensive: $Script:BootMsg / $Script:BootstrapLang may be null if trap fires before initialization
-    $errTitle = if ($null -ne $Script:BootMsg -and $null -ne $Script:BootstrapLang -and $Script:BootMsg.ContainsKey($Script:BootstrapLang)) { $Script:BootMsg[$Script:BootstrapLang].errTitle } else { '[MBU v3.2.1] BOOTSTRAP ERROR:' }
+    $errTitle = if ($null -ne $Script:BootMsg -and $null -ne $Script:BootstrapLang -and $Script:BootMsg.ContainsKey($Script:BootstrapLang)) { $Script:BootMsg[$Script:BootstrapLang].errTitle } else { '[MBU v3.3.3] ERRO DO BOOTSTRAP:' }
     Write-Host $errTitle $_.Exception.Message -ForegroundColor Red
     Write-Host '============================================================' -ForegroundColor Red
     Write-Host ''
@@ -128,7 +141,7 @@ trap {
     break
 }
 
-$Script:Version = '3.3.0'
+$Script:Version = '3.3.3'
 $Script:RepoOwner = 'CoelhoFZ'
 $Script:RepoName = 'MinecraftBedrockUnlocker'
 $Script:BaseUrl = "https://github.com/$($Script:RepoOwner)/$($Script:RepoName)/releases/latest/download"
@@ -235,6 +248,19 @@ function Test-PayloadFile {
     return $true
 }
 
+function Convert-ToUtf8BomFile {
+    param([Parameter(Mandatory=$true)][string]$Path)
+
+    $bytes = [System.IO.File]::ReadAllBytes($Path)
+    $utf8Strict = New-Object System.Text.UTF8Encoding -ArgumentList $false, $true
+    $content = $utf8Strict.GetString($bytes)
+    if ($content.Length -gt 0 -and [int][char]$content[0] -eq 65279) {
+        $content = $content.Substring(1)
+    }
+    $utf8WithBom = New-Object System.Text.UTF8Encoding -ArgumentList $true
+    [System.IO.File]::WriteAllText($Path, $content, $utf8WithBom)
+}
+
 function Invoke-FileDownload {
     param(
         [Parameter(Mandatory=$true)][string]$Url,
@@ -250,6 +276,7 @@ function Invoke-FileDownload {
     for ($attempt = 1; $attempt -le 3; $attempt++) {
         try {
             Invoke-WebRequest -Uri (New-CacheBustedUrl $Url) -OutFile $tmpPath -UseBasicParsing -Headers $headers -MaximumRedirection 5 -DisableKeepAlive -ErrorAction Stop
+            Convert-ToUtf8BomFile -Path $tmpPath
             Test-PayloadFile -Path $tmpPath | Out-Null
             Move-Item -Path $tmpPath -Destination $Destination -Force
             return $true
@@ -265,6 +292,7 @@ function Invoke-FileDownload {
         $client = New-Object System.Net.WebClient
         foreach ($header in $headers.GetEnumerator()) { $client.Headers[$header.Key] = $header.Value }
         $client.DownloadFile((New-CacheBustedUrl $Url), $tmpPath)
+        Convert-ToUtf8BomFile -Path $tmpPath
         Test-PayloadFile -Path $tmpPath | Out-Null
         Move-Item -Path $tmpPath -Destination $Destination -Force
         return $true
@@ -284,6 +312,7 @@ function Invoke-FileDownload {
                 -H "User-Agent: MinecraftBedrockUnlocker/$($Script:Version)" `
                 -o $tmpPath (New-CacheBustedUrl $Url)
             if ($LASTEXITCODE -ne 0) { throw "curl.exe exited with code $LASTEXITCODE" }
+            Convert-ToUtf8BomFile -Path $tmpPath
             Test-PayloadFile -Path $tmpPath | Out-Null
             Move-Item -Path $tmpPath -Destination $Destination -Force
             return $true
@@ -367,7 +396,11 @@ function Start-Bootstrap {
         }
         $exitCode = if ($LASTEXITCODE -is [int]) { $LASTEXITCODE } else { 0 }
         if ($exitCode -ne 0) {
-            Write-Status "unlocker exited with code $exitCode" ([ConsoleColor]::Red)
+            if ($Script:BootstrapLang -eq 'pt') {
+                Write-Status "unlocker saiu com codigo $exitCode" ([ConsoleColor]::Red)
+            } else {
+                Write-Status "unlocker exited with code $exitCode" ([ConsoleColor]::Red)
+            }
             Write-Status ""
             if ($Script:BootstrapLang -eq 'pt') {
                 Write-Status "O unlocker encontrou um erro. Veja a mensagem acima." ([ConsoleColor]::Yellow)
