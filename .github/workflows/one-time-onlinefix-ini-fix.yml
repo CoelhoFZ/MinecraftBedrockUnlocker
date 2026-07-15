@@ -1,17 +1,17 @@
 name: Apply OnlineFix INI compatibility fix
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/one-time-onlinefix-ini-fix.yml
+  issue_comment:
+    types:
+      - created
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   patch:
+    if: github.event.issue.number == 26 && github.event.comment.body == '<!-- mbu-onlinefix-ini-maintenance -->'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -66,7 +66,6 @@ jobs:
           PY
 
           rm -f .github/workflows/one-time-onlinefix-ini-fix.yml
-
           git diff --check
           pwsh -NoLogo -NoProfile -Command '$tokens = $null; $errors = $null; [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "unlocker.ps1"), [ref]$tokens, [ref]$errors) | Out-Null; if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }'
 
@@ -78,3 +77,10 @@ jobs:
           git add unlocker.ps1 .github/workflows/one-time-onlinefix-ini-fix.yml
           git commit -m "fix: keep OnlineFix.ini writable"
           git push origin HEAD:main
+
+      - name: Remove maintenance trigger
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh api --method DELETE "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}"
