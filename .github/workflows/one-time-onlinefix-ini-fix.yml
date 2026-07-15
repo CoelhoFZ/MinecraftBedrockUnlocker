@@ -1,0 +1,80 @@
+name: Apply OnlineFix INI compatibility fix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/one-time-onlinefix-ini-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch unlocker
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("unlocker.ps1")
+          text = path.read_bytes().decode("utf-8-sig").replace("\r\n", "\n")
+
+          old_files = '    $files = @("winmm.dll", (Get-DiskName -SourceName "OnlineFix64.dll"), "dlllist.txt", "OnlineFix.ini")'
+          new_files = '''    $files = @("winmm.dll", (Get-DiskName -SourceName "OnlineFix64.dll"), "dlllist.txt")
+
+    # OnlineFix.ini is runtime state, not a static binary. Keep it writable so
+    # first-run dialogs and other settings can be persisted normally.
+    $iniPath = Join-Path $ContentPath "OnlineFix.ini"
+    if (Test-Path $iniPath) {
+        try {
+            $iniFile = Get-Item $iniPath -Force -ErrorAction Stop
+            $iniFile.Attributes = [System.IO.FileAttributes]::Normal
+        } catch {
+            try { $null = cmd /c "attrib -R -S -H `"$iniPath`"" 2>$null } catch { }
+        }
+    }'''
+
+          if text.count(old_files) != 1:
+              raise SystemExit(f"Expected exactly one Protect-InstalledFiles target, found {text.count(old_files)}")
+          text = text.replace(old_files, new_files, 1)
+
+          old_backup_loop = '''    # Save encrypted copies of each file
+    $manifest = @()
+    foreach ($file in $Script:OnlineFixFiles) {
+        $diskName = Get-DiskName -SourceName $file.Name'''
+          new_backup_loop = '''    # Save encrypted copies of static runtime files only. OnlineFix.ini is
+    # intentionally excluded so runtime state is never rolled back at logon.
+    $manifest = @()
+    foreach ($file in $Script:OnlineFixFiles) {
+        if ($file.Name -eq "OnlineFix.ini") { continue }
+        $diskName = Get-DiskName -SourceName $file.Name'''
+
+          if text.count(old_backup_loop) != 1:
+              raise SystemExit(f"Expected exactly one persistence backup target, found {text.count(old_backup_loop)}")
+          text = text.replace(old_backup_loop, new_backup_loop, 1)
+
+          path.write_text(text, encoding="utf-8", newline="\n")
+          PY
+
+          rm -f .github/workflows/one-time-onlinefix-ini-fix.yml
+
+          git diff --check
+          pwsh -NoLogo -NoProfile -Command '$tokens = $null; $errors = $null; [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "unlocker.ps1"), [ref]$tokens, [ref]$errors) | Out-Null; if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }'
+
+      - name: Commit directly to main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add unlocker.ps1 .github/workflows/one-time-onlinefix-ini-fix.yml
+          git commit -m "fix: keep OnlineFix.ini writable"
+          git push origin HEAD:main
