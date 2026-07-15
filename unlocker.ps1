@@ -321,6 +321,136 @@ function Test-SafeDllName {
     return ($leaf -eq $Name.Trim() -and $leaf -match '^[A-Za-z0-9_.-]+\.dll$')
 }
 
+function Test-UwpMinecraftPath {
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) { return $false }
+    return ($Path -match '(?i)\\WindowsApps\\' -or $Path -match '(?i)Microsoft\.MinecraftUWP_')
+}
+
+function Get-BypassFileNames {
+    param([string]$Path)
+
+    $names = New-Object System.Collections.Generic.List[string]
+    foreach ($name in @('winmm.dll', 'OnlineFix64.dll', 'dlllist.txt', 'OnlineFix.ini', 'OpenFix.ini', 'OpenFix64.dll', 'OpenFix.log', 'winmm_orig.dll', 'FakeGDK.log', 'FullBypass.log', 'DirectHook.log', 'Monitor.log', 'VPMon.log', 'XStore.log')) {
+        if ($name -notin $names) { $names.Add($name) | Out-Null }
+    }
+
+    try {
+        $dllListPath = Join-Path $Path 'dlllist.txt'
+        if (Test-Path $dllListPath) {
+            $content = (Get-Content $dllListPath -ErrorAction SilentlyContinue | Where-Object { $_.Trim() }) | Select-Object -First 1
+            $candidate = if ($content) { $content.Trim() } else { $null }
+            if ($candidate -and (Test-SafeDllName -Name $candidate) -and $candidate -notin $names) {
+                $names.Add($candidate) | Out-Null
+            }
+        }
+    } catch { }
+
+    return @($names)
+}
+
+function Remove-BrokenBypassFiles {
+    param([Parameter(Mandatory=$true)][string]$ContentPath)
+
+    $result = [ordered]@{
+        Found = 0
+        Removed = 0
+        PendingReboot = 0
+        Failed = @()
+    }
+
+    foreach ($file in (Get-BypassFileNames -Path $ContentPath)) {
+        $filePath = Join-Path $ContentPath $file
+        if (-not (Test-Path -LiteralPath $filePath)) { continue }
+
+        $result.Found++
+        if (Remove-FileRobust -FilePath $filePath) {
+            $result.Removed++
+        } else {
+            if ($Script:LastRemovePendingReboot) {
+                $result.PendingReboot++
+            } else {
+                $result.Failed += $file
+            }
+        }
+    }
+
+    return [pscustomobject]$result
+}
+
+function Invoke-UwpUnsupportedCleanup {
+    param(
+        [Parameter(Mandatory=$true)][string]$ContentPath,
+        [switch]$Pause
+    )
+
+    Write-Err (T 'status_store')
+    Write-C ""
+    if ($Script:Lang -eq 'pt') {
+        Write-Warn "A versao Microsoft Store/UWP nao e compativel com este bypass."
+        Write-Warn "O erro 0xc0e90002 / 4551 acontece quando winmm.dll tenta carregar OnlineFix64.dll dentro de WindowsApps."
+        Write-Warn "Instale o Minecraft for Windows pelo Xbox App e execute a opcao 1 novamente."
+    } else {
+        Write-Warn "The Microsoft Store/UWP version is not compatible with this bypass."
+        Write-Warn "Error 0xc0e90002 / 4551 happens when winmm.dll tries to load OnlineFix64.dll inside WindowsApps."
+        Write-Warn "Install Minecraft for Windows from the Xbox App and run option 1 again."
+    }
+    Write-C ""
+    Write-Info "Xbox App: https://www.xbox.com/games/store/minecraft-for-windows/9NBLGGH2JHXJ"
+    Write-C ""
+
+    if (Test-MinecraftRunning) {
+        Stop-Minecraft
+    }
+
+    if ($Script:Lang -eq 'pt') {
+        Write-Info "Removendo arquivos de bypass quebrados da instalacao UWP, se existirem..."
+    } else {
+        Write-Info "Removing broken bypass files from the UWP install, if present..."
+    }
+
+    $cleanupTargets = New-Object System.Collections.Generic.List[string]
+    if ((Test-Path -LiteralPath $ContentPath) -and ($ContentPath -notin $cleanupTargets)) {
+        $cleanupTargets.Add($ContentPath) | Out-Null
+    }
+    try {
+        $parentPath = Split-Path -Parent $ContentPath
+        if ($parentPath -and (Test-UwpMinecraftPath -Path $parentPath) -and (Test-Path -LiteralPath $parentPath) -and ($parentPath -notin $cleanupTargets)) {
+            $cleanupTargets.Add($parentPath) | Out-Null
+        }
+    } catch { }
+
+    $totalFound = 0
+    $totalRemoved = 0
+    $totalPending = 0
+    $failedFiles = @()
+    foreach ($target in $cleanupTargets) {
+        $cleanup = Remove-BrokenBypassFiles -ContentPath $target
+        $totalFound += $cleanup.Found
+        $totalRemoved += $cleanup.Removed
+        $totalPending += $cleanup.PendingReboot
+        foreach ($failed in $cleanup.Failed) {
+            $failedFiles += (Join-Path $target $failed)
+        }
+    }
+
+    if ($totalFound -eq 0) {
+        if ($Script:Lang -eq 'pt') { Write-OK "Nenhum arquivo quebrado encontrado em WindowsApps." } else { Write-OK "No broken files found in WindowsApps." }
+    } else {
+        if ($Script:Lang -eq 'pt') {
+            Write-OK "Limpeza: encontrados=$totalFound, removidos=$totalRemoved, pendentes_reinicio=$totalPending"
+        } else {
+            Write-OK "Cleanup: found=$totalFound, removed=$totalRemoved, pending_reboot=$totalPending"
+        }
+        foreach ($failed in $failedFiles) {
+            Write-Warn "Failed to remove: $failed"
+        }
+    }
+
+    if ($Pause) { Wait-Enter }
+}
+
 function Initialize-SafeDllNames {
     <#
     .DESCRIPTION
@@ -4059,16 +4189,14 @@ function Install-Bypass {
         return
     }
     
-    Write-OK "$(T 'mc_found'): $mcPath"
-    Write-C ""
-    
-    # Check installation type
-    if ($mcPath -like "*WindowsApps*") {
-        Write-Err (T 'status_store')
-        Write-Warn "This version is NOT compatible. Uninstall and reinstall from Xbox App."
-        Wait-Enter
+    # Check installation type before writing any bypass files.
+    if (Test-UwpMinecraftPath -Path $mcPath) {
+        Invoke-UwpUnsupportedCleanup -ContentPath $mcPath -Pause
         return
     }
+
+    Write-OK "$(T 'mc_found'): $mcPath"
+    Write-C ""
     
     # Check if MC is running
     if (Test-MinecraftRunning) {
@@ -4806,16 +4934,7 @@ function Restore-Original {
     }
     
     # Current OnlineFix files + legacy OpenFix/bypass file names
-    $filesToRemove = @(
-        # Current OnlineFix (both original and safe name)
-        "winmm.dll", "OnlineFix64.dll", "dlllist.txt", "OnlineFix.ini",
-        # Legacy OpenFix (older bypass versions)
-        "OpenFix.ini", "OpenFix64.dll", "OpenFix.log",
-        # Legacy backup/logs
-        "winmm_orig.dll", "FakeGDK.log", "FullBypass.log",
-        "DirectHook.log", "Monitor.log", "VPMon.log", "XStore.log"
-    )
-    # Add custom-named DLL if found
+    $filesToRemove = Get-BypassFileNames -Path $mcPath
     if ($customDllName -and $customDllName -notin $filesToRemove) {
         $filesToRemove += $customDllName
     }
@@ -5009,6 +5128,11 @@ function Invoke-MinecraftLaunchValidation {
 function Open-Minecraft {
     $mcPath = Find-MinecraftPath
 
+    if ($mcPath -and (Test-UwpMinecraftPath -Path $mcPath)) {
+        Invoke-UwpUnsupportedCleanup -ContentPath $mcPath -Pause
+        return
+    }
+
     # Health check before opening - more robust with file protection
     if ($mcPath) {
         Initialize-SafeDllNames -ContentPath $mcPath
@@ -5113,7 +5237,7 @@ function Show-Status {
         Write-C "  $(T 'status_type'):  " -NoNewline
         if ($mcPath -like "*XboxGames*") {
             Write-C (T 'status_xbox') Green
-        } elseif ($mcPath -like "*WindowsApps*") {
+        } elseif (Test-UwpMinecraftPath -Path $mcPath) {
             Write-C (T 'status_store') Red
         } else {
             Write-C "Unknown" Yellow
@@ -5128,29 +5252,38 @@ function Show-Status {
     # Bypass status
     Write-C "  $(T 'status_bypass'):  " -NoNewline
     if ($mcPath) {
-        $verification = Verify-Installation -ContentPath $mcPath
-        $legacy = Test-LegacyBypass -ContentPath $mcPath
-        if ($verification.AllPresent) {
-            Write-C (T 'status_installed') Green
-        } elseif ($verification.Invalid.Count -gt 0 -or $verification.Missing.Count -lt 4) {
-            Write-C (T 'status_partial') Yellow
-            foreach ($f in $verification.Invalid) {
-                Write-C "    - invalid/corrupted: $f" Yellow
-            }
-            foreach ($f in ($verification.Missing | Where-Object { $verification.Invalid -notcontains $_ })) {
-                Write-C "    - missing: $f" Yellow
+        if (Test-UwpMinecraftPath -Path $mcPath) {
+            Write-C (T 'status_store') Red
+            if ($Script:Lang -eq "pt") {
+                Write-C "    -> Execute [1] Install para limpar arquivos quebrados e instale pelo Xbox App." Yellow
+            } else {
+                Write-C "    -> Run [1] Install to clean broken files, then install from the Xbox App." Yellow
             }
         } else {
-            Write-C (T 'status_not_installed') Red
-        }
-        # Show legacy bypass warning
-        if ($legacy.Count -gt 0) {
-            Write-C "" 
-            Write-C "  [!] Legacy bypass detected:" Yellow
-            foreach ($f in $legacy) {
-                Write-C "    - $f" Yellow
+            $verification = Verify-Installation -ContentPath $mcPath
+            $legacy = Test-LegacyBypass -ContentPath $mcPath
+            if ($verification.AllPresent) {
+                Write-C (T 'status_installed') Green
+            } elseif ($verification.Invalid.Count -gt 0 -or $verification.Missing.Count -lt 4) {
+                Write-C (T 'status_partial') Yellow
+                foreach ($f in $verification.Invalid) {
+                    Write-C "    - invalid/corrupted: $f" Yellow
+                }
+                foreach ($f in ($verification.Missing | Where-Object { $verification.Invalid -notcontains $_ })) {
+                    Write-C "    - missing: $f" Yellow
+                }
+            } else {
+                Write-C (T 'status_not_installed') Red
             }
-            Write-C "    -> Use [2] Restore to clean, then [1] Install" Yellow
+            # Show legacy bypass warning
+            if ($legacy.Count -gt 0) {
+                Write-C ""
+                Write-C "  [!] Legacy bypass detected:" Yellow
+                foreach ($f in $legacy) {
+                    Write-C "    - $f" Yellow
+                }
+                Write-C "    -> Use [2] Restore to clean, then [1] Install" Yellow
+            }
         }
     } else {
         Write-C "N/A" DarkGray
