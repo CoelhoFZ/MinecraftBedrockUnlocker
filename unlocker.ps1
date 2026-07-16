@@ -115,25 +115,29 @@ function Set-MbuRuntimeStateCompatibility {
         throw 'The expected installed-file protection block was not found.'
     }
 
-    $oldBackupLoop = @'
-    # Save encrypted copies of each file
-    $manifest = @()
-    foreach ($file in $Script:OnlineFixFiles) {
-        $diskName = Get-DiskName -SourceName $file.Name
-'@
-    $newBackupLoop = @'
-    # Save encrypted copies of static runtime files only. OnlineFix.ini is
-    # intentionally excluded so runtime state is never rolled back at logon.
-    $manifest = @()
-    foreach ($file in $Script:OnlineFixFiles) {
-        if ($file.Name -eq "OnlineFix.ini") { continue }
-        $diskName = Get-DiskName -SourceName $file.Name
-'@
-
-    if ($text.Contains($oldBackupLoop.TrimEnd())) {
-        $text = $text.Replace($oldBackupLoop.TrimEnd(), $newBackupLoop.TrimEnd())
-    } elseif ($text -notmatch 'runtime state is never rolled back at logon') {
-        throw 'The expected persistence backup block was not found.'
+    # Keep OnlineFix.ini writable and out of the encrypted persistence
+    # manifest, so first-run state is not rolled back at logon. The core has
+    # changed indentation over time, so use a narrow regex instead of an
+    # indentation-sensitive literal replacement.
+    if ($text -notmatch 'runtime state is never rolled back at logon') {
+        $backupPattern = '(?ms)(?<indent>^[ \t]*)# Save encrypted copies of each file\r?\n(?<indent2>[ \t]*)\$manifest = @\(\)\r?\n(?<indent3>[ \t]*)foreach \(\$file in \$Script:OnlineFixFiles\) \{\r?\n(?<indent4>[ \t]*)\$diskName = Get-DiskName -SourceName \$file\.Name'
+        $backupMatch = [regex]::Match($text, $backupPattern)
+        if (-not $backupMatch.Success) {
+            throw 'The expected persistence backup block was not found.'
+        }
+        $indent = $backupMatch.Groups['indent'].Value
+        $indent2 = $backupMatch.Groups['indent2'].Value
+        $indent3 = $backupMatch.Groups['indent3'].Value
+        $indent4 = $backupMatch.Groups['indent4'].Value
+        $replacement = @(
+            "$indent# Save encrypted copies of static runtime files only. OnlineFix.ini is"
+            "$indent# intentionally excluded so runtime state is never rolled back at logon."
+            "${indent2}`$manifest = @()"
+            "${indent3}foreach (`$file in `$Script:OnlineFixFiles) {"
+            "${indent4}    if (`$file.Name -eq `"OnlineFix.ini`") { continue }"
+            "${indent4}    `$diskName = Get-DiskName -SourceName `$file.Name"
+        ) -join "`n"
+        $text = $text.Substring(0, $backupMatch.Index) + $replacement + $text.Substring($backupMatch.Index + $backupMatch.Length)
     }
 
     return $text
@@ -148,6 +152,7 @@ function Set-MbuAutomaticDiagnostics {
 # Main Loop
 # ============================================================================
 '@
+    $mainMarker = $mainMarker.Replace("`r`n", "`n")
 
     $upgradeBlock = @'
 function Get-MbuOfficialMinecraftHealth {
@@ -498,17 +503,20 @@ function Start-MainLoop {
     $pt = ($Script:Lang -eq 'pt')
     $isUnlocked = ($state.Mode -eq 'restore')
 
-    $greetings = @{
-        'pt' = if ($isUnlocked) { "Olá, $greeting, o Minecraft ja esta desbloqueado! Se quiser, voce pode remover o desbloqueio clicando [1] e dando enter." } else { "Olá, $greeting! O Minecraft ainda não está desbloqueado. Para desbloquear, pressione [1] e aperte enter." }
-        'es' = if ($isUnlocked) { "Hola, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Buenos días' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Buenas tardes' } else { 'Buenas noches' }), Minecraft ya está desbloqueado! Si quieres, puedes eliminar el bypass pulsando [1] y dando a enter." } else { "¡Hola! Minecraft aún no está desbloqueado. Para desbloquearlo, presiona [1] y enter." }
-        'fr' = if ($isUnlocked) { "Bonjour, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Bonjour' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Bon après-midi' } else { 'Bonsoir' }), Minecraft est déjà débloqué ! Si tu veux, tu peux supprimer le bypass en appuyant sur [1] puis entrée." } else { "Bonjour ! Minecraft n'est pas encore débloqué. Pour le débloquer, appuyez sur [1] puis entrée." }
-        'zh' = if ($isUnlocked) { "你好，$(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { '早上好' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { '下午好' } else { '晚上好' }), Minecraft 已经解锁了！如果你想移除解锁，按 [1] 然后回车。" } else { "你好！Minecraft 尚未解锁。要解锁，按 [1] 然后回车。" }
-        'hi' = if ($isUnlocked) { "नमस्ते, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'सुप्रभात' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'शुभ दोपहर' } else { 'शुभ संध्या' }), Minecraft पहले से अनलॉक है! अगर आप बायपास हटाना चाहते हैं, तो [1] दबाएं और एंटर करें." } else { "नमस्ते! Minecraft अभी अनलॉक नहीं है। अनलॉक करने के लिए [1] दबाएं और एंटर करें।" }
-        'ar' = if ($isUnlocked) { "!مرحبا، $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'صباح الخير' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'مساء الخير' } else { 'مساء النور' })، تم فتح Minecraft بالفعل! إذا كنت تريد إزالة فتح الرصيد، اضغط [1] ثم اضغط Enter." } else { "مرحباً! لم يتم فتح Minecraft بعد. للفتح، اضغط [1] ثم Enter." }
-        'ru' = if ($isUnlocked) { "Привет, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Доброе утро' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Добрый день' } else { 'Добрый вечер' }), Minecraft уже разблокирован! Если хотите удалить обход, нажмите [1] и Enter." } else { "Привет! Minecraft еще não разблокирован. Para разблокировки нажмите [1] e Enter." }
-        'en' = if ($isUnlocked) { "Hello, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Good morning' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Good afternoon' } else { 'Good evening' }), Minecraft is already unlocked! If you want, you can remove the bypass by pressing [1] and enter." } else { "Hello! Minecraft is not unlocked yet. To unlock it, press [1] and enter." }
+    $msg = $null
+    if ($pt) {
+        if ($isUnlocked) {
+            $msg = "Ola, $greeting, o Minecraft ja esta desbloqueado! Para remover o desbloqueio, pressione [1] e aperte Enter."
+        } else {
+            $msg = "Ola, $greeting! O Minecraft ainda nao esta desbloqueado. Para desbloquear, pressione [1] e aperte Enter."
+        }
+    } else {
+        if ($isUnlocked) {
+            $msg = "Hello, $greeting. Minecraft is already unlocked! To remove the bypass, press [1] and Enter."
+        } else {
+            $msg = "Hello, $greeting! Minecraft is not unlocked yet. To unlock it, press [1] and Enter."
+        }
     }
-    $msg = if ($greetings.ContainsKey($Script:Lang)) { $greetings[$Script:Lang] } else { $greetings['en'] }
     Write-C "  $msg" Green
 
     while ($true) {

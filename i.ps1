@@ -381,7 +381,10 @@ $Script:Msg = @{
 # ── Download and execute unlocker.ps1 ──
 $lastError = $null
 $content = $null
-$urls = @($Script:RawUrl, $Script:ReleaseUrl)
+# The raw GitHub file is the canonical source. Do not fall back to a release
+# asset that may not exist, because that would hide the real bootstrap error
+# behind a misleading HTTP 404.
+$urls = @($Script:RawUrl)
 
 Write-Host ($Script:Msg[$Script:Lang].downloading)
 
