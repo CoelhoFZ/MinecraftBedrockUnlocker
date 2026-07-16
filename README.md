@@ -81,27 +81,24 @@ The tool:
 
 ## Interactive Menu
 
-```
-  ============================================================
-   __  __ _                            __ _   
-  |  \/  (_)_ __   ___  ___ _ __ __ _ / _| |_ 
-  | |\/| | | '_ \ / _ \/ __| '__/ _' | |_| __|
-  | |  | | | | | |  __/ (__| | | (_| |  _| |_ 
-  |_|  |_|_|_| |_|\___|\___|\_  \__,_|_|  \__|
-     ____           _                 _        
-    | __ )  ___  __| |_ __ ___   ___| | __    
-    |  _ \ / _ \/ _' | '__/ _ \ / __| |/ /    
-    | |_) |  __/ (_| | | | (_) | (__|   <     
-    |____/ \___|\__,_|_|  \___/ \___|_|\_\    
-                     Unlocker by CoelhoFZ      
-  ============================================================
+The menu is dynamic based on installation state:
 
+**Not installed:**
+```
 [1] Install Mod (Unlock Game)
-[2] Restore Original (Back to Trial)
-[3] Open Minecraft
-[4] Install Minecraft (Xbox App)
-[5] Check Status
-[6] System Diagnostics
+[0] Exit
+```
+
+**Installed (can restore):**
+```
+[1] Restore Original (Back to Trial)
+[0] Exit
+```
+
+**Incomplete installation:**
+```
+[1] Repair/reinstall automatically
+[2] Restore Original and remove incomplete files
 [0] Exit
 ```
 
@@ -152,7 +149,7 @@ Third-party runtime components are documented separately in [THIRD_PARTY_NOTICES
 - Installs the mod files inside `C:\XboxGames\Minecraft for Windows\Content`.
 - Adds scoped antivirus exclusions for the Minecraft content folder and installed files.
 - Creates the scheduled task `MCContentBridge` and backup folder `%LOCALAPPDATA%\MCBridge` so the files can be restored after reboot.
-- Option `[2] Restore Original` removes the installed files, scheduled task and backup folder.
+- Option `[1] Restore Original` removes the installed files, scheduled task and backup folder.
 
 ## Compatibility
 

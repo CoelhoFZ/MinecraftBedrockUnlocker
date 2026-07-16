@@ -79,27 +79,24 @@ A ferramenta:
 
 ## Menu Interativo
 
-```
-  ============================================================
-   __  __ _                            __ _   
-  |  \/  (_)_ __   ___  ___ _ __ __ _ / _| |_ 
-  | |\/| | | '_ \ / _ \/ __| '__/ _' | |_| __|
-  | |  | | | | | |  __/ (__| | | (_| |  _| |_ 
-  |_|  |_|_|_| |_|\___|\___|\_  \__,_|_|  \__|
-     ____           _                 _        
-    | __ )  ___  __| |_ __ ___   ___| | __    
-    |  _ \ / _ \/ _' | '__/ _ \ / __| |/ /    
-    | |_) |  __/ (_| | | | (_) | (__|   <     
-    |____/ \___|\__,_|_|  \___/ \___|_|\_\    
-                     Unlocker by CoelhoFZ      
-  ============================================================
+O menu é dinâmico baseado no estado da instalação:
 
+**Não instalado:**
+```
 [1] Instalar Mod (Desbloquear Jogo)
-[2] Restaurar Original (Voltar ao Trial)
-[3] Abrir Minecraft
-[4] Instalar Minecraft (Xbox App)
-[5] Verificar Status
-[6] Diagnóstico do Sistema
+[0] Sair
+```
+
+**Instalado (pode restaurar):**
+```
+[1] Restaurar Original (Voltar ao Trial)
+[0] Sair
+```
+
+**Instalação incompleta:**
+```
+[1] Reparar/reinstalar automaticamente
+[2] Restaurar Original e remover arquivos incompletos
 [0] Sair
 ```
 
@@ -171,7 +168,7 @@ Os componentes third-party de runtime são documentados separadamente em [THIRD_
 - Instala os arquivos do mod em `C:\XboxGames\Minecraft for Windows\Content`.
 - Adiciona exclusões de antivírus apenas para a pasta Content do Minecraft e os arquivos instalados.
 - Cria a tarefa agendada `MCContentBridge` e a pasta de backup `%LOCALAPPDATA%\MCBridge` para restaurar os arquivos após reinicialização.
-- A opção `[2] Restaurar Original` remove os arquivos instalados, a tarefa agendada e a pasta de backup.
+- A opção `[1] Restaurar Original` remove os arquivos instalados, a tarefa agendada e a pasta de backup.
 
 ## Compatibilidade
 

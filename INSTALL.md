@@ -33,7 +33,7 @@ Both short bootstraps download the latest release assets with cache-busting, rej
 
 ### Step 3: Choose Option [1]
 
-The script will show an interactive menu. Select **[1] Install Mod**.
+The script will show an interactive menu. If Minecraft is not installed, select **[1] Install Mod**.
 
 ### Step 4: Play!
 
@@ -151,7 +151,7 @@ The game must be installed via **Xbox App** in `C:\XboxGames\`:
 To remove the bypass and restore the game to Trial mode:
 
 1. Run the script again
-2. Choose option **[2] Restore Original**
+2. Choose option **[1] Restore Original**
 3. Done! Game is back to normal
 
 ---

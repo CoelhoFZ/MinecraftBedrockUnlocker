@@ -396,7 +396,7 @@ function Show-MbuDynamicMenu {
 
     switch ($state.Mode) {
         'restore' {
-            Write-C $(if ($pt) { '  [2] Restaurar original (voltar para Trial)' } else { '  [2] Restore original (return to Trial)' }) Green
+            Write-C $(if ($pt) { '  [1] Restaurar original (voltar para Trial)' } else { '  [1] Restore original (return to Trial)' }) Green
         }
         'partial' {
             Write-Warn $(if ($pt) { 'Uma instalacao incompleta foi detectada.' } else { 'An incomplete installation was detected.' })
@@ -496,25 +496,34 @@ function Start-MainLoop {
 
         switch ($choice.Trim()) {
             '1' {
-                if ($menuState.Mode -notin @('install', 'partial')) {
-                    Write-Warn $(if ($Script:Lang -eq 'pt') { 'A instalacao ja esta completa. Use a opcao 2 para restaurar o original.' } else { 'The installation is already complete. Use option 2 to restore the original.' })
-                    continue
-                }
-
-                try {
-                    $health = Show-MbuOfficialMinecraftHealth -AttemptRepair
-                    if (-not $health.Healthy) {
-                        Write-Warn $(if ($Script:Lang -eq 'pt') { 'A instalacao foi interrompida para evitar alterar um Minecraft incompleto ou corrompido.' } else { 'Installation was stopped to avoid modifying an incomplete or corrupted Minecraft installation.' })
-                        Wait-Enter
-                        continue
+                if ($menuState.Mode -eq 'restore') {
+                    try {
+                        Restore-Original
+                        Show-MbuRestoreResult
+                    } catch {
+                        Write-C ''
+                        Write-Err "$($_.Exception.Message)"
+                        Write-C ''
+                        Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })"
                     }
-                    Install-Bypass
-                    Show-MbuPostInstallResult
-                } catch {
-                    Write-C ''
-                    Write-Err "$($_.Exception.Message)"
-                    Write-C ''
-                    Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })"
+                } elseif ($menuState.Mode -in @('install', 'partial')) {
+                    try {
+                        $health = Show-MbuOfficialMinecraftHealth -AttemptRepair
+                        if (-not $health.Healthy) {
+                            Write-Warn $(if ($Script:Lang -eq 'pt') { 'A instalacao foi interrompida para evitar alterar um Minecraft incompleto ou corrompido.' } else { 'Installation was stopped to avoid modifying an incomplete or corrupted Minecraft installation.' })
+                            Wait-Enter
+                            continue
+                        }
+                        Install-Bypass
+                        Show-MbuPostInstallResult
+                    } catch {
+                        Write-C ''
+                        Write-Err "$($_.Exception.Message)"
+                        Write-C ''
+                        Read-Host "  $(if ($Script:Lang -eq 'pt') { 'Pressione ENTER para continuar' } else { 'Press ENTER to continue' })"
+                    }
+                } else {
+                    Write-Warn $(if ($Script:Lang -eq 'pt') { 'Nenhuma acao disponivel para a opcao 1.' } else { 'No action available for option 1.' })
                 }
             }
             '2' {
