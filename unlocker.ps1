@@ -147,6 +147,12 @@ function Set-MbuAutomaticDiagnostics {
     param([Parameter(Mandatory = $true)][string]$Content)
 
     $text = $Content.Replace("`r`n", "`n")
+
+    # Some hosts (including redirected/non-interactive PowerShell) throw from
+    # Clear-Host because the underlying console does not support cursor moves.
+    # Guard the exact core calls so the installer can continue and show output.
+    $text = [regex]::Replace($text, '(?m)^(\s*)Clear-Host\s*$', '$1try { Clear-Host -ErrorAction Stop } catch { }')
+
     $mainMarker = @'
 # ============================================================================
 # Main Loop
