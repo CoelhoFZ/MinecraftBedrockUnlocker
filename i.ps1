@@ -40,6 +40,53 @@ $Headers = @{
     'User-Agent'    = 'MinecraftBedrockUnlockerBootstrap/3.3.3'
 }
 
+# ── Error report endpoint (Cloudflare Worker proxy to Discord webhook) ──
+# The real webhook URL lives inside the Worker secret; the script never sees it.
+$Script:ReportEndpoint = 'https://mbu-errors.<your-worker-subdomain>.workers.dev/report'
+
+function Send-ErrorReport {
+    param([Parameter(Mandatory=$false)][object]$LastError, [Parameter(Mandatory=$false)][string]$Language)
+
+    if ([string]::IsNullOrWhiteSpace($Script:ReportEndpoint)) { return }
+    if ($Script:ReportEndpoint -like '*<your-worker-subdomain>*') { return }
+
+    try {
+        $errText = if ($LastError) { [string]$LastError.Exception.Message } else { '[no error captured]' }
+    } catch { $errText = '[error capture failed]' }
+
+    # Sanitize paths and PII from the error text before sending.
+    try {
+        $userProfile = [Environment]::GetEnvironmentVariable('USERPROFILE')
+        if (-not [string]::IsNullOrWhiteSpace($userProfile)) { $errText = $errText.Replace($userProfile, '~') }
+        $userName = [Environment]::GetEnvironmentVariable('USERNAME')
+        if (-not [string]::IsNullOrWhiteSpace($userName)) { $errText = $errText.Replace($userName, '<user>') }
+        $homeDir = [Environment]::GetEnvironmentVariable('HOME')
+        if (-not [string]::IsNullOrWhiteSpace($homeDir)) { $errText = $errText.Replace($homeDir, '~') }
+    } catch { }
+
+    # Hard length cap so a forged error cannot flood the channel.
+    if ($errText.Length -gt 600) { $errText = $errText.Substring(0, 600) + '...' }
+
+    $hostName = 'unknown'; try { $hostName = [Environment]::MachineName } catch { }
+    $osVer = 'unknown'; try { $osVer = [Environment]::OSVersion.VersionString } catch { }
+    $ts = ''; try { $ts = (Get-Date -Format 'yyyy-MM-ddTHH:mm:ssZ') } catch { }
+
+    $payload = @{
+        version   = '3.3.3'
+        language  = $Language
+        host      = $hostName
+        os        = $osVer
+        errorText = $errText
+        timestamp = $ts
+    } | ConvertTo-Json -Compress -Depth 3
+
+    try {
+        Invoke-RestMethod -UseBasicParsing -Method Post -Uri $Script:ReportEndpoint `
+            -ContentType 'application/json; charset=utf-8' -Body $payload `
+            -TimeoutSec 8 -ErrorAction Stop | Out-Null
+    } catch { }
+}
+
 $Script:RepoOwner = 'CoelhoFZ'
 $Script:RepoName  = 'MinecraftBedrockUnlocker'
 
@@ -124,6 +171,9 @@ $Script:Msg = @{
         smartFix3    = 'OR: Right-click PowerShell -> Run as Administrator, then paste the install command.'
         generic      = 'Check your internet connection and try again.'
         generic2     = 'If the problem persists, the GitHub servers may be unavailable.'
+        reportAsk    = 'We hit an error. Send an anonymous, safe error report so we can fix it? [Y/N]'
+        reportSent   = 'Report sent. Thank you!'
+        reportSkip   = 'Report not sent.'
         pressEnter   = 'Press ENTER to exit'
     }
     zh = @{
@@ -139,6 +189,9 @@ $Script:Msg = @{
         smartFix3    = '或者:右键单击 PowerShell -> 以管理员身份运行,然后粘贴安装命令。'
         generic      = '检查您的网络连接并重试。'
         generic2     = '如果问题仍然存在,GitHub 服务器可能不可用。'
+        reportAsk    = '遇到错误。是否发送匿名安全错误报告以帮助我们修复? [Y/N]'
+        reportSent   = '报告已发送。谢谢!'
+        reportSkip   = '报告未发送。'
         pressEnter   = '按回车退出'
     }
     hi = @{
@@ -154,6 +207,9 @@ $Script:Msg = @{
         smartFix3    = 'या: PowerShell पर राइट-क्लिक करें -> व्यवस्थापक के रूप में चलाएँ, फिर इंस्टॉल कमांड पेस्ट करें।'
         generic      = 'अपना इंटरनेट कनेक्शन जाँचें और पुनः प्रयास करें।'
         generic2     = 'यदि समस्या बनी रहती है, तो GitHub सर्वर अनुपलब्ध हो सकते हैं।'
+        reportAsk    = 'एक त्रुटि हुई। इसे ठीक करने में मदद के लिए अनाम सुरक्षित रिपोर्ट भेजें? [Y/N]'
+        reportSent   = 'रिपोर्ट भेज दी गई। धन्यवाद!'
+        reportSkip   = 'रिपोर्ट नहीं भेजी गई।'
         pressEnter   = 'बाहर निकलने के लिए एंटर दबाएँ'
     }
     es = @{
@@ -169,6 +225,9 @@ $Script:Msg = @{
         smartFix3    = 'O: Haga clic derecho en PowerShell -> Ejecutar como administrador, luego pegue el comando de instalación.'
         generic      = 'Compruebe su conexión a internet e inténtelo de nuevo.'
         generic2     = 'Si el problema persiste, los servidores de GitHub pueden no estar disponibles.'
+        reportAsk    = 'Ocurrió un error. ¿Enviar un informe de error anónimo y seguro para ayudarnos a solucionarlo? [S/N]'
+        reportSent   = '¡Informe enviado. Gracias!'
+        reportSkip   = 'Informe no enviado.'
         pressEnter   = 'Pulse ENTER para salir'
     }
     fr = @{
@@ -184,6 +243,9 @@ $Script:Msg = @{
         smartFix3    = 'OU : Clic droit sur PowerShell -> Exécuter en tant qu''administrateur, puis collez la commande d''installation.'
         generic      = 'Vérifiez votre connexion Internet et réessayez.'
         generic2     = 'Si le problème persiste, les serveurs GitHub sont peut-être indisponibles.'
+        reportAsk    = 'Une erreur est survenue. Envoyer un rapport d''erreur anonyme et sécurisé pour nous aider à corriger ? [O/N]'
+        reportSent   = 'Rapport envoyé. Merci !'
+        reportSkip   = 'Rapport non envoyé.'
         pressEnter   = 'Appuyez sur ENTRÉE pour quitter'
     }
     ar = @{
@@ -199,6 +261,9 @@ $Script:Msg = @{
         smartFix3    = 'أو: انقر بزر الماوس الأيمن على PowerShell -> تشغيل كمسؤول، ثم الصق أمر التثبيت.'
         generic      = 'تحقق من اتصالك بالإنترنت وحاول مرة أخرى.'
         generic2     = 'إذا استمرت المشكلة، فقد تكون خوادم GitHub غير متاحة.'
+        reportAsk    = 'حدث خطأ. إرسال تقرير خطأ مجهول المصدر وآمن لمساعدتنا في الإصلاح؟ [Y/N]'
+        reportSent   = 'تم إرسال التقرير. شكراً لك!'
+        reportSkip   = 'لم يتم إرسال التقرير.'
         pressEnter   = 'اضغط مفتاح الإدخال للخروج'
     }
     ru = @{
@@ -214,6 +279,9 @@ $Script:Msg = @{
         smartFix3    = 'ИЛИ: Щёлкните правой кнопкой мыши PowerShell -> Запуск от имени администратора, затем вставьте команду установки.'
         generic      = 'Проверьте подключение к Интернету и повторите попытку.'
         generic2     = 'Если проблема не исчезнет, серверы GitHub могут быть недоступны.'
+        reportAsk    = 'Произошла ошибка. Отправить анонимный безопасный отчёт об ошибке, чтобы помочь нам исправить? [Y/N]'
+        reportSent   = 'Отчёт отправлен. Спасибо!'
+        reportSkip   = 'Отчёт не отправлен.'
         pressEnter   = 'Нажмите ВВОД для выхода'
     }
     pt = @{
@@ -229,6 +297,9 @@ $Script:Msg = @{
         smartFix3    = 'OU: Clique com o botão direito no PowerShell -> Executar como administrador, depois cole o comando de instalação.'
         generic      = 'Verifique sua conexão com a internet e tente novamente.'
         generic2     = 'Se o problema persistir, os servidores do GitHub podem estar indisponíveis.'
+        reportAsk    = 'Encontramos um erro. Enviar um relatório anônimo e seguro para nos ajudar a corrigir? [S/N]'
+        reportSent   = 'Relatório enviado. Obrigado!'
+        reportSkip   = 'Relatório não enviado.'
         pressEnter   = 'Pressione ENTER para sair'
     }
 }
@@ -311,6 +382,20 @@ if ($smartScreenHit) {
     Write-Host $Script:Msg[$Script:Lang].generic -ForegroundColor Yellow
     Write-Host $Script:Msg[$Script:Lang].generic2 -ForegroundColor Yellow
 }
+
+# ── Optional anonymous error report ──
+try {
+    Write-Host ''
+    $answer = Read-Host $Script:Msg[$Script:Lang].reportAsk
+    if ($answer -eq $Script:Msg[$Script:Lang].reportAsk -or [string]::IsNullOrWhiteSpace($answer)) { $answer = 'N' }
+    $yes = @('Y','S','O','Д').Contains($answer.Trim().ToUpperInvariant())
+    if ($yes) {
+        Send-ErrorReport -LastError $lastError -Language $Script:Lang
+        Write-Host $Script:Msg[$Script:Lang].reportSent -ForegroundColor Green
+    } else {
+        Write-Host $Script:Msg[$Script:Lang].reportSkip -ForegroundColor Gray
+    }
+} catch { }
 
 Write-Host ''
 Read-Host $Script:Msg[$Script:Lang].pressEnter
