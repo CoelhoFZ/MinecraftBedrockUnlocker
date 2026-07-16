@@ -499,10 +499,10 @@ function Start-MainLoop {
 
     if ($state.Mode -eq 'restore') {
         if ($pt) {
-            Write-OK "$greeting, o Minecraft ja esta desbloqueado! Se quiser, voce pode remover o desbloqueio clicando [1] e dando enter."
+            Write-C "  Olá, $greeting, o Minecraft ja esta desbloqueado! Se quiser, voce pode remover o desbloqueio clicando [1] e dando enter." Green
         } else {
             $enGreeting = if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Good morning' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Good afternoon' } else { 'Good evening' }
-            Write-OK "$enGreeting, Minecraft is already unlocked! If you want, you can remove the bypass by pressing [1] and enter."
+            Write-C "  Hello, $enGreeting, Minecraft is already unlocked! If you want, you can remove the bypass by pressing [1] and enter." Green
         }
     } else {
         Write-OK (T 'admin_ok')
