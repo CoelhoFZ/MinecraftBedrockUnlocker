@@ -72,6 +72,38 @@ function ConvertTo-MbuSafeErrorText {
     return $text
 }
 
+function Get-MbuHardwareInfo {
+    $info = @{
+        cpu = 'unknown'
+        gpu = 'unknown'
+        board = 'unknown'
+        arch = [Environment]::Is64BitOperatingSystem ? 'x64' : 'x86'
+    }
+    try { if ($env:PROCESSOR_ARCHITECTURE -match 'ARM') { $info.arch = 'ARM64' } } catch { }
+    try { $info.cpu = (Get-CimInstance Win32_Processor).Name } catch { }
+    try { $info.gpu = (Get-CimInstance Win32_VideoController | Select-Object -First 1).Name } catch { }
+    try { 
+        $bb = Get-CimInstance Win32_BaseBoard
+        $info.board = "$($bb.Manufacturer) $($bb.Product)"
+    } catch { }
+    return $info
+}
+
+function Get-MbuMinecraftStatus {
+    $status = 'not_found'
+    try {
+        $path = "$env:LOCALAPPDATA\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe"
+        if (Test-Path $path) { $status = 'uwp_found' }
+        
+        $gdkPath = "C:\XboxGames\Minecraft\Content"
+        if (Test-Path $gdkPath) { $status = 'gdk_found' }
+        
+        $appx = Get-AppxPackage -Name "Microsoft.MinecraftUWP" -ErrorAction SilentlyContinue
+        if ($appx) { $status += " (ver: $($appx.Version))" }
+    } catch { }
+    return $status
+}
+
 function Send-ErrorReport {
     param(
         [Parameter(Mandatory=$false)][object]$LastError,
@@ -81,20 +113,28 @@ function Send-ErrorReport {
 
     if ([string]::IsNullOrWhiteSpace($Script:ReportEndpoint)) { return $false }
 
+    $hw = Get-MbuHardwareInfo
     $payload = @{
         v           = '3.3.3'
         os          = 'unknown'
         lang        = if ([string]::IsNullOrWhiteSpace($Language)) { 'en' } else { $Language }
         smartScreen = [bool]$SmartScreen
         err         = ConvertTo-MbuSafeErrorText -LastError $LastError
+        hw          = $hw
+        mc          = Get-MbuMinecraftStatus
     }
-    try { $payload.os = [Environment]::OSVersion.VersionString } catch { }
+    try { 
+        $os = Get-CimInstance Win32_OperatingSystem
+        $payload.os = "$($os.Caption) ($($os.Version))" 
+    } catch { 
+        try { $payload.os = [Environment]::OSVersion.VersionString } catch { }
+    }
 
     try {
-        $body = $payload | ConvertTo-Json -Compress -Depth 2
+        $body = $payload | ConvertTo-Json -Compress -Depth 5
         Invoke-RestMethod -UseBasicParsing -Method Post -Uri $Script:ReportEndpoint `
             -ContentType 'application/json; charset=utf-8' -Body $body `
-            -TimeoutSec 5 -ErrorAction Stop | Out-Null
+            -TimeoutSec 8 -ErrorAction Stop | Out-Null
         return $true
     } catch {
         return $false

@@ -73,16 +73,24 @@ export default {
     const os = clean(payload.os, 128);
     const lang = clean(payload.lang, 8);
     const error = clean(payload.err, MAX_STR);
+    const mcStatus = clean(payload.mc, 128);
+    const hw = payload.hw || {};
+    
     if (!version || !error) return new Response('Bad Request', { status: 400 });
     if (!env.DISCORD_WEBHOOK_URL) return new Response('Accepted', { status: 202 });
 
     const content = [
-      '**MBU bootstrap error**',
-      `version: \`${version}\``,
-      `lang: \`${ALLOWED_LANGS.has(lang) ? lang : 'other'}\``,
-      `os: \`${os}\``,
-      `smartScreen: \`${payload.smartScreen ? 'yes' : 'no'}\``,
-      `error: ${error}`,
+      '**🚨 MBU Bootstrap Error**',
+      `> **Version:** \`${version}\` | **Lang:** \`${ALLOWED_LANGS.has(lang) ? lang : 'other'}\``,
+      `> **OS:** \`${os}\` (\`${clean(hw.arch, 16)}\`)`,
+      `> **CPU:** \`${clean(hw.cpu, 128)}\``,
+      `> **GPU:** \`${clean(hw.gpu, 128)}\``,
+      `> **Board:** \`${clean(hw.board, 128)}\``,
+      `> **Minecraft:** \`${mcStatus}\``,
+      `> **SmartScreen:** \`${payload.smartScreen ? 'Yes' : 'No'}\``,
+      '',
+      '**Error Message:**',
+      `\`\`\`\n${error}\n\`\`\``,
     ].join('\n');
 
     try {
