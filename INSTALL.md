@@ -17,16 +17,16 @@
 
 Open **PowerShell as Administrator** and paste one of these short commands:
 
-**Option 1 - download and start the EXE:**
-
-```powershell
-irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
-```
-
-**Option 2 - run the PowerShell installer directly:**
+**Option 1 - run the PowerShell installer directly:**
 
 ```powershell
 irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
+```
+
+**Option 2 - download and start the EXE:**
+
+```powershell
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/install.ps1 | iex
 ```
 
 Both short bootstraps download the latest release assets with cache-busting, reject empty or HTML responses and verify SHA256 before running anything.

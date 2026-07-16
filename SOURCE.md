@@ -4,14 +4,23 @@ This repository is the installer and launcher for MinecraftBedrockUnlocker.
 
 The source code authored in this repository remains licensed under GPLv3. The runtime DLLs that perform the actual Minecraft Bedrock unlock are closed-source Online-Fix components. This repository does not have access to the source code for those DLLs.
 
+## Prerequisites
+
+To build `MinecraftBedrockUnlocker.exe` from source you need:
+
+- **Mono C# compiler** (`mcs`) - on Ubuntu/Debian: `sudo apt install mono-complete`
+- **MinGW windres** (`windres`) - on Ubuntu/Debian: `sudo apt install mingw-w64`
+- **Bash** shell (Linux/macOS/WSL)
+
 ## GPLv3 source in this repository
 
 | Component | Source path | Notes |
 |---|---|---|
-| Short EXE bootstrap | `e.ps1` | Downloads, verifies and starts the latest EXE release asset. |
 | Short installer bootstrap | `i.ps1` | Downloads, verifies and runs the latest `install.ps1` release asset. |
 | PowerShell bootstrap | `install.ps1` | Downloads and verifies the full installer payload. |
 | PowerShell installer | `unlocker.ps1` | Detects Minecraft, installs files, validates hashes, repairs and restores. |
+| Diagnostic script | `diagnose.ps1` | Non-destructive system checks for troubleshooting. |
+| Legacy bootstrap | `bootstrap-v3.2.0.ps1` | v3.2.0 bootstrap for backwards compatibility. |
 | Windows EXE wrapper | `build/Launcher.cs` | Small C# launcher that embeds and runs `install.ps1`. |
 | EXE build script | `build/build.sh` | Builds `dist/MinecraftBedrockUnlocker.exe` from `build/Launcher.cs` and embedded `install.ps1`. |
 | EXE manifest | `build/app.manifest` | Windows application manifest used by the wrapper build. |

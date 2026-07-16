@@ -39,7 +39,7 @@ A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only
 Open **PowerShell** (search for it in the Start Menu) and paste:
 
 ```powershell
-irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
 
 Downloads and runs the latest installer from GitHub. Always up-to-date, with retry, cache-bust, and TLS 1.2. **Runs in memory — SmartScreen will NOT block it.**
@@ -126,7 +126,7 @@ The tool:
 | Game shows "Unlock Full Version" | Antivirus deleted the files — run the bootstrap again |
 | "Minecraft not found" | Install via **Xbox App** (NOT Microsoft Store) to `C:\XboxGames` |
 | SmartScreen / "reputação binária mal-intencionada" | No longer an issue — the installer is now 100% PowerShell (no EXE) |
-| `'ï»¿$ErrorActionPreference' is not recognized` | Update to v3.2.1+: run `irm ...raw/main/e.ps1 | iex` |
+| `'ï»¿$ErrorActionPreference' is not recognized` | Update to v3.3.3+: run `irm ...raw/main/i.ps1 | iex` |
 | Game crashes on startup | Run Diagnostics [6] and check Gaming Services |
 | "Running scripts is disabled" | `Set-ExecutionPolicy Bypass -Scope Process -Force` |
 | "Access Denied" | Open PowerShell as **Administrator** (Win + X → Terminal Admin) |

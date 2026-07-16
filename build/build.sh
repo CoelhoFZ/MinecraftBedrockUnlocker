@@ -9,6 +9,11 @@ OUTPUT_FILE="${DIST_DIR}/MinecraftBedrockUnlocker.exe"
 RESOURCE_FILE="${BUILD_DIR}/launcher.res"
 RC_FILE="${BUILD_DIR}/launcher.rc"
 
+# Read version from single source of truth
+VERSION="$(cat "${REPO_DIR}/VERSION" | tr -d '[:space:]')"
+VERSION_4="${VERSION}.0"
+echo "Building version ${VERSION} (${VERSION_4})..."
+
 mkdir -p "${DIST_DIR}" "${BUILD_DIR}"
 
 # Download latest DLLs from GitHub release for embedding (skip if already present)
@@ -17,10 +22,13 @@ if [ ! -f "${DIST_DIR}/OnlineFix64.dll" ]; then
   gh release download --repo CoelhoFZ/MinecraftBedrockUnlocker --pattern '*.dll' --pattern 'dlllist.txt' --pattern 'OnlineFix.ini' --dir "${DIST_DIR}" 2>/dev/null || echo "  -> Could not auto-fetch DLLs. Place them in dist/ manually."
 fi
 
-trap 'rm -f "${RESOURCE_FILE}" "${RC_FILE}"' EXIT
+# Substitute version into app.manifest
+sed "s|3\.3\.3\.0|${VERSION_4}|g" "${REPO_DIR}/build/app.manifest" > "${BUILD_DIR}/app.manifest"
+
+trap 'rm -f "${RESOURCE_FILE}" "${RC_FILE}" "${BUILD_DIR}/app.manifest"' EXIT
 
 cat > "${RC_FILE}" <<EOF
-1 RT_MANIFEST "${REPO_DIR}/build/app.manifest"
+1 RT_MANIFEST "${BUILD_DIR}/app.manifest"
 1 ICON "${REPO_DIR}/icon.ico"
 EOF
 

@@ -3,7 +3,7 @@
   Minecraft Bedrock Unlocker v3.2.0 - Unified bootstrap (PowerShell) with Multi7 language support (en, zh, hi, es, fr, ar, ru) based on OS culture (Get-Culture).
 
 .DESCRIPTION
-  v3.2.0 consolidates install.ps1 + e.ps1 + i.ps1 into a single bootstrap.
+  v3.2.0 consolidates install.ps1 + i.ps1 into a single bootstrap.
   Why this exists: v3.1.11 on GitHub release ships only MinecraftBedrockUnlocker.exe
   as a release asset. The PowerShell installers (install.ps1, unlocker.ps1) reference
   multiple release-hosted assets (winmm.dll, OnlineFix64.dll, dlllist.txt, etc.) that
@@ -36,7 +36,7 @@
   .\bootstrap-v3.2.0.ps1 -SkipExe
 
 .NOTES
-  Version:        3.2.1
+  Version:        3.3.3
   Author: CoelhoFZ + Gustavo (CoelhoFZ Community)
   License: GPLv3 (this script only; bundled Online-Fix binaries retain their own license).
 #>
@@ -56,7 +56,7 @@ Set-StrictMode -Version 2.0
 # Constants
 # ---------------------------------------------------------------------------
 
-$Script:Version = '3.2.1'
+$Script:Version = '3.3.3'
 $Script:RepoOwner = 'CoelhoFZ'
 $Script:RepoName  = 'MinecraftBedrockUnlocker'
 $Script:ExeName   = 'MinecraftBedrockUnlocker.exe'
@@ -94,7 +94,7 @@ function T {
     $lang = Detect-Lang
     $table = @{
         en = @{
-            'banner' = 'Minecraft Bedrock Unlocker - bootstrap v3.2.1'
+            'banner' = 'Minecraft Bedrock Unlocker - bootstrap v3.3.3'
             'detecting_os' = 'Detecting platform...'
             'os_unsupported' = 'This bootstrap requires Windows.'
             'ps_unsupported' = 'PowerShell 5.1 or newer is required (you have {0}).'
@@ -122,7 +122,7 @@ function T {
             'press_enter_pt' = 'Pressione ENTER para sair'
         }
         zh = @{
-            'banner' = 'Minecraft 基岩版解锁器 - 引导程序 v3.2.1'
+            'banner' = 'Minecraft 基岩版解锁器 - 引导程序 v3.3.3'
             'detecting_os' = '正在检测平台...'
             'os_unsupported' = '此引导程序仅支持 Windows。'
             'ps_unsupported' = '需要 PowerShell 5.1 或更高版本（您当前为 {0}）。'
@@ -150,7 +150,7 @@ function T {
             'press_enter_pt' = '按回车退出'
         }
         hi = @{
-            'banner' = 'Minecraft Bedrock अनलॉकर - बूटस्ट्रैप v3.2.1'
+            'banner' = 'Minecraft Bedrock अनलॉकर - बूटस्ट्रैप v3.3.3'
             'detecting_os' = 'प्लेटफ़ॉर्म का पता लगा रहा है...'
             'os_unsupported' = 'यह बूटस्ट्रैप केवल Windows पर काम करता है।'
             'ps_unsupported' = 'PowerShell 5.1 या नया संस्करण आवश्यक है (आपके पास {0} है)।'
@@ -178,7 +178,7 @@ function T {
             'press_enter_pt' = 'बाहर निकलने के लिए एंटर दबाएँ'
         }
         es = @{
-            'banner' = 'Minecraft Bedrock Unlocker - bootstrap v3.2.1'
+            'banner' = 'Minecraft Bedrock Unlocker - bootstrap v3.3.3'
             'detecting_os' = 'Detectando plataforma...'
             'os_unsupported' = 'Este bootstrap sólo funciona en Windows.'
             'ps_unsupported' = 'Se requiere PowerShell 5.1 o más reciente (usted tiene {0}).'
@@ -206,7 +206,7 @@ function T {
             'press_enter_pt' = 'Pulse ENTER para salir'
         }
         fr = @{
-            'banner' = 'Minecraft Bedrock Unlocker - bootstrap v3.2.1'
+            'banner' = 'Minecraft Bedrock Unlocker - bootstrap v3.3.3'
             'detecting_os' = 'Détection de la plateforme...'
             'os_unsupported' = 'Ce bootstrap ne fonctionne que sur Windows.'
             'ps_unsupported' = 'PowerShell 5.1 ou plus récent est requis (vous avez {0}).'
@@ -234,7 +234,7 @@ function T {
             'press_enter_pt' = 'Appuyez sur ENTRÉE pour quitter'
         }
         ar = @{
-            'banner' = 'Minecraft Bedrock Unlocker - مُحمِّل v3.2.1'
+            'banner' = 'Minecraft Bedrock Unlocker - مُحمِّل v3.3.3'
             'detecting_os' = 'جارٍ اكتشاف النظام الأساسي...'
             'os_unsupported' = 'هذا المُحمِّل يعمل فقط على Windows.'
             'ps_unsupported' = 'مطلوب PowerShell 5.1 أو أحدث (لديك {0}).'
@@ -262,7 +262,7 @@ function T {
             'press_enter_pt' = 'اضغط مفتاح الإدخال للخروج'
         }
         ru = @{
-            'banner' = 'Minecraft Bedrock Unlocker - загрузчик v3.2.1'
+            'banner' = 'Minecraft Bedrock Unlocker - загрузчик v3.3.3'
             'detecting_os' = 'Определение платформы...'
             'os_unsupported' = 'Этот загрузчик работает только в Windows.'
             'ps_unsupported' = 'Требуется PowerShell 5.1 или новее (у вас {0}).'
@@ -600,7 +600,7 @@ function Start-Bootstrap {
     # 7. Final error message with troubleshooting hints
     Write-Host ''
     Write-Host '============================================================' -ForegroundColor Red
-    Write-Host '[v3.2.1] ' (T 'all_failed') -ForegroundColor Red
+    Write-Host '[v3.3.3] ' (T 'all_failed') -ForegroundColor Red
     Write-Host (T 'cause_internet')  -ForegroundColor Yellow
     Write-Host (T 'cause_av')        -ForegroundColor Yellow
     Write-Host (T 'cause_release')   -ForegroundColor Yellow
@@ -632,7 +632,7 @@ try {
 } catch {
     Write-Host ''
     Write-Host '============================================================' -ForegroundColor Red
-    Write-Host '[v3.2.1] FATAL: ' $_.Exception.Message -ForegroundColor Red
+    Write-Host '[v3.3.3] FATAL: ' $_.Exception.Message -ForegroundColor Red
     Write-Host '============================================================' -ForegroundColor Red
     Write-Host ''
     if ($Host.Name -ne 'ServerHost' -and $Host.UI.RawUI) {

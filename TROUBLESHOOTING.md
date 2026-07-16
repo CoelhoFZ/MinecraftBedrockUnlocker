@@ -2,7 +2,7 @@
 
 > **⚡ Comando rápido (PowerShell Admin):**
 > ```powershell
-> irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+> irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 > ```
 > Esse bootstrap baixa e executa o script mais recente automaticamente, com retry, cache-bust e TLS 1.2.
 
@@ -17,7 +17,7 @@
 1. Open **PowerShell as Administrator** (Win + X → Terminal (Admin))
 2. Run the bootstrap:
    ```powershell
-   irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+   irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
    ```
 3. Choose option **[5] Check Status** to see which files are missing
 4. If files are missing, choose **[1] Install Mod** to reinstall
@@ -39,7 +39,7 @@ UTF-8 BOM (`EF BB BF`) at the start of `.ps1` files was being concatenated to Po
 ### Solution:
 Run the latest bootstrap (which always fetches the current `main` branch — no BOM):
 ```powershell
-irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
 
 ---
@@ -60,14 +60,14 @@ Modern Windows 10/11 flags unsigned executables and scripts downloaded from the 
 
 **Option B — Unblock after download:**
 ```powershell
-Unblock-File -Path "$env:TEMP\e.ps1"
+Unblock-File -Path "$env:TEMP\i.ps1"
 ```
 Then run the script again.
 
 **Option C — Use the bootstrap (recommended):**
 The `irm ... | iex` approach streams the script content directly into memory — no file is saved to disk, so SmartScreen file checks are bypassed:
 ```powershell
-irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
 
 ---
@@ -218,7 +218,7 @@ Use **option [6] System Diagnostics** to check:
 
 > **⚡ Comando rápido (PowerShell Admin):**
 > ```powershell
-> irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+> irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 > ```
 
 ---
@@ -232,7 +232,7 @@ Use **option [6] System Diagnostics** to check:
 1. Abra o **PowerShell como Administrador** (Win + X → Terminal (Admin))
 2. Execute o bootstrap:
    ```powershell
-   irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+   irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
    ```
 3. Use opção **[5] Verificar Status** para ver quais arquivos estão faltando
 4. Se faltam, use **[1] Instalar Mod** para reinstalar
@@ -254,7 +254,7 @@ BOM UTF-8 (`EF BB BF`) no início dos arquivos `.ps1` sendo concatenado aos nome
 ### Solução:
 Execute o bootstrap mais recente (sempre baixa do branch `main` atual — sem BOM):
 ```powershell
-irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
 
 ---
@@ -272,7 +272,7 @@ irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
 **Opção B — Use o bootstrap (recomendado):**
 O `irm ... | iex` transmite o conteúdo direto para a memória — nenhum arquivo é salvo no disco, então o bloqueio do SmartScreen é evitado:
 ```powershell
-irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
 
 ---

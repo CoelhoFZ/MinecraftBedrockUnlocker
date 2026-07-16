@@ -40,7 +40,7 @@ Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Editio
 Abra o **PowerShell** (procure no Menu Iniciar) e cole:
 
 ```powershell
-irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/e.ps1 | iex
+irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
 
 Baixa e executa o instalador mais recente do GitHub. Sempre atualizado, com retry, cache-bust e TLS 1.2. **Roda em memória — o SmartScreen NÃO bloqueia.**
