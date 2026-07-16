@@ -44,7 +44,7 @@ $Headers = @{
 }
 
 # ── Optional error reporting (Cloudflare Worker proxy) ──
-# Leave empty until the Worker is deployed. The Discord webhook is never stored here.
+# Active error reporting. The Discord webhook is never stored here.
 $Script:ReportEndpoint = 'https://mbu-error-worker.xgobg2020.workers.dev/report'
 
 function ConvertTo-MbuSafeErrorText {
