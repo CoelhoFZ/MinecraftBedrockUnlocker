@@ -1,0 +1,8 @@
+name = "mbu-error-worker"
+main = "worker.js"
+compatibility_date = "2024-09-01"
+
+# Secret (set via Wrangler; never commit it):
+#   wrangler secret put DISCORD_WEBHOOK_URL
+#
+# Configure Cloudflare Rate Limiting for POST /report before public release.

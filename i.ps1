@@ -15,6 +15,9 @@ trap {
     Write-Host '  3. PowerShell execution policy is restricted' -ForegroundColor Yellow
     Write-Host ''
     try {
+        if (Get-Command -Name Invoke-MbuErrorReportPrompt -ErrorAction SilentlyContinue) { Invoke-MbuErrorReportPrompt -LastError $_ }
+    } catch { }
+    try {
         $prompt = if ($null -ne $Script:Msg -and $null -ne $Script:Lang -and $Script:Msg.ContainsKey($Script:Lang)) { $Script:Msg[$Script:Lang].pressEnter } else { 'Press ENTER to exit' }
         Read-Host $prompt | Out-Null
     } catch {
@@ -40,50 +43,81 @@ $Headers = @{
     'User-Agent'    = 'MinecraftBedrockUnlockerBootstrap/3.3.3'
 }
 
-# ── Error report endpoint (Cloudflare Worker proxy to Discord webhook) ──
-# The real webhook URL lives inside the Worker secret; the script never sees it.
-$Script:ReportEndpoint = 'https://mbu-errors.<your-worker-subdomain>.workers.dev/report'
+# ── Optional error reporting (Cloudflare Worker proxy) ──
+# Leave empty until the Worker is deployed. The Discord webhook is never stored here.
+$Script:ReportEndpoint = ''
 
-function Send-ErrorReport {
-    param([Parameter(Mandatory=$false)][object]$LastError, [Parameter(Mandatory=$false)][string]$Language)
-
-    if ([string]::IsNullOrWhiteSpace($Script:ReportEndpoint)) { return }
-    if ($Script:ReportEndpoint -like '*<your-worker-subdomain>*') { return }
+function ConvertTo-MbuSafeErrorText {
+    param([Parameter(Mandatory=$false)][object]$LastError)
 
     try {
-        $errText = if ($LastError) { [string]$LastError.Exception.Message } else { '[no error captured]' }
-    } catch { $errText = '[error capture failed]' }
+        $text = if ($LastError -and $LastError.Exception) { [string]$LastError.Exception.Message } else { '[no error captured]' }
+    } catch {
+        $text = '[error capture failed]'
+    }
 
-    # Sanitize paths and PII from the error text before sending.
     try {
-        $userProfile = [Environment]::GetEnvironmentVariable('USERPROFILE')
-        if (-not [string]::IsNullOrWhiteSpace($userProfile)) { $errText = $errText.Replace($userProfile, '~') }
-        $userName = [Environment]::GetEnvironmentVariable('USERNAME')
-        if (-not [string]::IsNullOrWhiteSpace($userName)) { $errText = $errText.Replace($userName, '<user>') }
-        $homeDir = [Environment]::GetEnvironmentVariable('HOME')
-        if (-not [string]::IsNullOrWhiteSpace($homeDir)) { $errText = $errText.Replace($homeDir, '~') }
+        # Redact complete paths before environment values so filenames are not retained.
+        $text = [regex]::Replace($text, '(?i)(?:[A-Z]:\\|\\\\)\S+', '[path]')
+        foreach ($value in @($env:USERPROFILE, $env:HOME, $env:USERNAME)) {
+            if (-not [string]::IsNullOrWhiteSpace($value)) { $text = $text.Replace([string]$value, '[redacted]') }
+        }
+        $text = $text -replace '[\x00-\x1F\x7F]+', ' '
+        $text = $text -replace '\s+', ' '
+        $text = $text.Trim()
     } catch { }
 
-    # Hard length cap so a forged error cannot flood the channel.
-    if ($errText.Length -gt 600) { $errText = $errText.Substring(0, 600) + '...' }
+    if ([string]::IsNullOrWhiteSpace($text)) { $text = '[no error details]' }
+    if ($text.Length -gt 600) { $text = $text.Substring(0, 600) + '...' }
+    return $text
+}
 
-    $hostName = 'unknown'; try { $hostName = [Environment]::MachineName } catch { }
-    $osVer = 'unknown'; try { $osVer = [Environment]::OSVersion.VersionString } catch { }
-    $ts = ''; try { $ts = (Get-Date -Format 'yyyy-MM-ddTHH:mm:ssZ') } catch { }
+function Send-ErrorReport {
+    param(
+        [Parameter(Mandatory=$false)][object]$LastError,
+        [Parameter(Mandatory=$false)][string]$Language,
+        [Parameter(Mandatory=$false)][bool]$SmartScreen = $false
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Script:ReportEndpoint)) { return $false }
 
     $payload = @{
-        version   = '3.3.3'
-        language  = $Language
-        host      = $hostName
-        os        = $osVer
-        errorText = $errText
-        timestamp = $ts
-    } | ConvertTo-Json -Compress -Depth 3
+        v           = '3.3.3'
+        os          = 'unknown'
+        lang        = if ([string]::IsNullOrWhiteSpace($Language)) { 'en' } else { $Language }
+        smartScreen = [bool]$SmartScreen
+        err         = ConvertTo-MbuSafeErrorText -LastError $LastError
+    }
+    try { $payload.os = [Environment]::OSVersion.VersionString } catch { }
 
     try {
+        $body = $payload | ConvertTo-Json -Compress -Depth 2
         Invoke-RestMethod -UseBasicParsing -Method Post -Uri $Script:ReportEndpoint `
-            -ContentType 'application/json; charset=utf-8' -Body $payload `
-            -TimeoutSec 8 -ErrorAction Stop | Out-Null
+            -ContentType 'application/json; charset=utf-8' -Body $body `
+            -TimeoutSec 5 -ErrorAction Stop | Out-Null
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Invoke-MbuErrorReportPrompt {
+    param(
+        [Parameter(Mandatory=$false)][object]$LastError,
+        [Parameter(Mandatory=$false)][bool]$SmartScreen = $false
+    )
+
+    try {
+        if ([string]::IsNullOrWhiteSpace($Script:ReportEndpoint)) { return }
+        $language = if ($Script:Lang) { $Script:Lang } else { 'en' }
+        $messages = if ($Script:Msg -and $Script:Msg.ContainsKey($language)) { $Script:Msg[$language] } else { $null }
+        $prompt = if ($messages -and $messages.reportAsk) { $messages.reportAsk } else { 'Send an anonymous error report? [Y/N]' }
+        $answer = Read-Host $prompt
+        if (-not @('Y', 'S', 'O', 'Д').Contains(([string]$answer).Trim().ToUpperInvariant())) { return }
+
+        $sent = Send-ErrorReport -LastError $LastError -Language $language -SmartScreen $SmartScreen
+        if ($sent -and $messages) { Write-Host $messages.reportSent -ForegroundColor Green }
+        elseif (-not $sent) { Write-Host 'Report could not be sent.' -ForegroundColor DarkYellow }
     } catch { }
 }
 
@@ -384,18 +418,7 @@ if ($smartScreenHit) {
 }
 
 # ── Optional anonymous error report ──
-try {
-    Write-Host ''
-    $answer = Read-Host $Script:Msg[$Script:Lang].reportAsk
-    if ($answer -eq $Script:Msg[$Script:Lang].reportAsk -or [string]::IsNullOrWhiteSpace($answer)) { $answer = 'N' }
-    $yes = @('Y','S','O','Д').Contains($answer.Trim().ToUpperInvariant())
-    if ($yes) {
-        Send-ErrorReport -LastError $lastError -Language $Script:Lang
-        Write-Host $Script:Msg[$Script:Lang].reportSent -ForegroundColor Green
-    } else {
-        Write-Host $Script:Msg[$Script:Lang].reportSkip -ForegroundColor Gray
-    }
-} catch { }
+Invoke-MbuErrorReportPrompt -LastError $lastError -SmartScreen $smartScreenHit
 
 Write-Host ''
 Read-Host $Script:Msg[$Script:Lang].pressEnter
