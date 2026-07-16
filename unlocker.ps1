@@ -208,6 +208,11 @@ function Get-MbuOfficialMinecraftHealth {
                 OpenXbox = $true
             }
         } else {
+            # The GDK executable is not a reliable install gate. Xbox packages
+            # can use catalog signing, sparse/stub launchers, and file sharing
+            # rules that make a PE/signature/read probe fail even while the game
+            # opens normally. The bypass writes separate files in Content, so a
+            # failed probe must not abort a supported XboxGames installation.
             try {
                 $exeItem = Get-Item -LiteralPath $exePath -Force -ErrorAction Stop
                 if ($exeItem.Length -le 0) {
@@ -215,61 +220,14 @@ function Get-MbuOfficialMinecraftHealth {
                         Reason = if ($pt) { 'Minecraft.Windows.exe existe, mas esta vazio.' } else { 'Minecraft.Windows.exe exists but is empty.' }
                         Path = $exePath
                         Solution = if ($pt) { 'Use Verificar e reparar no aplicativo Xbox ou reinstale o jogo.' } else { 'Use Verify and repair in the Xbox app or reinstall the game.' }
-                        OpenXbox = $true
-                    }
-                } elseif ($exeItem.Length -lt 1MB) {
-                    $issues += [pscustomobject]@{
-                        Reason = if ($pt) { 'Minecraft.Windows.exe esta incompleto: o tamanho do arquivo e anormalmente pequeno.' } else { 'Minecraft.Windows.exe is incomplete: the file is abnormally small.' }
-                        Path = "$exePath ($($exeItem.Length) bytes)"
-                        Solution = if ($pt) { 'Use Verificar e reparar no aplicativo Xbox. Se continuar, reinstale o jogo.' } else { 'Use Verify and repair in the Xbox app. Reinstall the game if the problem continues.' }
-                        OpenXbox = $true
-                    }
-                } elseif (-not (Test-PE64File -Path $exePath)) {
-                    $issues += [pscustomobject]@{
-                        Reason = if ($pt) { 'Minecraft.Windows.exe nao possui uma estrutura executavel PE64 valida e provavelmente esta corrompido.' } else { 'Minecraft.Windows.exe does not have a valid PE64 executable structure and is probably corrupted.' }
-                        Path = $exePath
-                        Solution = if ($pt) { 'Use Verificar e reparar no aplicativo Xbox ou reinstale o jogo.' } else { 'Use Verify and repair in the Xbox app or reinstall the game.' }
-                        OpenXbox = $true
-                    }
-                }
-
-                try {
-                    $stream = [System.IO.File]::Open($exePath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
-                    $probe = New-Object byte[] 2
-                    $read = $stream.Read($probe, 0, 2)
-                    $stream.Dispose()
-                    if ($read -ne 2) { throw 'Unable to read the executable header.' }
-                } catch {
-                    $issues += [pscustomobject]@{
-                        Reason = if ($pt) { 'O arquivo principal do Minecraft existe, mas nao pode ser lido.' } else { 'The main Minecraft file exists but cannot be read.' }
-                        Path = $exePath
-                        Solution = if ($pt) { 'Feche o Minecraft e o aplicativo Xbox, execute o script como administrador e tente novamente. Se persistir, repare o jogo.' } else { 'Close Minecraft and the Xbox app, run the script as administrator, and try again. Repair the game if it continues.' }
                         OpenXbox = $false
                     }
                 }
-
-                try {
-                    $signature = Get-AuthenticodeSignature -LiteralPath $exePath -ErrorAction Stop
-                    if ($signature.Status -ne [System.Management.Automation.SignatureStatus]::Valid) {
-                        $warnings += [pscustomobject]@{
-                            Reason = if ($pt) { "A assinatura do executavel nao foi validada pelo PowerShell: $($signature.Status)." } else { "PowerShell did not validate the executable signature: $($signature.Status)." }
-                            Path = $exePath
-                            Solution = if ($pt) { 'Isso pode ser assinatura por catalogo. Repare o jogo apenas se ele tambem nao abrir ou apresentar outros erros.' } else { 'This may be catalog signing. Repair the game only if it also fails to open or shows other errors.' }
-                        }
-                    }
-                } catch {
-                    $warnings += [pscustomobject]@{
-                        Reason = if ($pt) { 'Nao foi possivel consultar a assinatura do executavel.' } else { 'The executable signature could not be checked.' }
-                        Path = $exePath
-                        Solution = if ($pt) { 'Nenhuma acao e necessaria se o jogo abre normalmente.' } else { 'No action is needed if the game opens normally.' }
-                    }
-                }
             } catch {
-                $issues += [pscustomobject]@{
-                    Reason = if ($pt) { 'O script nao conseguiu inspecionar Minecraft.Windows.exe.' } else { 'The script could not inspect Minecraft.Windows.exe.' }
+                $warnings += [pscustomobject]@{
+                    Reason = if ($pt) { 'O arquivo principal do Minecraft nao pode ser inspecionado pelo script.' } else { 'The main Minecraft file could not be inspected by the script.' }
                     Path = $exePath
-                    Solution = if ($pt) { 'Feche o jogo e o aplicativo Xbox, execute como administrador e tente novamente.' } else { 'Close the game and Xbox app, run as administrator, and try again.' }
-                    OpenXbox = $false
+                    Solution = if ($pt) { 'A checagem nao bloqueia a instalacao. Se o jogo abre normalmente, continue; repare-o apenas se houver falhas reais ao iniciar.' } else { 'This check does not block installation. If the game opens normally, continue; repair it only if it actually fails to start.' }
                 }
             }
         }
@@ -359,13 +317,6 @@ function Get-MbuOfficialMinecraftHealth {
             }
         }
     } catch { }
-
-    if ($AttemptRepair -and ($issues | Where-Object { $_.OpenXbox } | Select-Object -First 1)) {
-        try {
-            Start-Process 'ms-windows-store://pdp?productId=9NBLGGH2JHXJ' -ErrorAction SilentlyContinue | Out-Null
-            $repairs += if ($pt) { 'O aplicativo Xbox/loja foi aberto na pagina do Minecraft para facilitar o reparo.' } else { 'The Xbox app/store was opened on the Minecraft page to make repair easier.' }
-        } catch { }
-    }
 
     return [pscustomobject]@{
         Healthy = ($issues.Count -eq 0)
