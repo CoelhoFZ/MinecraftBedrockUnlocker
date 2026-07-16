@@ -1,4 +1,4 @@
-# Legacy compatibility wrapper — e.ps1 was renamed to i.ps1.
+﻿# Legacy compatibility wrapper — e.ps1 was renamed to i.ps1.
 # This file exists so old links and tutorials still work.
 
 $ErrorActionPreference = 'Stop'
@@ -7,5 +7,7 @@ try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::S
 $ProgressPreference = 'SilentlyContinue'
 
 $url = 'https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/i.ps1'
-$content = (New-Object System.Net.WebClient).DownloadString($url)
+$client = New-Object System.Net.WebClient
+$client.Encoding = [System.Text.Encoding]::UTF8
+$content = $client.DownloadString($url)
 & ([scriptblock]::Create($content))

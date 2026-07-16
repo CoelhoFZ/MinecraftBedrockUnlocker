@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 
 # Bootstrap v3.3.3: downloads and executes unlocker.ps1 in memory
@@ -244,7 +244,7 @@ foreach ($url in $urls) {
     for ($attempt = 1; $attempt -le 3; $attempt++) {
         try {
             $cb = [guid]::NewGuid().ToString('N')
-            $sep = if ($url.Contains('?')) { '&' } else { '?' }
+            if ($url.Contains('?')) { $sep = '&' } else { $sep = '?' }
             $cachebusted = "$url${sep}cb=$cb"
 
             $content = Invoke-RestMethod -UseBasicParsing -Headers $Headers -Uri $cachebusted -MaximumRedirection 5 -ErrorAction Stop
@@ -288,7 +288,17 @@ Write-Host '============================================================' -Foreg
 Write-Host ''
 
 # SmartScreen / App Control / execution policy detection
-if ($lastError -and $errMsg -match 'Controle de Aplicativo|Application.?Control|SmartScreen|reputa[cç].*o|reputation|bloqueou este arquivo|blocked.*app|protected.*PC|unrecognized|não reconhecido|signer|não pode ser executado|mal.intencionada|operation.*validated|Publisher.*blocked|prevented.*start|running scripts is disabled|execution of scripts is disabled|não pode ser carregado|cannot be loaded|PSSecurityException|UnauthorizedAccess') {
+$smartScreenPatterns = @(
+    'Controle de Aplicativo', 'Application Control', 'SmartScreen', 'reputation', 'reputa',
+    'bloqueou este arquivo', 'blocked', 'protected', 'unrecognized', 'nao reconhecido',
+    'signer', 'executado', 'intencionada', 'validated', 'Publisher', 'prevented',
+    'scripts is disabled', 'carregado', 'cannot be loaded', 'PSSecurityException', 'UnauthorizedAccess'
+)
+$smartScreenHit = $false
+if ($lastError -and $errMsg) {
+    foreach ($p in $smartScreenPatterns) { if ($errMsg -like "*$p*") { $smartScreenHit = $true; break } }
+}
+if ($smartScreenHit) {
     Write-Host $Script:Msg[$Script:Lang].smartScreen -ForegroundColor Red
     Write-Host $Script:Msg[$Script:Lang].smartScreen2 -ForegroundColor Yellow
     Write-Host $Script:Msg[$Script:Lang].smartScreen3 -ForegroundColor Yellow
