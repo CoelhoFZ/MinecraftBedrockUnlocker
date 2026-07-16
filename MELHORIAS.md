@@ -5,7 +5,6 @@ Revisao feita em 16/07/2026 (UTC) sobre o codigo em `main`, os assets do release
 ## Aplicado nesta alteracao
 
 - Removido do menu principal o bloco `ACOES DISPONIVEIS` / `AVAILABLE ACTIONS` e seus dois separadores.
-- Atualizado o hash de `unlocker.ps1` em `SHA256SUMS.txt`.
 
 Todo o backlog abaixo permanece pendente e nao foi aplicado nesta alteracao.
 
