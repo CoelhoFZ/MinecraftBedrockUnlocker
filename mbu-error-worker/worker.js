@@ -2,6 +2,11 @@ const MAX_BODY = 16 * 1024;
 const MAX_STR = 1000;
 const ALLOWED_LANGS = new Set(['en', 'zh', 'hi', 'es', 'fr', 'ar', 'ru', 'pt']);
 
+// Simple in-memory rate limiting (per isolate)
+const ipRequests = new Map();
+const RATE_LIMIT = 5; 
+const WINDOW_MS = 60 * 1000;
+
 function clean(value, max) {
   if (typeof value !== 'string') return '';
   return value.slice(0, max)
@@ -17,6 +22,32 @@ export default {
     if (request.method !== 'POST' || url.pathname !== '/report') {
       return new Response('Not Found', { status: 404 });
     }
+
+    // Rate limiting
+    const ip = request.headers.get('CF-Connecting-IP') || 'anonymous';
+    const now = Date.now();
+    const record = ipRequests.get(ip) || { count: 0, startTime: now };
+
+    if (now - record.startTime > WINDOW_MS) {
+      record.count = 1;
+      record.startTime = now;
+    } else {
+      record.count++;
+    }
+    
+    // Simple cleanup to prevent memory leak
+    if (ipRequests.size > 1000) {
+      for (const [key, val] of ipRequests) {
+        if (now - val.startTime > WINDOW_MS) ipRequests.delete(key);
+      }
+    }
+    
+    ipRequests.set(ip, record);
+
+    if (record.count > RATE_LIMIT) {
+      return new Response('Too Many Requests', { status: 429 });
+    }
+
     const contentLength = Number(request.headers.get('Content-Length') || 0);
     if (contentLength && contentLength > MAX_BODY) {
       return new Response('Payload Too Large', { status: 413 });
