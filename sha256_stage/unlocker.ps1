@@ -476,6 +476,13 @@ function Show-MbuRestoreResult {
     }
 
     $newMainLoop = @'
+function Get-TimeGreeting {
+    $hour = (Get-Date).Hour
+    if ($hour -ge 6 -and $hour -lt 12) { return 'Bom dia' }
+    elseif ($hour -ge 12 -and $hour -lt 18) { return 'Boa tarde' }
+    else { return 'Boa noite' }
+}
+
 function Start-MainLoop {
     Detect-Language
     Set-ConsoleAppearance
@@ -486,7 +493,20 @@ function Start-MainLoop {
         return
     }
 
-    Write-OK (T 'admin_ok')
+    $greeting = Get-TimeGreeting
+    $state = Get-MbuActionState
+    $pt = ($Script:Lang -eq 'pt')
+
+    if ($state.Mode -eq 'restore') {
+        if ($pt) {
+            Write-OK "$greeting, o Minecraft ja esta desbloqueado! Se quiser, voce pode remover o desbloqueio clicando [1] e dando enter."
+        } else {
+            $enGreeting = if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Good morning' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Good afternoon' } else { 'Good evening' }
+            Write-OK "$enGreeting, Minecraft is already unlocked! If you want, you can remove the bypass by pressing [1] and enter."
+        }
+    } else {
+        Write-OK (T 'admin_ok')
+    }
 
     while ($true) {
         $menuState = Show-MbuDynamicMenu
