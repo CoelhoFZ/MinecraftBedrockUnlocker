@@ -77,7 +77,7 @@ function Get-MbuHardwareInfo {
         cpu = 'unknown'
         gpu = 'unknown'
         board = 'unknown'
-        arch = [Environment]::Is64BitOperatingSystem ? 'x64' : 'x86'
+        arch = if ([Environment]::Is64BitOperatingSystem) { 'x64' } else { 'x86' }
     }
     try { if ($env:PROCESSOR_ARCHITECTURE -match 'ARM') { $info.arch = 'ARM64' } } catch { }
     try { $info.cpu = (Get-CimInstance Win32_Processor).Name } catch { }
