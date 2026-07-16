@@ -441,9 +441,6 @@ function Show-MbuDynamicMenu {
     $state = Get-MbuActionState
     $pt = ($Script:Lang -eq 'pt')
 
-    Write-Line
-    Write-C $(if ($pt) { '  ACOES DISPONIVEIS' } else { '  AVAILABLE ACTIONS' }) Cyan
-    Write-Line
     Write-C ''
 
     switch ($state.Mode) {
