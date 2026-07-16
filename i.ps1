@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2.0
 
 # Bootstrap v3.3.3: downloads and executes unlocker.ps1 in memory
