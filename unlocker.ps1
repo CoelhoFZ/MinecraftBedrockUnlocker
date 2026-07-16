@@ -496,18 +496,21 @@ function Start-MainLoop {
     $greeting = Get-TimeGreeting
     $state = Get-MbuActionState
     $pt = ($Script:Lang -eq 'pt')
+    $isUnlocked = ($state.Mode -eq 'restore')
 
-    if ($state.Mode -eq 'restore') {
-        $greetings = @{
-            'pt' = "Olá, $greeting, o Minecraft ja esta desbloqueado! Se quiser, voce pode remover o desbloqueio clicando [1] e dando enter."
-            'es' = "Hola, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Buenos días' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Buenas tardes' } else { 'Buenas noches' }), Minecraft ya está desbloqueado! Si quieres, puedes eliminar el bypass pulsando [1] y dando a enter."
-            'fr' = "Bonjour, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Bonjour' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Bon après-midi' } else { 'Bonsoir' }), Minecraft est déjà débloqué ! Si tu veux, tu peux supprimer le bypass en appuyant sur [1] puis entrée."
-            'zh' = "你好，$(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { '早上好' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { '下午好' } else { '晚上好' }), Minecraft 已经解锁了！如果你想移除解锁，按 [1] 然后回车。"
-            'hi' = "नमस्ते, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'सुप्रभात' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'शुभ दोपहर' } else { 'शुभ संध्या' }), Minecraft पहले से अनलॉक है! अगर आप बायपास हटाना चाहते हैं, तो [1] दबाएं और एंटर करें."
-            'ar' = "!مرحبا، $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'صباح الخير' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'مساء الخير' } else { 'مساء النور' })، تم فتح Minecraft بالفعل! إذا كنت تريد إزالة فتح الرصيد، اضغط [1] ثم اضغط Enter."
-            'ru' = "Привет, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Доброе утро' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Добрый день' } else { 'Добрый вечер' }), Minecraft уже разблокирован! Если хотите удалить обход, нажмите [1] и Enter."
-            'en' = "Hello, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Good morning' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Good afternoon' } else { 'Good evening' }), Minecraft is already unlocked! If you want, you can remove the bypass by pressing [1] and enter."
-        }
+    $greetings = @{
+        'pt' = if ($isUnlocked) { "Olá, $greeting, o Minecraft ja esta desbloqueado! Se quiser, voce pode remover o desbloqueio clicando [1] e dando enter." } else { "Olá, $greeting! O Minecraft ainda não está desbloqueado. Para desbloquear, pressione [1] e aperte enter." }
+        'es' = if ($isUnlocked) { "Hola, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Buenos días' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Buenas tardes' } else { 'Buenas noches' }), Minecraft ya está desbloqueado! Si quieres, puedes eliminar el bypass pulsando [1] y dando a enter." } else { "¡Hola! Minecraft aún no está desbloqueado. Para desbloquearlo, presiona [1] y enter." }
+        'fr' = if ($isUnlocked) { "Bonjour, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Bonjour' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Bon après-midi' } else { 'Bonsoir' }), Minecraft est déjà débloqué ! Si tu veux, tu peux supprimer le bypass en appuyant sur [1] puis entrée." } else { "Bonjour ! Minecraft n'est pas encore débloqué. Pour le débloquer, appuyez sur [1] puis entrée." }
+        'zh' = if ($isUnlocked) { "你好，$(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { '早上好' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { '下午好' } else { '晚上好' }), Minecraft 已经解锁了！如果你想移除解锁，按 [1] 然后回车。" } else { "你好！Minecraft 尚未解锁。要解锁，按 [1] 然后回车。" }
+        'hi' = if ($isUnlocked) { "नमस्ते, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'सुप्रभात' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'शुभ दोपहर' } else { 'शुभ संध्या' }), Minecraft पहले से अनलॉक है! अगर आप बायपास हटाना चाहते हैं, तो [1] दबाएं और एंटर करें." } else { "नमस्ते! Minecraft अभी अनलॉक नहीं है। अनलॉक करने के लिए [1] दबाएं और एंटर करें।" }
+        'ar' = if ($isUnlocked) { "!مرحبا، $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'صباح الخير' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'مساء الخير' } else { 'مساء النور' })، تم فتح Minecraft بالفعل! إذا كنت تريد إزالة فتح الرصيد، اضغط [1] ثم اضغط Enter." } else { "مرحباً! لم يتم فتح Minecraft بعد. للفتح، اضغط [1] ثم Enter." }
+        'ru' = if ($isUnlocked) { "Привет, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Доброе утро' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Добрый день' } else { 'Добрый вечер' }), Minecraft уже разблокирован! Если хотите удалить обход, нажмите [1] и Enter." } else { "Привет! Minecraft еще não разблокирован. Para разблокировки нажмите [1] e Enter." }
+        'en' = if ($isUnlocked) { "Hello, $(if ((Get-Date).Hour -ge 6 -and (Get-Date).Hour -lt 12) { 'Good morning' } elseif ((Get-Date).Hour -ge 12 -and (Get-Date).Hour -lt 18) { 'Good afternoon' } else { 'Good evening' }), Minecraft is already unlocked! If you want, you can remove the bypass by pressing [1] and enter." } else { "Hello! Minecraft is not unlocked yet. To unlock it, press [1] and enter." }
+    }
+    $msg = if ($greetings.ContainsKey($Script:Lang)) { $greetings[$Script:Lang] } else { $greetings['en'] }
+    Write-C "  $msg" Green
+
         $msg = if ($greetings.ContainsKey($Script:Lang)) { $greetings[$Script:Lang] } else { $greetings['en'] }
         Write-C "  $msg" Green
     } else {
