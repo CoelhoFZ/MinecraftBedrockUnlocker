@@ -511,12 +511,6 @@ function Start-MainLoop {
     $msg = if ($greetings.ContainsKey($Script:Lang)) { $greetings[$Script:Lang] } else { $greetings['en'] }
     Write-C "  $msg" Green
 
-        $msg = if ($greetings.ContainsKey($Script:Lang)) { $greetings[$Script:Lang] } else { $greetings['en'] }
-        Write-C "  $msg" Green
-    } else {
-        Write-OK (T 'admin_ok')
-    }
-
     while ($true) {
         $menuState = Show-MbuDynamicMenu
         Write-C "  $(T 'choose'): " Cyan -NoNewline
