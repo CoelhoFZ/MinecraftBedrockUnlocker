@@ -24,7 +24,7 @@
 
 > **🔓 Unlock Minecraft Bedrock Edition for FREE on Windows 10/11!**
 
-A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only works with Xbox App installations** (NOT Microsoft Store!). **No EXE — runs entirely in PowerShell.** No SmartScreen blocks, no browser download warnings.
+A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only works with Xbox App installations** (NOT Microsoft Store!). **No EXE - runs entirely in PowerShell.** No SmartScreen blocks, no browser download warnings.
 
 > ⚠️ **Disclaimer**: This project is for educational purposes only. Please support the developers by purchasing the game.
 
@@ -32,9 +32,9 @@ A tool to unlock the full version of **Minecraft Bedrock Edition (GDK)**. **Only
 
 ## ⬇️ How to Install
 
-> ⚠️ **DO NOT download the `.exe` file.** Browsers (Chrome, Edge, Firefox) block it with "dangerous file" warnings and Windows SmartScreen flags it. Use the methods below instead — they always work.
+> ⚠️ **DO NOT download the `.exe` file.** Browsers (Chrome, Edge, Firefox) block it with "dangerous file" warnings and Windows SmartScreen flags it. Use the methods below instead - they always work.
 
-### ⚡ Method 1 — PowerShell One-Liner (Recommended)
+### ⚡ Method 1 - PowerShell One-Liner (Recommended)
 
 Open **PowerShell** (search for it in the Start Menu) and paste:
 
@@ -42,11 +42,11 @@ Open **PowerShell** (search for it in the Start Menu) and paste:
 irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
 
-Downloads and runs the latest installer from GitHub. Always up-to-date, with retry, cache-bust, and TLS 1.2. **Runs in memory — SmartScreen will NOT block it.**
+Downloads and runs the latest installer from GitHub. Always up-to-date, with retry, cache-bust, and TLS 1.2. **Runs in memory - SmartScreen will NOT block it.**
 
-> 💡 **Why not the EXE?** Windows SmartScreen blocks unsigned `.exe` files downloaded from the internet. The PowerShell command avoids this entirely — no warnings, no blocks.
+> 💡 **Why not the EXE?** Windows SmartScreen blocks unsigned `.exe` files downloaded from the internet. The PowerShell command avoids this entirely - no warnings, no blocks.
 
-### 🖱️ Method 2 — Double-Click (install.bat)
+### 🖱️ Method 2 - Double-Click (install.bat)
 
 Download **[install.bat](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.bat)** and double-click it. It opens PowerShell automatically and runs the installer.
 
@@ -77,7 +77,7 @@ The tool:
 6. Keeps the game unlocked across reboots
 
 > 🛡️ **AV-aware**: Helps reduce false positive deletions during setup and points you to the relevant AV exclusion steps when needed.
-> ⚡ **No EXE**: Runs entirely in PowerShell — no SmartScreen blocks, no browser download warnings.
+> ⚡ **No EXE**: Runs entirely in PowerShell - no SmartScreen blocks, no browser download warnings.
 
 ## Interactive Menu
 
@@ -114,15 +114,15 @@ The menu is dynamic based on installation state:
 
 ## Troubleshooting
 
-> 📖 **Full guide**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — covers BOM/UTF-8 errors, SmartScreen, antivirus (Defender, Kaspersky, Avast, Bitdefender), crashes, access denied, CMD vs PowerShell, and more. Bilingual (English & Portuguese).
+> 📖 **Full guide**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - covers BOM/UTF-8 errors, SmartScreen, antivirus (Defender, Kaspersky, Avast, Bitdefender), crashes, access denied, CMD vs PowerShell, and more. Bilingual (English & Portuguese).
 
 ### Quick Summary
 
 | Issue | Solution |
 |-------|----------|
-| Game shows "Unlock Full Version" | Antivirus deleted the files — run the bootstrap again |
+| Game shows "Unlock Full Version" | Antivirus deleted the files - run the bootstrap again |
 | "Minecraft not found" | Install via **Xbox App** (NOT Microsoft Store) to `C:\XboxGames` |
-| SmartScreen / "reputação binária mal-intencionada" | No longer an issue — the installer is now 100% PowerShell (no EXE) |
+| SmartScreen / "reputação binária mal-intencionada" | No longer an issue - the installer is now 100% PowerShell (no EXE) |
 | `'ï»¿$ErrorActionPreference' is not recognized` | Update to v3.3.3+: run `irm ...raw/main/i.ps1 | iex` |
 | Game crashes on startup | Run Diagnostics [6] and check Gaming Services |
 | "Running scripts is disabled" | `Set-ExecutionPolicy Bypass -Scope Process -Force` |
@@ -132,11 +132,11 @@ The menu is dynamic based on installation state:
 
 ## ⚠️ Antivirus False Positives
 
-Some files used by the setup may trigger antivirus warnings — **this can happen with game mod installers and related runtime components**.
+Some files used by the setup may trigger antivirus warnings - **this can happen with game mod installers and related runtime components**.
 
-1. **Installer source available** — You can review the GPLv3 PowerShell installer source in this repository
-2. **Third-party component notices** — Runtime component details are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
-3. **Guided exclusions** — Setup and troubleshooting steps are documented in [INSTALL.md](INSTALL.md) and [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+1. **Installer source available** - You can review the GPLv3 PowerShell installer source in this repository
+2. **Third-party component notices** - Runtime component details are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+3. **Guided exclusions** - Setup and troubleshooting steps are documented in [INSTALL.md](INSTALL.md) and [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ## Source code and license scope
 
@@ -173,6 +173,6 @@ Join our Discord: https://discord.gg/byDkXzhvuZ
 
 ## License
 
-Repository-authored installer and documentation: GPLv3 — See [LICENSE](LICENSE).
+Repository-authored installer and documentation: GPLv3 - See [LICENSE](LICENSE).
 
 Third-party Online-Fix runtime binaries are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and are not relicensed by this repository.

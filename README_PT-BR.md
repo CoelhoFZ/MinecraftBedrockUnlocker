@@ -25,7 +25,7 @@
 
 > **🔓 Desbloqueie o Minecraft Bedrock Edition DE GRAÇA no Windows 10/11!**
 
-Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Edition (GDK)**. **Só funciona com instalações do Xbox App** (NÃO Microsoft Store!). **Sem EXE — roda 100% em PowerShell.** Sem bloqueios SmartScreen, sem avisos de download do navegador.
+Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Edition (GDK)**. **Só funciona com instalações do Xbox App** (NÃO Microsoft Store!). **Sem EXE - roda 100% em PowerShell.** Sem bloqueios SmartScreen, sem avisos de download do navegador.
 
 > ⚠️ **Aviso**: Este projeto é apenas para fins educacionais. Por favor, apoie os desenvolvedores comprando o jogo.
 
@@ -33,9 +33,9 @@ Uma ferramenta para desbloquear a versão completa do **Minecraft Bedrock Editio
 
 ## ⬇️ Como Instalar
 
-> ⚠️ **NÃO baixe o arquivo `.exe`.** Navegadores (Chrome, Edge, Firefox) bloqueiam com aviso de "arquivo perigoso" e o SmartScreen do Windows também bloqueia. Use os métodos abaixo — funcionam sempre.
+> ⚠️ **NÃO baixe o arquivo `.exe`.** Navegadores (Chrome, Edge, Firefox) bloqueiam com aviso de "arquivo perigoso" e o SmartScreen do Windows também bloqueia. Use os métodos abaixo - funcionam sempre.
 
-### ⚡ Método 1 — Comando PowerShell (Recomendado)
+### ⚡ Método 1 - Comando PowerShell (Recomendado)
 
 Abra o **PowerShell** (procure no Menu Iniciar) e cole:
 
@@ -43,11 +43,11 @@ Abra o **PowerShell** (procure no Menu Iniciar) e cole:
 irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
 
-Baixa e executa o instalador mais recente do GitHub. Sempre atualizado, com retry, cache-bust e TLS 1.2. **Roda em memória — o SmartScreen NÃO bloqueia.**
+Baixa e executa o instalador mais recente do GitHub. Sempre atualizado, com retry, cache-bust e TLS 1.2. **Roda em memória - o SmartScreen NÃO bloqueia.**
 
-> 💡 **Por que não o EXE?** O SmartScreen bloqueia arquivos `.exe` não-assinados. O comando PowerShell evita isso completamente — sem avisos, sem bloqueios.
+> 💡 **Por que não o EXE?** O SmartScreen bloqueia arquivos `.exe` não-assinados. O comando PowerShell evita isso completamente - sem avisos, sem bloqueios.
 
-### 🖱️ Método 2 — Clique Duplo (install.bat)
+### 🖱️ Método 2 - Clique Duplo (install.bat)
 
 Baixe o **[install.bat](https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/install.bat)** e dê um clique duplo. Ele abre o PowerShell automaticamente e executa o instalador.
 

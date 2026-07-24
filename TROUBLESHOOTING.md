@@ -37,7 +37,7 @@ Invoke-Expression: Cannot index into a null array.
 UTF-8 BOM (`EF BB BF`) at the start of `.ps1` files was being concatenated to PowerShell variable names when using `iex` on older downloads. This was fixed in **v3.2.1**.
 
 ### Solution:
-Run the latest bootstrap (which always fetches the current `main` branch — no BOM):
+Run the latest bootstrap (which always fetches the current `main` branch - no BOM):
 ```powershell
 irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
@@ -55,17 +55,17 @@ irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 Modern Windows 10/11 flags unsigned executables and scripts downloaded from the internet via the **Mark of the Web** (Zone.Identifier ADS).
 
 ### Solution:
-**Option A — Keep anyway (one time):**
+**Option A - Keep anyway (one time):**
 - Click **More info** → **Run anyway** on the SmartScreen popup
 
-**Option B — Unblock after download:**
+**Option B - Unblock after download:**
 ```powershell
 Unblock-File -Path "$env:TEMP\i.ps1"
 ```
 Then run the script again.
 
-**Option C — Use the bootstrap (recommended):**
-The `irm ... | iex` approach streams the script content directly into memory — no file is saved to disk, so SmartScreen file checks are bypassed:
+**Option C - Use the bootstrap (recommended):**
+The `irm ... | iex` approach streams the script content directly into memory - no file is saved to disk, so SmartScreen file checks are bypassed:
 ```powershell
 irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
@@ -252,7 +252,7 @@ Invoke-Expression: Cannot index into a null array.
 BOM UTF-8 (`EF BB BF`) no início dos arquivos `.ps1` sendo concatenado aos nomes de variáveis do PowerShell ao usar `iex` em downloads antigos. Corrigido na **v3.2.1**.
 
 ### Solução:
-Execute o bootstrap mais recente (sempre baixa do branch `main` atual — sem BOM):
+Execute o bootstrap mais recente (sempre baixa do branch `main` atual - sem BOM):
 ```powershell
 irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
@@ -266,11 +266,11 @@ irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 - "O Microsoft Defender SmartScreen impediu o início de um aplicativo não reconhecido"
 
 ### Solução:
-**Opção A — Executar assim mesmo (uma vez):**
+**Opção A - Executar assim mesmo (uma vez):**
 - Clique em **Mais informações** → **Executar mesmo assim**
 
-**Opção B — Use o bootstrap (recomendado):**
-O `irm ... | iex` transmite o conteúdo direto para a memória — nenhum arquivo é salvo no disco, então o bloqueio do SmartScreen é evitado:
+**Opção B - Use o bootstrap (recomendado):**
+O `irm ... | iex` transmite o conteúdo direto para a memória - nenhum arquivo é salvo no disco, então o bloqueio do SmartScreen é evitado:
 ```powershell
 irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 ```
@@ -297,7 +297,7 @@ irm https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/raw/main/i.ps1 | iex
 - Status [5] mostra arquivos faltando
 - `OnlineFix64.dll` desaparece após instalação
 
-### Solução — Windows Defender:
+### Solução - Windows Defender:
 1. Abra **Segurança do Windows**
 2. Vá em **Proteção contra vírus e ameaças**
 3. Clique **Gerenciar configurações**
@@ -336,9 +336,9 @@ Jogo instalado pela Microsoft Store em vez do Xbox App, OU instalado em local n�
 ## ⚠️ Problema: Jogo Fecha Sozinho ao Iniciar
 
 ### Causas possíveis:
-1. **Gaming Services não está rodando** — execute Diagnósticos [6] e reinicie o PC
-2. **Arquivos do bypass corrompidos** — execute Restaurar Original [2] e depois Instalar Mod [1]
-3. **Minecraft desatualizado** — atualize pelo Xbox App
+1. **Gaming Services não está rodando** - execute Diagnósticos [6] e reinicie o PC
+2. **Arquivos do bypass corrompidos** - execute Restaurar Original [2] e depois Instalar Mod [1]
+3. **Minecraft desatualizado** - atualize pelo Xbox App
 
 ---
 

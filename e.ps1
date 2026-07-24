@@ -1,4 +1,4 @@
-﻿# Legacy compatibility wrapper — e.ps1 was renamed to i.ps1.
+﻿# Legacy compatibility wrapper - e.ps1 was renamed to i.ps1.
 # This file exists so old links and tutorials still work.
 
 $ErrorActionPreference = 'Stop'
