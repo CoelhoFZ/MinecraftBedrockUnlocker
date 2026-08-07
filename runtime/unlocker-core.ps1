@@ -1744,13 +1744,13 @@ function T {
             ru = "Оценка (пока не блокирует)"
         }
         "sac_greeting_warn" = @{
-            en = "ATTENTION: Smart App Control is ON and will block OnlineFix64.dll. Run [1] Install to disable it automatically."
-            zh = "注意：Smart App Control 已开启，将阻止 OnlineFix64.dll。运行 [1] 安装可自动禁用。"
-            hi = "ध्यान दें: Smart App Control चालू है और OnlineFix64.dll को ब्लॉक करेगा। इसे स्वचालित रूप से बंद करने के लिए [1] इंस्टॉल चलाएँ।"
-            es = "ATENCIÓN: Smart App Control está activado y bloqueará OnlineFix64.dll. Ejecute [1] Instalar para desactivarlo automáticamente."
-            fr = "ATTENTION : Smart App Control est activé et bloquera OnlineFix64.dll. Exécutez [1] Installer pour le désactiver automatiquement."
-            ar = "انتبه: Smart App Control مفعّلة وستحظر OnlineFix64.dll. شغّل [1] تثبيت لإيقافها تلقائياً."
-            ru = "ВНИМАНИЕ: Smart App Control включен и заблокирует OnlineFix64.dll. Запустите [1] Установка, чтобы отключить его автоматически."
+            en = "NOTE: the bypass files are installed, but Smart App Control is ON and will still block OnlineFix64.dll - the game will NOT open until SAC is disabled."
+            zh = "注意：bypass 文件已安装，但 Smart App Control 已开启，仍会阻止 OnlineFix64.dll - 在禁用 SAC 之前游戏将无法打开。"
+            hi = "नोट: बायपास फ़ाइलें स्थापित हैं, लेकिन Smart App Control चालू है और फिर भी OnlineFix64.dll को ब्लॉक करेगा - SAC बंद होने तक गेम नहीं खुलेगा।"
+            es = "NOTA: los archivos del bypass están instalados, pero Smart App Control está activado y seguirá bloqueando OnlineFix64.dll - el juego NO abrirá hasta desactivar SAC."
+            fr = "NOTE : les fichiers du bypass sont installés, mais Smart App Control est activé et bloquera toujours OnlineFix64.dll - le jeu ne s'ouvrira PAS tant que SAC n'est pas désactivé."
+            ar = "ملاحظة: ملفات التجاوز مثبتة، لكن Smart App Control مفعّلة وستظل تحظر OnlineFix64.dll - لن تفتح اللعبة حتى يتم إيقاف SAC."
+            ru = "ПРИМЕЧАНИЕ: файлы обхода установлены, но Smart App Control включен и по-прежнему блокирует OnlineFix64.dll - игра НЕ откроется, пока SAC не отключен."
         }
     }
     
@@ -1885,7 +1885,7 @@ function T {
         'sac_status_on' = 'LIGADA - bloqueia o bypass'
         'sac_status_off' = 'Desligada / N/A'
         'sac_status_eval' = 'Avaliacao (ainda nao bloqueia)'
-        'sac_greeting_warn' = 'ATENCAO: Smart App Control esta LIGADA e vai bloquear o OnlineFix64.dll. Execute [1] Instalar para desligar automaticamente.'
+        'sac_greeting_warn' = 'NOTA: os arquivos do bypass estao instalados, mas a Smart App Control esta LIGADA e ainda vai bloquear o OnlineFix64.dll - o jogo NAO abre ate a SAC ser desligada.'
     }
     if ($Script:Lang -eq 'pt' -and $ptOverrides.ContainsKey($Key)) {
         return $ptOverrides[$Key]
@@ -5772,11 +5772,15 @@ function Start-MainLoop {
         $msg = if ($greetings.ContainsKey($Script:Lang)) { $greetings[$Script:Lang] } else { $greetings['en'] }
         Write-C "  $msg" Green
 
-        # Smart App Control warning: bypass files exist but SAC still blocks loading
+        # Smart App Control: bypass files exist but SAC still blocks loading.
+        # Warn and offer to disable SAC immediately (no need to press [1] first).
         if (Test-MbuSmartAppControlBlocking) {
             Write-C ""
             Write-Warn (T 'sac_greeting_warn')
             Write-C ""
+            if (-not (Invoke-MbuSmartAppControlGuard)) {
+                return
+            }
         }
     } else {
         Write-OK (T 'admin_ok')
