@@ -50,8 +50,7 @@ function Get-MbuCoreContent {
     }
 
     $urls = @(
-        'https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/runtime/unlocker-core.ps1',
-        'https://github.com/CoelhoFZ/MinecraftBedrockUnlocker/releases/latest/download/unlocker.ps1'
+        'https://raw.githubusercontent.com/CoelhoFZ/MinecraftBedrockUnlocker/main/runtime/unlocker-core.ps1'
     )
 
     $errors = New-Object System.Collections.Generic.List[string]
@@ -575,6 +574,16 @@ function Start-MainLoop {
 
     $greetingKey = if ($isUnlocked) { 'greeting_unlocked' } else { 'greeting_locked' }
     Write-C (Get-MbuCompatText $greetingKey @($greeting)) Green
+
+    # Smart App Control: bypass files exist but SAC still blocks loading OnlineFix64.dll.
+    if ($isUnlocked -and (Test-MbuSmartAppControlBlocking)) {
+        Write-C ''
+        Write-Warn (T 'sac_greeting_warn')
+        Write-C ''
+        if (-not (Invoke-MbuSmartAppControlGuard)) {
+            return
+        }
+    }
 
     while ($true) {
         $menuState = Show-MbuDynamicMenu
