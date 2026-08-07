@@ -328,6 +328,72 @@ function Test-UwpMinecraftPath {
     return ($Path -match '(?i)\\WindowsApps\\' -or $Path -match '(?i)Microsoft\.MinecraftUWP_')
 }
 
+# ============================================================================
+# Smart App Control (SAC) - Windows 11 blocks loading the unsigned
+# OnlineFix64.dll into the signed game process (Bad Image 0xc0e90007 / 4556).
+# ============================================================================
+
+function Get-MbuSmartAppControlState {
+    # Returns SAC state: 0 = off/not available, 1 = on (blocks), 2 = evaluation.
+    try {
+        $policy = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy' -Name 'VerifiedAndReputablePolicyState' -ErrorAction Stop
+        if ($null -ne $policy.VerifiedAndReputablePolicyState) {
+            return [int]$policy.VerifiedAndReputablePolicyState
+        }
+    } catch { }
+    return 0
+}
+
+function Test-MbuSmartAppControlBlocking {
+    # Only enforcement mode (1) blocks loading. Evaluation (2) does not.
+    return ((Get-MbuSmartAppControlState) -eq 1)
+}
+
+function Disable-MbuSmartAppControl {
+    # One-way operation: once disabled, SAC can only be re-enabled by
+    # resetting Windows 11. Requires admin + reboot to take effect.
+    try {
+        # The CI\Policy key is guaranteed to exist here: this function is only
+        # called after Test-MbuSmartAppControlBlocking returned true (state==1).
+        $policyPath = 'HKLM:\SYSTEM\CurrentControlSet\Control\CI\Policy'
+        Set-ItemProperty -Path $policyPath -Name 'VerifiedAndReputablePolicyState' -Value 0 -Type DWord -Force -ErrorAction Stop
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Invoke-MbuSmartAppControlGuard {
+    # Called before installing the bypass. Returns $true if install may proceed,
+    # $false if it must abort (SAC disabled -> reboot required, or user aborted).
+    if (-not (Test-MbuSmartAppControlBlocking)) { return $true }
+
+    Write-C ""
+    Write-Warn (T 'sac_warn_title')
+    Write-Warn (T 'sac_warn_body')
+    Write-C ""
+    Write-Warn (T 'sac_oneway_warn')
+    Write-C ""
+    Write-C "  $(T 'sac_ask_disable') " Cyan -NoNewline
+    $choice = Read-Host
+    if ($choice -match '^(y|s|1)') {
+        if (Disable-MbuSmartAppControl) {
+            Write-OK (T 'sac_disabled_ok')
+            Write-Warn (T 'sac_reboot_required')
+            Wait-Enter
+            return $false
+        }
+        Write-Err (T 'sac_disable_failed')
+        Write-Warn (T 'sac_manual_hint')
+        Write-C ""
+        Wait-Enter
+        return $false
+    }
+    Write-Warn (T 'sac_declined')
+    Write-C ""
+    return $true
+}
+
 function Get-BypassFileNames {
     param([string]$Path)
 
@@ -1560,6 +1626,132 @@ function T {
             ar = "محاولة"
             ru = "Попытка"
         }
+        "sac_warn_title" = @{
+            en = "Smart App Control is ON - it will block OnlineFix64.dll!"
+            zh = "Smart App Control 已开启 - 它会阻止 OnlineFix64.dll!"
+            hi = "Smart App Control चालू है - यह OnlineFix64.dll को ब्लॉक करेगा!"
+            es = "¡Smart App Control está activado - bloqueará OnlineFix64.dll!"
+            fr = "Smart App Control est activé - il bloquera OnlineFix64.dll !"
+            ar = "Smart App Control مفعّلة - ستحظر OnlineFix64.dll!"
+            ru = "Smart App Control включен - он заблокирует OnlineFix64.dll!"
+        }
+        "sac_warn_body" = @{
+            en = "Windows 11 blocks loading the unsigned OnlineFix64.dll into the signed Minecraft process (Bad Image 0xc0e90007 / Error 4556)."
+            zh = "Windows 11 会阻止将未签名的 OnlineFix64.dll 加载到已签名的 Minecraft 进程中（Bad Image 0xc0e90007 / 错误 4556）。"
+            hi = "Windows 11 हस्ताक्षरित Minecraft प्रक्रिया में अहस्ताक्षरित OnlineFix64.dll लोड होने से रोकता है (Bad Image 0xc0e90007 / त्रुटि 4556)।"
+            es = "Windows 11 bloquea la carga de OnlineFix64.dll sin firmar en el proceso firmado de Minecraft (Bad Image 0xc0e90007 / Error 4556)."
+            fr = "Windows 11 bloque le chargement de OnlineFix64.dll non signée dans le processus signé de Minecraft (Bad Image 0xc0e90007 / Erreur 4556)."
+            ar = "يمنع Windows 11 تحميل OnlineFix64.dll غير الموقعة في عملية Minecraft الموقعة (Bad Image 0xc0e90007 / الخطأ 4556)."
+            ru = "Windows 11 блокирует загрузку неподписанной OnlineFix64.dll в подписанный процесс Minecraft (Bad Image 0xc0e90007 / ошибка 4556)."
+        }
+        "sac_ask_disable" = @{
+            en = "Disable Smart App Control now? (Y/N): "
+            zh = "现在禁用 Smart App Control 吗？(Y/N): "
+            hi = "अभी Smart App Control बंद करें? (Y/N): "
+            es = "¿Desactivar Smart App Control ahora? (S/N): "
+            fr = "Désactiver Smart App Control maintenant ? (O/N) : "
+            ar = "هل تريد إيقاف Smart App Control الآن؟ (Y/N): "
+            ru = "Отключить Smart App Control сейчас? (Y/N): "
+        }
+        "sac_oneway_warn" = @{
+            en = "WARNING: disabling Smart App Control is ONE-WAY - it can only be re-enabled by resetting Windows 11."
+            zh = "警告：禁用 Smart App Control 是单向的 - 只能通过重置 Windows 11 重新启用。"
+            hi = "चेतावनी: Smart App Control बंद करना एकतरफा है - इसे केवल Windows 11 रीसेट करके ही फिर से चालू किया जा सकता है।"
+            es = "ADVERTENCIA: desactivar Smart App Control es UNIDIRECCIONAL - solo se puede reactivar restableciendo Windows 11."
+            fr = "AVERTISSEMENT : désactiver Smart App Control est IRRÉVERSIBLE - il ne peut être réactivé qu'en réinitialisant Windows 11."
+            ar = "تحذير: إيقاف Smart App Control إجراء أحادي الاتجاه - لا يمكن إعادة تفعيله إلا بإعادة تعيين Windows 11."
+            ru = "ПРЕДУПРЕЖДЕНИЕ: отключение Smart App Control — однонаправленное — повторно включить можно только сбросом Windows 11."
+        }
+        "sac_disabled_ok" = @{
+            en = "Smart App Control disabled successfully."
+            zh = "Smart App Control 已成功禁用。"
+            hi = "Smart App Control सफलतापूर्वक बंद कर दिया गया।"
+            es = "Smart App Control desactivado correctamente."
+            fr = "Smart App Control désactivé avec succès."
+            ar = "تم إيقاف Smart App Control بنجاح."
+            ru = "Smart App Control успешно отключен."
+        }
+        "sac_reboot_required" = @{
+            en = "A REBOOT is required for this to take effect. Reboot your PC and run Install [1] again."
+            zh = "需要重启才能生效。请重启电脑并重新运行安装 [1]。"
+            hi = "इसे प्रभावी करने के लिए रिबूट आवश्यक है। अपने पीसी को रिबूट करें और इंस्टॉल [1] फिर से चलाएँ।"
+            es = "Se requiere un REINICIO para que surta efecto. Reinicie el PC y ejecute Instalar [1] de nuevo."
+            fr = "Un REDÉMARRAGE est requis pour que cela prenne effet. Redémarrez le PC et relancez Installer [1]."
+            ar = "مطلوب إعادة تشغيل لتفعيل هذا. أعد تشغيل جهازك وشغّل التثبيت [1] مرة أخرى."
+            ru = "Требуется ПЕРЕЗАГРУЗКА, чтобы это вступило в силу. Перезагрузите ПК и снова запустите Установку [1]."
+        }
+        "sac_disable_failed" = @{
+            en = "Failed to disable Smart App Control automatically."
+            zh = "无法自动禁用 Smart App Control。"
+            hi = "Smart App Control स्वचालित रूप से बंद करने में विफल।"
+            es = "No se pudo desactivar Smart App Control automáticamente."
+            fr = "Échec de la désactivation automatique de Smart App Control."
+            ar = "فشل إيقاف Smart App Control تلقائياً."
+            ru = "Не удалось автоматически отключить Smart App Control."
+        }
+        "sac_manual_hint" = @{
+            en = "Disable it manually: Settings > Windows Security > App & browser control > Smart App Control settings > Off"
+            zh = "请手动禁用：设置 > Windows 安全中心 > 应用和浏览器控制 > Smart App Control 设置 > 关闭"
+            hi = "इसे मैन्युअल रूप से बंद करें: Settings > Windows Security > App & browser control > Smart App Control settings > Off"
+            es = "Desactívelo manualmente: Configuración > Seguridad de Windows > Control de aplicaciones y navegador > Configuración de Smart App Control > Desactivado"
+            fr = "Désactivez-le manuellement : Paramètres > Sécurité Windows > Contrôle des applications et du navigateur > Paramètres de Smart App Control > Désactivé"
+            ar = "أوقفه يدوياً: الإعدادات > أمان Windows > التحكم في التطبيق والمتصفح > إعدادات Smart App Control > إيقاف"
+            ru = "Отключите вручную: Параметры > Безопасность Windows > Управление приложениями и браузером > Параметры Smart App Control > Выкл."
+        }
+        "sac_declined" = @{
+            en = "OK - continuing WITHOUT disabling SAC. The game will still fail to load OnlineFix64.dll until Smart App Control is off."
+            zh = "好的 - 继续操作但不禁用 SAC。在关闭 Smart App Control 之前，游戏仍将无法加载 OnlineFix64.dll。"
+            hi = "ठीक है - SAC बंद किए बिना जारी रखा जा रहा है। Smart App Control बंद होने तक गेम OnlineFix64.dll लोड करने में विफल रहेगा।"
+            es = "OK - continuando SIN desactivar SAC. El juego seguirá sin cargar OnlineFix64.dll hasta que Smart App Control esté desactivado."
+            fr = "OK - on continue SANS désactiver SAC. Le jeu ne pourra toujours pas charger OnlineFix64.dll tant que Smart App Control est activé."
+            ar = "حسناً - المتابعة دون إيقاف SAC. ستظل اللعبة غير قادرة على تحميل OnlineFix64.dll حتى يتم إيقاف Smart App Control."
+            ru = "ОК - продолжаем БЕЗ отключения SAC. Игра по-прежнему не сможет загрузить OnlineFix64.dll, пока Smart App Control включен."
+        }
+        "sac_status_label" = @{
+            en = "Smart App Control"
+            zh = "Smart App Control"
+            hi = "Smart App Control"
+            es = "Smart App Control"
+            fr = "Smart App Control"
+            ar = "Smart App Control"
+            ru = "Smart App Control"
+        }
+        "sac_status_on" = @{
+            en = "ON - blocks bypass"
+            zh = "已开启 - 会阻止绕过"
+            hi = "चालू - बायपास को ब्लॉक करता है"
+            es = "ACTIVADO - bloquea el bypass"
+            fr = "ACTIVÉ - bloque le bypass"
+            ar = "مفعّلة - تحظر التجاوز"
+            ru = "ВКЛ - блокирует обход"
+        }
+        "sac_status_off" = @{
+            en = "Off / N/A"
+            zh = "已关闭 / 不适用"
+            hi = "बंद / उपलब्ध नहीं"
+            es = "Desactivado / N/D"
+            fr = "Désactivé / N/A"
+            ar = "مطفأة / غير متاح"
+            ru = "Выкл / Н/Д"
+        }
+        "sac_status_eval" = @{
+            en = "Evaluation (not blocking yet)"
+            zh = "评估中（尚未阻止）"
+            hi = "मूल्यांकन (अभी ब्लॉक नहीं करता)"
+            es = "Evaluación (aún no bloquea)"
+            fr = "Évaluation (ne bloque pas encore)"
+            ar = "تقييم (لا يحظر بعد)"
+            ru = "Оценка (пока не блокирует)"
+        }
+        "sac_greeting_warn" = @{
+            en = "ATTENTION: Smart App Control is ON and will block OnlineFix64.dll. Run [1] Install to disable it automatically."
+            zh = "注意：Smart App Control 已开启，将阻止 OnlineFix64.dll。运行 [1] 安装可自动禁用。"
+            hi = "ध्यान दें: Smart App Control चालू है और OnlineFix64.dll को ब्लॉक करेगा। इसे स्वचालित रूप से बंद करने के लिए [1] इंस्टॉल चलाएँ।"
+            es = "ATENCIÓN: Smart App Control está activado y bloqueará OnlineFix64.dll. Ejecute [1] Instalar para desactivarlo automáticamente."
+            fr = "ATTENTION : Smart App Control est activé et bloquera OnlineFix64.dll. Exécutez [1] Installer pour le désactiver automatiquement."
+            ar = "انتبه: Smart App Control مفعّلة وستحظر OnlineFix64.dll. شغّل [1] تثبيت لإيقافها تلقائياً."
+            ru = "ВНИМАНИЕ: Smart App Control включен и заблокирует OnlineFix64.dll. Запустите [1] Установка, чтобы отключить его автоматически."
+        }
     }
     
     $ptOverrides = @{
@@ -1680,6 +1872,20 @@ function T {
         'bd_onaccess_not_detected' = 'Exclusao ainda NAO detectada. Siga os passos novamente.'
         'bd_onaccess_skipped' = 'Exclusao nao configurada. Se o Minecraft tiver problemas depois, veja TROUBLESHOOTING.md.'
         'bd_onaccess_attempt' = 'Tentativa'
+        'sac_warn_title' = 'Smart App Control esta LIGADA - ela vai bloquear o OnlineFix64.dll!'
+        'sac_warn_body' = 'O Windows 11 bloqueia o carregamento da OnlineFix64.dll (nao assinada) dentro do processo assinado do Minecraft (Imagem Incorreta 0xc0e90007 / erro 4556).'
+        'sac_ask_disable' = 'Desligar a Smart App Control agora? (S/N): '
+        'sac_oneway_warn' = 'AVISO: desligar a Smart App Control e UNILATERAL - so volta ligando resetando o Windows 11.'
+        'sac_disabled_ok' = 'Smart App Control desligada com sucesso.'
+        'sac_reboot_required' = 'E necessario REINICIAR o PC para valer. Reinicie e execute [1] Instalar novamente.'
+        'sac_disable_failed' = 'Nao foi possivel desligar a Smart App Control automaticamente.'
+        'sac_manual_hint' = 'Desligue manualmente: Configuracoes > Seguranca do Windows > Controle de aplicativos e navegador > Smart App Control > Desligado'
+        'sac_declined' = 'OK - continuando SEM desligar a SAC. O jogo vai continuar falhando ao carregar o OnlineFix64.dll ate a SAC ser desligada.'
+        'sac_status_label' = 'Smart App Control'
+        'sac_status_on' = 'LIGADA - bloqueia o bypass'
+        'sac_status_off' = 'Desligada / N/A'
+        'sac_status_eval' = 'Avaliacao (ainda nao bloqueia)'
+        'sac_greeting_warn' = 'ATENCAO: Smart App Control esta LIGADA e vai bloquear o OnlineFix64.dll. Execute [1] Instalar para desligar automaticamente.'
     }
     if ($Script:Lang -eq 'pt' -and $ptOverrides.ContainsKey($Key)) {
         return $ptOverrides[$Key]
@@ -1898,11 +2104,27 @@ function Find-MinecraftPath {
         Write-Warn "MinecraftPath argument '$p' not found; falling back to auto-detection."
     }
 
-    # Priority 1: known XboxGames path on all drives (GDK install - compatible)
+    # Priority 1: known XboxGames path on all drives (GDK install - compatible).
+    # Only accept the folder if the game is really installed there. A leftover or
+    # tool-created folder containing only bypass files must NOT be treated as a
+    # valid install - otherwise the UWP/Store guard below never fires.
     $drives = @("C") + @((Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -match '^[D-Z]:\\$' }).Name)
+    $gameMarkers = @(
+        'Minecraft.Windows.exe',
+        'AppxManifest.xml',
+        'appxmanifest.xml',
+        'MicrosoftGame.config',
+        'MicrosoftGame.Config'
+    )
     foreach ($driveLetter in $drives) {
         $path = "${driveLetter}:\XboxGames\Minecraft for Windows\Content"
-        if (Test-Path $path) { return $path }
+        if (Test-Path -LiteralPath $path) {
+            $hasGame = $false
+            foreach ($marker in $gameMarkers) {
+                if (Test-Path -LiteralPath (Join-Path $path $marker)) { $hasGame = $true; break }
+            }
+            if ($hasGame) { return $path }
+        }
     }
 
     # Priority 2: custom Xbox App library folders under XboxGames
@@ -1923,9 +2145,14 @@ function Find-MinecraftPath {
 
     # Priority 3: UWP / Microsoft Store install - resolve via Get-AppxPackage.
     # InstallLocation works regardless of drive (issue #23: install on F: instead of C:).
+    # If the package lives under WindowsApps, return the package root so the
+    # Test-UwpMinecraftPath guard fires: Store installs are NOT compatible and
+    # must never be modified (loading OnlineFix64.dll inside WindowsApps fails
+    # with 0xc0e90007 / 4556 - Bad Image / integrity).
     try {
         $pkg = Get-AppxPackage -Name 'MICROSOFT.MINECRAFTUWP' -ErrorAction SilentlyContinue
         if ($pkg -and $pkg.InstallLocation) {
+            if (Test-UwpMinecraftPath -Path $pkg.InstallLocation) { return $pkg.InstallLocation }
             $contentPath = Join-Path $pkg.InstallLocation 'Content'
             if (Test-Path -LiteralPath $contentPath) { return $contentPath }
             # fallback: InstallLocation itself sometimes IS the Content folder
@@ -4194,7 +4421,12 @@ function Install-Bypass {
         Invoke-UwpUnsupportedCleanup -ContentPath $mcPath -Pause
         return
     }
-
+    # Smart App Control (Windows 11) blocks the unsigned OnlineFix64.dll from
+    # loading into the signed game process (Bad Image 0xc0e90007 / 4556).
+    # Detect it and offer to disable it automatically.
+    if (-not (Invoke-MbuSmartAppControlGuard)) {
+        return
+    }
     Write-OK "$(T 'mc_found'): $mcPath"
     Write-C ""
     
@@ -5314,7 +5546,16 @@ function Show-Status {
     } else {
         Write-C (T 'status_stopped') Red
     }
-    
+    # Smart App Control
+    Write-C "  $(T 'sac_status_label'):   " -NoNewline
+    $sacState = Get-MbuSmartAppControlState
+    if ($sacState -eq 1) {
+        Write-C (T 'sac_status_on') Red
+    } elseif ($sacState -eq 2) {
+        Write-C (T 'sac_status_eval') Yellow
+    } else {
+        Write-C (T 'sac_status_off') Green
+    }
     # Reboot Persistence
     Write-C "  $(T 'status_persistence'):  " -NoNewline
     if (Test-Persistence) {
@@ -5452,7 +5693,15 @@ function Show-Diagnostics {
         Message = $legacyMsg
         Hint = if (-not $legacyOk) { "Use [2] Restore to remove old bypass, then [1] Install for new version" } else { $null }
     }
-    
+    # 9. Smart App Control
+    $sacState = Get-MbuSmartAppControlState
+    $sacOk = ($sacState -ne 1)
+    $checks += @{
+        Name = T 'sac_status_label'
+        Passed = $sacOk
+        Message = if ($sacState -eq 1) { "ON - will block OnlineFix64.dll (Bad Image 0xc0e90007/4556)" } elseif ($sacState -eq 2) { "Evaluation (not blocking yet)" } else { "Off / N/A" }
+        Hint = if (-not $sacOk) { "Run [1] Install - the script can disable it automatically" } else { $null }
+    }
     # Print results
     $passed = 0
     $total = $checks.Count
@@ -5522,6 +5771,13 @@ function Start-MainLoop {
         }
         $msg = if ($greetings.ContainsKey($Script:Lang)) { $greetings[$Script:Lang] } else { $greetings['en'] }
         Write-C "  $msg" Green
+
+        # Smart App Control warning: bypass files exist but SAC still blocks loading
+        if (Test-MbuSmartAppControlBlocking) {
+            Write-C ""
+            Write-Warn (T 'sac_greeting_warn')
+            Write-C ""
+        }
     } else {
         Write-OK (T 'admin_ok')
     }

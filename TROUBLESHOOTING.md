@@ -138,6 +138,33 @@ The game is installed from Microsoft Store instead of Xbox App, OR installed in 
 
 **NOTE:** The bypass ONLY works with Xbox App (GDK) installations!
 
+If the game shows **"Imagem Incorreta / Bad Image" (status 0xc0e90007)** or **"Failed to load OnlineFix64.dll from the list (Error code: 4556)"**, the cause is one of:
+
+1. **Microsoft Store/UWP install** - files under `C:\Program Files\WindowsApps\`. Windows rejects loading the DLL from that protected folder. Uninstall the Store version and install via Xbox App - the script now detects and refuses this case automatically.
+2. **Smart App Control (Windows 11) blocking the DLL** - see the Smart App Control section below.
+
+---
+
+## ⚠️ Problem: Smart App Control blocks OnlineFix64.dll (Windows 11)
+
+### Symptoms:
+- Game shows **"Imagem Incorreta / Bad Image" (0xc0e90007)** or **"Failed to load OnlineFix64.dll from the list (Error code: 4556)"** even with a correct Xbox App (GDK) install
+- Windows opens the page **"Smart App Control has blocked part of this app"**
+- Status [5] / Diagnostics [6] show the bypass files are valid and in place
+
+### Cause:
+**Smart App Control** (Windows 11) is ON. It blocks loading of the unsigned `OnlineFix64.dll` into the signed Minecraft process. Antivirus exclusions do not help - SAC is a separate security layer.
+
+### Solution:
+Run **Install Mod [1]** - the script now detects Smart App Control and offers to disable it **automatically** (one-way decision + reboot).
+
+Manual alternative:
+1. Open **Windows Security** > **App & browser control**
+2. Click **Smart App Control settings**
+3. Set it to **Off** and reboot your PC
+
+> ⚠️ Disabling Smart App Control is **one-way**: it can only be re-enabled by resetting Windows 11.
+
 ---
 
 ## ⚠️ Problem: Game Crashes on Startup
@@ -330,6 +357,33 @@ Jogo instalado pela Microsoft Store em vez do Xbox App, OU instalado em local n�
 5. O jogo deve instalar em `C:\XboxGames\` (padrão)
 
 **NOTA:** O bypass só funciona com instalações via Xbox App (GDK)!
+
+Se o jogo mostrar **"Imagem Incorreta / Bad Image" (status 0xc0e90007)** ou **"Failed to load OnlineFix64.dll from the list (Error code: 4556)"**, a causa é uma destas:
+
+1. **Instalação Microsoft Store/UWP** - arquivos em `C:\Program Files\WindowsApps\`. O Windows recusa carregar a DLL dessa pasta protegida. Desinstale a versão Store e instale pelo Xbox App - o script agora detecta e recusa esse caso automaticamente.
+2. **Smart App Control (Windows 11) bloqueando a DLL** - veja a seção Smart App Control abaixo.
+
+---
+
+## ⚠️ Problema: Smart App Control bloqueia o OnlineFix64.dll (Windows 11)
+
+### Sintomas:
+- O jogo mostra **"Imagem Incorreta / Bad Image" (0xc0e90007)** ou **"Failed to load OnlineFix64.dll from the list (Error code: 4556)"** mesmo com instalação correta via Xbox App (GDK)
+- O Windows abre a página **"Smart App Control has blocked part of this app"**
+- Status [5] / Diagnósticos [6] mostram os arquivos do bypass válidos e no lugar
+
+### Causa:
+A **Smart App Control** (Windows 11) está LIGADA. Ela bloqueia o carregamento do `OnlineFix64.dll` (não assinado) dentro do processo assinado do Minecraft. Exclusões de antivírus não ajudam - a SAC é uma camada de segurança separada.
+
+### Solução:
+Execute **[1] Instalar Mod** - o script agora detecta a Smart App Control e oferece desligá-la **automaticamente** (decisão unilateral + reinício).
+
+Alternativa manual:
+1. Abra **Segurança do Windows** > **Controle de aplicativos e navegador**
+2. Clique em **Configurações de Smart App Control**
+3. Defina como **Desligado** e reinicie o PC
+
+> ⚠️ Desligar a Smart App Control é **unilateral**: só volta a ligar resetando o Windows 11.
 
 ---
 
