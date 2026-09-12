@@ -1,4 +1,4 @@
-# MinecraftBedrockUnlocker — moved
+# MinecraftBedrockUnlocker (moved)
 
 **This project has been renamed to [Minecraft-Bedrock-Free](https://github.com/CoelhoFZ/Minecraft-Bedrock-Free).**
 
